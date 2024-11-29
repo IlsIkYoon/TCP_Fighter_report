@@ -1,26 +1,13 @@
 #pragma once
 
 #include "resource.h"
-
-
-struct Session {
-	
-	SOCKET* _socket;
-	DWORD _ip;
-	DWORD _port;
-	//recv Q;
-	//send Q;
-	//Player;
-
-
-
-};
+#include "RingBuffer.h"
 
 class Player {
 	DWORD _hp;
 	DWORD _x;
 	DWORD _y;
-	//방향 (Direction)
+	DWORD _direction;
 
 
 
@@ -29,3 +16,17 @@ class Player {
 
 
 };
+
+struct Session {
+	
+	SOCKET _socket;
+	DWORD _ip;
+	DWORD _port;
+	RingBuffer _recvQ;
+	RingBuffer _sendQ;
+	Player* _player;
+	
+	//Session* _next; 배열로 가기 때문에 필요 없음
+
+};
+

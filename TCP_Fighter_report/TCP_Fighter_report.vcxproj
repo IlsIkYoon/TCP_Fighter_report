@@ -117,6 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -183,12 +184,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RingBuffer.cpp" />
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="TCPFighter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketDefine.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="TCPFighter.h" />
   </ItemGroup>
