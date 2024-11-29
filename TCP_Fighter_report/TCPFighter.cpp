@@ -105,15 +105,11 @@ bool TCPFighter() {
 				//recv 작업 일단 다이렉트로 넣는 방법 구현
 				sock_retval = recv(SessionArr[i]._socket, SessionArr[i]._recvQ.GetRearBufferPtr(),
 					SessionArr[i]._recvQ.DirectEnqueueSize(), 0);
-				if (sock_retval != 0) {
+				if (sock_retval == SOCKET_ERROR) {
 					if (GetLastError() != WSAEWOULDBLOCK) {
 						printf("%d recv error : %d\n", __LINE__, GetLastError());
 					}
 				}
-
-
-
-
 
 
 			}
