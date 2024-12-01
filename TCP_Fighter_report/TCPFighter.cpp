@@ -17,7 +17,7 @@ bool TCPFighter() {
 	int wsa_retval;
 	int sock_retval;
 	int select_retval;
-
+	int ringbuffer_retval;
 
 	//socket inteligense//----------------
 	WSADATA wsa;
@@ -105,29 +105,40 @@ bool TCPFighter() {
 				//recv 작업 일단 다이렉트로 넣는 방법 구현
 				sock_retval = recv(SessionArr[i]._socket, SessionArr[i]._recvQ.GetRearBufferPtr(),
 					SessionArr[i]._recvQ.DirectEnqueueSize(), 0);
-				if (sock_retval != 0) {
+				if (sock_retval == SOCKET_ERROR) {
 					if (GetLastError() != WSAEWOULDBLOCK) {
 						printf("%d recv error : %d\n", __LINE__, GetLastError());
+						return false;
 					}
 				}
 
-
-
-
-
-
-			}
-		}
-		for (i = 0; i < playerCount; i++) {
-			if (FD_ISSET(SessionArr[i]._socket, &writeset)) {
-				//send 작업
-
-
-
+				if (SessionArr[i]._recvQ.MoveRear(sock_retval)) {
+					printf("%d recvQ MoveRear error %d\n", __LINE__, GetLastError());
+					return false;
+				}// sock_retval 만큼 moverear;
 			}
 
+
+				if (FD_ISSET(SessionArr[i]._socket, &writeset)) {
+					//send 작업
+					sock_retval = send(SessionArr[i]._socket, SessionArr[i]._sendQ.GetFrontBufferPtr(),
+						SessionArr[i]._sendQ.DirectDequeueSize(), 0);
+					if (sock_retval == SOCKET_ERROR) {
+						if (GetLastError() != WSAEWOULDBLOCK) {
+							printf("%d send error : %d\n", __LINE__, GetLastError());
+							return false;
+						}
+						//send의 wouldblock의 경우에 대한 예외처리 필요
+					}
+						if (SessionArr[i]._sendQ.MoveFront(sock_retval)) {
+							printf("%d sendQ MoveFront error : %d\n", __LINE__, GetLastError());
+							return false;
+						}
+					}
+				}
+			}
 		}
-		
+
 		FD_ZERO(&readset);
 		FD_ZERO(&writeset);
 
@@ -137,6 +148,11 @@ bool TCPFighter() {
 		}
 
 		//로직//---------------------------------
+
+
+
+
+
 
 
 
