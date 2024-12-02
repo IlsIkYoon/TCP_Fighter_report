@@ -13,12 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="GameProc">
+      <UniqueIdentifier>{1cb44c53-0a4c-48f1-bc61-60b879f9daba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCPFighter">
+      <UniqueIdentifier>{42508d59-77b1-4ee6-8bca-3de023379b69}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="TCPFighter.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Session.cpp">
@@ -27,15 +30,15 @@
     <ClCompile Include="RingBuffer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="PacketDefine.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="GameProc.cpp">
+      <Filter>GameProc</Filter>
+    </ClCompile>
+    <ClCompile Include="TCPFighter.cpp">
+      <Filter>TCPFighter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="TCPFighter.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Session.h">
@@ -46,6 +49,12 @@
     </ClInclude>
     <ClInclude Include="RingBuffer.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GameProc.h">
+      <Filter>GameProc</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPFighter.h">
+      <Filter>TCPFighter</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -183,13 +183,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameProc.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="PacketDefine.cpp" />
     <ClCompile Include="RingBuffer.cpp" />
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="TCPFighter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameProc.h" />
     <ClInclude Include="PacketDefine.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RingBuffer.h" />

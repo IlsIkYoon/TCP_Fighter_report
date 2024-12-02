@@ -1,10 +1,11 @@
-#pragma once
+#ifndef __RESOURCE__
+#define __RESOURCE__
 
 
-#pragma comment(lib, "ws2_32")
+#pragma comment(lib, "Ws2_32")
 
-#include <WinSock2.h>
-#include <WS2tcpip.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <iostream>
 
@@ -45,7 +46,17 @@
 #define dfATTACK3_RANGE_Y		20
 
 
+//-------------------------------------------------------------
+// 기본 설정
+//-------------------------------------------------------------
 
+#define dfHP 20
+#define dfzAttack 1
+#define dfxAttack 3
+#define dfcAttack 4
+
+#define LL 0
+#define RR 1
 
 /*
 
@@ -99,3 +110,7 @@ Y 축 - 2
 #define dfATTACK3_RANGE_Y		20
 
 */
+
+
+
+#endif

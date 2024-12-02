@@ -20,7 +20,7 @@ bool RingBuffer::IsFull() {
 	}
 }
 
-//링버퍼 인큐 디큐 에러... 예외처리 더 해야 함 
+
 bool RingBuffer::Enqueue(CHAR* chpData, DWORD size) {
 	CHAR* pos; //링버퍼 포인터
 	if (IsFull()) return false;
@@ -199,7 +199,7 @@ char* RingBuffer::GetFrontBufferPtr(void) {
 
 
 
-	return &_buf[_front];
+	return &_buf[_front+1];
 }
 char* RingBuffer::GetRearBufferPtr(void) {
 
@@ -207,6 +207,6 @@ char* RingBuffer::GetRearBufferPtr(void) {
 		return &_buf[0];
 	}
 	else {
-		return &_buf[_rear];
+		return &_buf[_rear+1];
 	}
 }

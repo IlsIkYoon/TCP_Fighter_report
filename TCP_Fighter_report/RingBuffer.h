@@ -1,8 +1,7 @@
 #ifndef __RingBuffer__
 #define __RingBuffer__
 
-#include <windows.h>
-#include <iostream>
+#include "resource.h"
 
 #define BUFSIZE 1024
 

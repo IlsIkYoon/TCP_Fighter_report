@@ -1,17 +1,16 @@
 #include "TCPFighter.h"
-#include "PacketDefine.h"
-#include "Session.h"
+
 
 SOCKET listen_socket;
 
-DWORD playerCount = 0 ; //63명까지 접속을 받는 상황으로 가정
+extern DWORD playerCount; //63명까지 접속을 받는 상황으로 가정
 
 extern Session SessionArr[PLAYERMAXCOUNT];
 
 
 bool TCPFighter() {
 	int i;
-
+	srand(50);
 
 	//return value //-----------------------------
 	int wsa_retval;
@@ -40,7 +39,7 @@ bool TCPFighter() {
 	fd_set readset;
 	fd_set writeset;
 	TIMEVAL timeout = { 0, 0 };
-	
+
 	FD_ZERO(&readset);
 	FD_ZERO(&writeset);
 
@@ -58,101 +57,162 @@ bool TCPFighter() {
 		printf("%d socket error : %d\n", __LINE__, GetLastError());
 		return false;
 	}
-
+	printf("socket\n");
 	sock_retval = bind(listen_socket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 	if (sock_retval != 0) {
 		printf("%d bind error : %d\n", __LINE__, GetLastError());
 		return false;
 	}
+	printf("bind\n");
 
+	sock_retval = listen(listen_socket, SOMAXCONN);
+	if (sock_retval != 0) {
+		printf("%d listen error : %d\n", __LINE__, GetLastError());
+		return false;
+	}
+	printf("listen \n");
 	ioctlsocket(listen_socket, FIONBIO, &non_block);
 
 	//메인 루프 //-----------------------------------------
 
-	while (1) {
+	while (1) 
+	{
 
 		//네트워크//----------------------------
-		
+
 		FD_SET(listen_socket, &readset);
 		//나머지 accept된 소켓들은 아래에서 넣을 예정
 
 		select_retval = select(NULL, &readset, &writeset, NULL, &timeout);
-		if (select_retval == SOCKET_ERROR) {
+		if (select_retval == SOCKET_ERROR) 
+		{
 			printf("%d select error : %d\n", __LINE__, GetLastError());
 		}
 
-		if (FD_ISSET(listen_socket, &readset)){
+		if (FD_ISSET(listen_socket, &readset)) //캐릭터 초기 생성
+		{
 			//세션의 할당 안 된 곳에 accept해 줄 예정//---------------------
 			// 세션을 먼저 구성하고 나서 
 			// -----------------------------------------------------------
-			if (playerCount >= PLAYERMAXCOUNT) {
+			if (playerCount >= PLAYERMAXCOUNT) 
+			{
 				printf("playercount overflow !! , PlayerCount : %d\n", playerCount);
 			}
-			else {
+			else 
+			{
 				SessionArr[playerCount]._socket = accept(listen_socket, (SOCKADDR*)&clientAddr, &addrSize);
-				if (SessionArr[playerCount]._socket == INVALID_SOCKET) {
+				if (SessionArr[playerCount]._socket == INVALID_SOCKET) 
+				{
 					printf("Line : %d, playcount : %d,  accept error : %d\n", __LINE__, playerCount, GetLastError());
 				}
 				SessionArr[playerCount]._ip = clientAddr.sin_addr.s_addr;
 				SessionArr[playerCount]._port = clientAddr.sin_port;
 				SessionArr[playerCount]._player = new Player;
+				//초기 생성에 대한 작업들
+				CreateNewCharacter(&SessionArr[playerCount]);
+
 				playerCount++;
+
+				printf("create new character ! %d \n", playerCount);
+
+
 			}
 		}
 
-		for (i = 0; i < playerCount; i++) {
-			if (FD_ISSET(SessionArr[i]._socket, &readset)) {
-				//recv 작업 일단 다이렉트로 넣는 방법 구현
+		for (i = 0; i < playerCount; i++) 
+		{
+			if (FD_ISSET(SessionArr[i]._socket, &readset)) 
+			{
+				//recv 작업 
 				sock_retval = recv(SessionArr[i]._socket, SessionArr[i]._recvQ.GetRearBufferPtr(),
 					SessionArr[i]._recvQ.DirectEnqueueSize(), 0);
-				if (sock_retval == SOCKET_ERROR) {
-					if (GetLastError() != WSAEWOULDBLOCK) {
+
+
+				PacketHeader* pHeader;
+				
+				pHeader = (PacketHeader*)SessionArr[i]._recvQ.GetRearBufferPtr();
+
+
+				printf("recv,sock retval : %d, byCode : %d, bySize : %d, byType : %d\n", sock_retval, pHeader->byCode, pHeader->bySize, pHeader->byType);
+				
+				
+				
+				if (sock_retval == SOCKET_ERROR) 
+				{
+					if (GetLastError() != WSAEWOULDBLOCK) 
+					{
 						printf("%d recv error : %d\n", __LINE__, GetLastError());
 						return false;
 					}
 				}
 
-				if (SessionArr[i]._recvQ.MoveRear(sock_retval)) {
+				if (SessionArr[i]._recvQ.MoveRear(sock_retval) == 0) 
+				{
 					printf("%d recvQ MoveRear error %d\n", __LINE__, GetLastError());
 					return false;
 				}// sock_retval 만큼 moverear;
 			}
 
 
-				if (FD_ISSET(SessionArr[i]._socket, &writeset)) {
+			if (FD_ISSET(SessionArr[i]._socket, &writeset)) 
+			{	
+				if (SessionArr[i]._sendQ.IsEmpty() == false) {
 					//send 작업
 					sock_retval = send(SessionArr[i]._socket, SessionArr[i]._sendQ.GetFrontBufferPtr(),
 						SessionArr[i]._sendQ.DirectDequeueSize(), 0);
-					if (sock_retval == SOCKET_ERROR) {
-						if (GetLastError() != WSAEWOULDBLOCK) {
+					printf("send Retval : %d, direct dequeueSize : %d\n", sock_retval, SessionArr[i]._sendQ.DirectDequeueSize());
+
+					if (sock_retval == SOCKET_ERROR)
+					{
+						if (GetLastError() != WSAEWOULDBLOCK)
+						{
 							printf("%d send error : %d\n", __LINE__, GetLastError());
 							return false;
 						}
 						//send의 wouldblock의 경우에 대한 예외처리 필요
 					}
-						if (SessionArr[i]._sendQ.MoveFront(sock_retval)) {
-							printf("%d sendQ MoveFront error : %d\n", __LINE__, GetLastError());
-							return false;
-						}
+					if (SessionArr[i]._sendQ.MoveFront(sock_retval) == 0)
+					{
+						printf("%d sendQ MoveFront error : %d\n", __LINE__, GetLastError());
+						return false;
 					}
+
 				}
+
 			}
 		}
-
+		//Sleep(10000);
+	
 		FD_ZERO(&readset);
 		FD_ZERO(&writeset);
 
-		for (i = 0; i < playerCount; i++) {
+		for (i = 0; i < playerCount; i++) 
+		{
 			FD_SET(SessionArr[i]._socket, &readset);
 			FD_SET(SessionArr[i]._socket, &writeset);
 		}
 
-		//로직//---------------------------------
+	//로직//--------------------------------
+	
+
+		//recvq에 있는 데이터를 뜯어보고 sendq에 데이터를 넣어 줌 
+
+		for (int i = 0; i < playerCount; i++) 
+		{
+			if (SessionArr[i]._recvQ.IsEmpty() != true) {
+
+				DecodePacket(&SessionArr[i]);
 
 
+			}
+		}
 
 
-
+		//게임 로직//
+		for (int i = 0; i < playerCount; i++)
+		{
+			SessionArr[i]._player->Move();
+		}
 
 
 
@@ -160,9 +220,6 @@ bool TCPFighter() {
 
 
 	}
-
-
-
 
 
 

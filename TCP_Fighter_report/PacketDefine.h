@@ -21,6 +21,8 @@
 #ifndef __PACKET_DEFINE__
 #define __PACKET_DEFINE__
 
+#include "resource.h"
+
 
 struct PacketHeader {
 	BYTE	byCode;			// 패킷코드 0x89 고정.
@@ -33,12 +35,14 @@ struct PacketHeader {
 #define	dfPACKET_SC_CREATE_MY_CHARACTER			0
 
 struct SC_CREATE_MY_CHARACTER{
-
+#pragma pack(push, 1)
 	DWORD ID;
 	BYTE Direction;
 	short X;
 	short Y;
 	BYTE HP;
+#pragma pack(pop)
+
 };
 
 //---------------------------------------------------------------
@@ -56,12 +60,13 @@ struct SC_CREATE_MY_CHARACTER{
 #define	dfPACKET_SC_CREATE_OTHER_CHARACTER		1
 
 struct SC_CREATE_OTHER_CHARACTER {
+#pragma pack(push, 1)
 	DWORD ID;
 	BYTE Direction;
 	short X;
 	short Y;
 	BYTE HP;
-
+#pragma pack(pop)
 };
 
 //---------------------------------------------------------------
@@ -75,7 +80,9 @@ struct SC_CREATE_OTHER_CHARACTER {
 
 #define	dfPACKET_SC_DELETE_CHARACTER			2
 struct SC_DELETE_CHARACTER {
+#pragma pack(push, 1)
 	DWORD ID;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 삭제 패킷						Server -> Client
@@ -86,10 +93,12 @@ struct SC_DELETE_CHARACTER {
 
 
 #define	dfPACKET_CS_MOVE_START					10
-struct SC_MOVE_START {
+struct CS_MOVE_START {
+#pragma pack(push, 1)
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 이동시작 패킷						Client -> Server
@@ -115,10 +124,12 @@ struct SC_MOVE_START {
 
 #define	dfPACKET_SC_MOVE_START					11
 struct SC_MOVE_START {
+#pragma pack(push, 1)
 	DWORD ID;
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 이동시작 패킷						Server -> Client
@@ -136,10 +147,12 @@ struct SC_MOVE_START {
 
 
 #define	dfPACKET_CS_MOVE_STOP					12
-struct SC_MOVE_STOP {
+struct CS_MOVE_STOP {
+#pragma pack(push, 1)
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 이동중지 패킷						Client -> Server
@@ -152,10 +165,12 @@ struct SC_MOVE_STOP {
 
 #define	dfPACKET_SC_MOVE_STOP					13
 struct SC_MOVE_STOP {
+#pragma pack(push, 1)
 	DWORD ID;
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 이동중지 패킷						Server -> Client
@@ -169,9 +184,11 @@ struct SC_MOVE_STOP {
 
 #define	dfPACKET_CS_ATTACK1						20
 struct CS_ATTACK1 {
+#pragma pack(push, 1)
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 공격 패킷							Client -> Server
@@ -185,10 +202,12 @@ struct CS_ATTACK1 {
 
 #define	dfPACKET_SC_ATTACK1						21
 struct SC_ATTACK1 {
+#pragma pack(push, 1)
 	DWORD ID;
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 공격 패킷							Server -> Client
@@ -202,9 +221,11 @@ struct SC_ATTACK1 {
 
 #define	dfPACKET_CS_ATTACK2						22
 struct CS_ATTACK2 {
+#pragma pack(push, 1)
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 공격 패킷							Client -> Server
@@ -218,10 +239,12 @@ struct CS_ATTACK2 {
 
 #define	dfPACKET_SC_ATTACK2						23
 struct SC_ATTACK2 {
+#pragma pack(push, 1)
 	DWORD ID;
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 공격 패킷							Server -> Client
@@ -238,9 +261,11 @@ struct SC_ATTACK2 {
 
 #define	dfPACKET_CS_ATTACK3						24
 struct CS_ATTACK3 {
+#pragma pack(push, 1)
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 공격 패킷							Client -> Server
@@ -258,10 +283,12 @@ struct CS_ATTACK3 {
 
 #define	dfPACKET_SC_ATTACK3						25
 struct SC_ATTACK3 {
+#pragma pack(push, 1)
 	DWORD ID;
 	BYTE Direction;
 	short X;
 	short Y;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 공격 패킷							Server -> Client
@@ -282,9 +309,11 @@ struct SC_ATTACK3 {
 
 #define	dfPACKET_SC_DAMAGE						30
 struct SC_DAMAGE {
+#pragma pack(push, 1)
 	DWORD AttackID;
 	DWORD DamageID;
 	BYTE DamageHP;
+#pragma pack(pop)
 };
 //---------------------------------------------------------------
 // 캐릭터 데미지 패킷							Server -> Client
@@ -328,6 +357,13 @@ struct SC_DAMAGE {
 //	2	-	Y
 //
 //---------------------------------------------------------------
+
+
+
+
+
+
+
 
 
 
