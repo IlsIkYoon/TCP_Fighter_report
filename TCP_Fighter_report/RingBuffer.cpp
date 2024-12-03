@@ -25,15 +25,19 @@ bool RingBuffer::Enqueue(CHAR* chpData, DWORD size) {
 	CHAR* pos; //링버퍼 포인터
 	if (IsFull()) return false;
 
+
+	DWORD extraBuf = _bufsize - 1 - _rear; //배열의 0전까지의 남은 공간
+
+	/*
+
 	if (_rear == _bufsize - 1) {
 		pos = &_buf[0];
 	}
 	else { pos = &_buf[_rear + 1]; }
 
-
+	*/
 	char* pDest = chpData;
 
-	DWORD extraBuf = _bufsize - 1 - _rear; //배열의 0전까지의 남은 공간
 	if (GetBufferFree() >= size)
 	{
 		if (extraBuf < size)
@@ -116,6 +120,15 @@ void RingBuffer::ClearBuffer(void) {
 
 DWORD RingBuffer::DirectEnqueueSize(void) {
 
+	if (_rear == _bufsize - 1) {
+		//rear가 마지막에 도달했을 때에 대한 예외처리
+
+		return _front;
+
+	}
+
+
+
 	if (_rear < _front) {
 		return _front - _rear - 1;
 	}
@@ -132,6 +145,13 @@ DWORD RingBuffer::DirectEnqueueSize(void) {
 }
 
 DWORD RingBuffer::DirectDequeueSize(void) {
+
+
+	if (_front == _bufsize - 1)
+	{
+		return _rear + 1;
+	}
+
 
 	if (_rear < _front) {
 		return _bufsize - 1 - _front;
@@ -199,9 +219,17 @@ char* RingBuffer::GetFrontBufferPtr(void) {
 
 
 
+
+
+
+
 	return &_buf[_front+1];
 }
 char* RingBuffer::GetRearBufferPtr(void) {
+
+
+
+
 
 	if (_rear == _bufsize - 1) {
 		return &_buf[0];

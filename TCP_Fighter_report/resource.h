@@ -51,12 +51,12 @@
 //-------------------------------------------------------------
 
 #define dfHP 20
-#define dfzAttack 1
-#define dfxAttack 3
-#define dfcAttack 4
+#define dfAttack1Damage 1
+#define dfAttack2Damage 3
+#define dfAttack3Damage 4
 
-#define LL 0
-#define RR 1
+#define LL 0x00
+#define RR 0x04
 
 /*
 
@@ -70,14 +70,14 @@ Z : 주먹
 X : 큰주먹
 C : 돌려차기
 
-
-# 화면 이동영역 ---------------------------
+*/
+//# 화면 이동영역 ---------------------------
 
 #define dfRANGE_MOVE_TOP	50
 #define dfRANGE_MOVE_LEFT	10
 #define dfRANGE_MOVE_RIGHT	630
 #define dfRANGE_MOVE_BOTTOM	470
-
+/*
 위 좌표에 가지 못하게 해야하며,
 해당 좌표에 닿는 경우 움직임을 멈추어야 함.
 (작거나 같으면 멈춤)
@@ -96,12 +96,12 @@ Y 축 - 2
 //-----------------------------------------------------------------
 // 이동 오류체크 범위
 //-----------------------------------------------------------------
-#define dfERROR_RANGE		50
 
 
 //---------------------------------------------------------------
 // 공격범위.
 //---------------------------------------------------------------
+*/
 #define dfATTACK1_RANGE_X		80
 #define dfATTACK2_RANGE_X		90
 #define dfATTACK3_RANGE_X		100
@@ -109,8 +109,8 @@ Y 축 - 2
 #define dfATTACK2_RANGE_Y		10
 #define dfATTACK3_RANGE_Y		20
 
-*/
 
+#define dfERROR_RANGE		50
 
 
 #endif

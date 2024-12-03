@@ -20,13 +20,214 @@ bool MoveStart(Session* _session)
 
 	printf("Player ID : %d, Direction : %d, MoveStart \n", _session->_player->_ID, _session->_player->_direction);
 
+	//다른 캐릭터들 send q 에 move start enqueue
+
+	
+	PacketHeader MoveHeader;
+	SC_MOVE_START SC_MoveStart_Packet;
+	
+	MoveHeader.byCode = 0x89;
+	MoveHeader.bySize = sizeof(SC_MoveStart_Packet);
+	MoveHeader.byType = dfPACKET_SC_MOVE_START;
+
+
+
+	
+	
+	SC_MoveStart_Packet.Direction = MoveStartPacket.Direction;
+	SC_MoveStart_Packet.X = MoveStartPacket.X;
+	SC_MoveStart_Packet.Y = MoveStartPacket.Y;
+	SC_MoveStart_Packet.ID = _session->_player->_ID;
+
+
+
+
+	for (int i = 0; i < playerCount; i++)
+	{
+		if (SessionArr[i]._player->_ID != _session->_player->_ID) {
+
+			SessionArr[i]._sendQ.Enqueue((char*)&MoveHeader, sizeof(MoveHeader));
+			SessionArr[i]._sendQ.Enqueue((char*)&SC_MoveStart_Packet, sizeof(SC_MoveStart_Packet)); //enqueue가 실패할 경우에 대한 예외처리 필요
+		}
+	}
+
+
+
+
 	return true;
 }
 
 
 void MoveStop(Session* _session)
 {
+
+	CS_MOVE_STOP MoveStopPacket;
+	if (_session->_recvQ.Peek((char*)&MoveStopPacket, sizeof(MoveStopPacket)) < sizeof(MoveStopPacket)) {
+		printf("Line : %d, recvQ Peek Error", __LINE__); //이러면 다음에 또 헤더를 뜯지 않나 ? 
+		return;
+	}
+
+	_session->_recvQ.MoveFront(sizeof(MoveStopPacket));
+
 	_session->_player->MoveStop();
+	
+	_session->_player->_direction = MoveStopPacket.Direction;
+	_session->_player->_x = MoveStopPacket.X;
+	_session->_player->_y = MoveStopPacket.Y;
+
+	//다른 캐릭터들 send q에 move stop을 넣어줘야 함
+
+	PacketHeader MoveHeader;
+	SC_MOVE_STOP SC_MoveStopPacket;
+
+	MoveHeader.byCode = 0x89;
+	MoveHeader.bySize = sizeof(SC_MoveStopPacket);
+	MoveHeader.byType = dfPACKET_SC_MOVE_STOP;
+
+
+	SC_MoveStopPacket.Direction = MoveStopPacket.Direction;
+	SC_MoveStopPacket.X = MoveStopPacket.X;
+	SC_MoveStopPacket.Y = MoveStopPacket.Y;
+	SC_MoveStopPacket.ID = _session->_player->_ID;
+
+	for (int i = 0; i < playerCount; i++)
+	{
+		if (SessionArr[i]._player->_ID != _session->_player->_ID)
+		{
+			SessionArr[i]._sendQ.Enqueue((char*)&MoveHeader, sizeof(MoveHeader));
+			SessionArr[i]._sendQ.Enqueue((char*)&SC_MoveStopPacket, sizeof(SC_MoveStopPacket)); //enqueue실패에 대한 예외처리도 필요
+		}
+	}
+
+
+
+
+
 	printf("Player ID : %d, Direction : %d, MoveStop  \n", _session->_player->_ID, _session->_player->_direction);
 
+}
+
+
+bool Attack1(Session* _session)
+{
+	CS_ATTACK1 AttackPacket;
+	if (_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket)) < sizeof(AttackPacket))
+	{
+		printf("Line : %d, Peek error", __LINE__);
+		return false;
+	}
+
+	_session->_recvQ.MoveFront(sizeof(AttackPacket));
+
+	_session->_player->_direction = AttackPacket.Direction;
+
+	PacketHeader AttackHeader;
+	SC_ATTACK1 SCAttackPacket;
+
+	AttackHeader.byCode = 0x89;
+	AttackHeader.bySize = sizeof(SCAttackPacket);
+	AttackHeader.byType = dfPACKET_SC_ATTACK1;
+
+	SCAttackPacket.Direction = AttackPacket.Direction;
+	SCAttackPacket.X = AttackPacket.X;
+	SCAttackPacket.Y = AttackPacket.Y;
+	SCAttackPacket.ID = _session->_player->_ID;
+
+	for (int i = 0; i < playerCount; i++)
+	{
+		if (SessionArr[i]._player->_ID != _session->_player->_ID)
+		{
+			SessionArr[i]._sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader));
+			SessionArr[i]._sendQ.Enqueue((char*)&SCAttackPacket, sizeof(SCAttackPacket));
+		}
+
+	}
+
+
+
+
+	if (AttackPacket.Direction == LL)
+	{
+		for (int i = 0; i < playerCount; i++)
+		{
+			
+			//타격 판정
+
+			if ((AttackPacket.X - SessionArr[i]._player->_x) <= dfATTACK1_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			{
+				if (AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK1_RANGE_Y || SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y)
+				{
+					//타격 성공 
+					SessionArr[i]._player->_hp -= dfAttack1Damage;
+
+					for (int j = 0; j < playerCount; j++)
+					{
+						//데미지 메세지 보내기
+
+						PacketHeader DamageHeader;
+						SC_DAMAGE DamagePacket;
+
+						DamageHeader.byCode = 0x89;
+						DamageHeader.bySize = sizeof(DamagePacket);
+						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+						DamagePacket.AttackID = _session->_player->_ID;
+						DamagePacket.DamageID = SessionArr[i]._player->_ID;
+						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+							 
+						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
+						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+					}
+
+
+				}
+			}
+
+		}
+
+	}
+
+	else
+	{
+		for (int i = 0; i < playerCount; i++)
+		{
+
+			//타격 판정
+
+			if ((SessionArr[i]._player->_x - AttackPacket.X) <= dfATTACK1_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			{
+				if (AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK1_RANGE_Y || SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y)
+				{
+					//타격 성공 
+					SessionArr[i]._player->_hp -= dfAttack1Damage;
+
+					for (int j = 0; j < playerCount; j++)
+					{
+						//데미지 메세지 보내기
+
+						PacketHeader DamageHeader;
+						SC_DAMAGE DamagePacket;
+
+						DamageHeader.byCode = 0x89;
+						DamageHeader.bySize = sizeof(DamagePacket);
+						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+						DamagePacket.AttackID = _session->_player->_ID;
+						DamagePacket.DamageID = SessionArr[i]._player->_ID;
+						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+
+						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
+						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+					}
+
+
+				}
+			}
+
+		}
+
+	}
+
+
+	return true;
 }

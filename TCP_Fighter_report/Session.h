@@ -33,6 +33,8 @@ public:
 	
 	bool MoveStart(BYTE Direction, short X, short Y) {
 		_direction = Direction;
+		_x = X;
+		_y = Y;
 		_move = true;
 
 		return true;

@@ -135,6 +135,12 @@ bool DecodePacket(Session* _session)
 		return false;
 	}
 
+	PacketHeader* ppHeader;
+	ppHeader = (PacketHeader*)_session->_recvQ.GetFrontBufferPtr();
+
+	printf("\nbyCode : %d, bySize : %d, byType : %d\n", pHeader.byCode, pHeader.bySize, pHeader.byType);
+	printf("ringbuffer data : byCode : %d, bySize : %d, byType : %d\n\n", ppHeader->byCode, ppHeader->bySize, ppHeader->byType);
+
 	if (pHeader.byCode != 0x89)
 	{
 		printf("protocol code error : %d\n", pHeader.byCode);
@@ -158,9 +164,6 @@ bool DecodePacket(Session* _session)
 		break;
 		*/
 
-	case dfPACKET_SC_DELETE_CHARACTER:
-
-		break;
 
 	case dfPACKET_CS_MOVE_START:
 
@@ -169,21 +172,18 @@ bool DecodePacket(Session* _session)
 
 		break;
 
-
-	case dfPACKET_SC_MOVE_START:
-
-		break;
-
 	case dfPACKET_CS_MOVE_STOP:
-
-		break;
-
-	case dfPACKET_SC_MOVE_STOP:
 		MoveStop(_session);
 
 		break;
 
+	case dfPACKET_SC_MOVE_STOP:
+
+		break;
+
 	case dfPACKET_CS_ATTACK1:
+
+		Attack1(_session);
 
 		break;
 

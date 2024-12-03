@@ -6,7 +6,7 @@
 
 bool MoveStart(Session* _session);
 void MoveStop(Session* _session);
-
+bool Attack1(Session* _session); 
 
 
 
