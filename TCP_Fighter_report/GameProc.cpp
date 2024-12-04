@@ -18,7 +18,8 @@ bool MoveStart(Session* _session)
 
 	_session->_player->MoveStart(MoveStartPacket.Direction, MoveStartPacket.X, MoveStartPacket.Y);
 
-	printf("Player ID : %d, Direction : %d, MoveStart \n", _session->_player->_ID, _session->_player->_direction);
+	printf("Player ID : %d, Direction : %d, X: %d, Y : %d MoveStart \n", _session->_player->_ID, _session->_player->_direction
+	, _session->_player->_x, _session->_player->_y);
 
 	//다른 캐릭터들 send q 에 move start enqueue
 
@@ -63,7 +64,7 @@ void MoveStop(Session* _session)
 
 	CS_MOVE_STOP MoveStopPacket;
 	if (_session->_recvQ.Peek((char*)&MoveStopPacket, sizeof(MoveStopPacket)) < sizeof(MoveStopPacket)) {
-		printf("Line : %d, recvQ Peek Error", __LINE__); //이러면 다음에 또 헤더를 뜯지 않나 ? 
+		printf("Line : %d, recvQ Peek Error", __LINE__); 
 		return;
 	}
 
@@ -146,18 +147,21 @@ bool Attack1(Session* _session)
 
 
 
-	if (AttackPacket.Direction == LL)
+	if ((AttackPacket.Direction) == LL) //left
 	{
+		printf("attack Left ! \n");
 		for (int i = 0; i < playerCount; i++)
 		{
 			
 			//타격 판정
 
-			if ((AttackPacket.X - SessionArr[i]._player->_x) <= dfATTACK1_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			if ((AttackPacket.X - SessionArr[i]._player->_x) >= 0 && (AttackPacket.X - SessionArr[i]._player->_x) <= dfATTACK1_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
 			{
 				if (AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK1_RANGE_Y || SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y)
 				{
 					//타격 성공 
+
+
 					SessionArr[i]._player->_hp -= dfAttack1Damage;
 
 					for (int j = 0; j < playerCount; j++)
@@ -189,17 +193,273 @@ bool Attack1(Session* _session)
 
 	else
 	{
+		printf("attack Right ! \n");
 		for (int i = 0; i < playerCount; i++)
 		{
 
 			//타격 판정
 
-			if ((SessionArr[i]._player->_x - AttackPacket.X) <= dfATTACK1_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			if ((SessionArr[i]._player->_x - AttackPacket.X) >= 0 && (SessionArr[i]._player->_x - AttackPacket.X) <= dfATTACK1_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
 			{
 				if (AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK1_RANGE_Y || SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y)
 				{
 					//타격 성공 
 					SessionArr[i]._player->_hp -= dfAttack1Damage;
+
+					for (int j = 0; j < playerCount; j++)
+					{
+						//데미지 메세지 보내기
+
+						PacketHeader DamageHeader;
+						SC_DAMAGE DamagePacket;
+
+						DamageHeader.byCode = 0x89;
+						DamageHeader.bySize = sizeof(DamagePacket);
+						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+						DamagePacket.AttackID = _session->_player->_ID;
+						DamagePacket.DamageID = SessionArr[i]._player->_ID;
+						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+
+						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
+						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+					}
+
+
+				}
+			}
+
+		}
+
+	}
+
+
+	return true;
+}
+
+bool Attack2(Session* _session)
+{
+	CS_ATTACK2 AttackPacket;
+	if (_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket)) < sizeof(AttackPacket))
+	{
+		printf("Line : %d, Peek error", __LINE__);
+		return false;
+	}
+
+	_session->_recvQ.MoveFront(sizeof(AttackPacket));
+
+	_session->_player->_direction = AttackPacket.Direction;
+
+	PacketHeader AttackHeader;
+	SC_ATTACK2 SCAttackPacket;
+
+	AttackHeader.byCode = 0x89;
+	AttackHeader.bySize = sizeof(SCAttackPacket);
+	AttackHeader.byType = dfPACKET_SC_ATTACK2;
+
+	SCAttackPacket.Direction = AttackPacket.Direction;
+	SCAttackPacket.X = AttackPacket.X;
+	SCAttackPacket.Y = AttackPacket.Y;
+	SCAttackPacket.ID = _session->_player->_ID;
+
+	for (int i = 0; i < playerCount; i++)
+	{
+		if (SessionArr[i]._player->_ID != _session->_player->_ID)
+		{
+			SessionArr[i]._sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader));
+			SessionArr[i]._sendQ.Enqueue((char*)&SCAttackPacket, sizeof(SCAttackPacket));
+		}
+
+	}
+
+
+
+
+	if ((AttackPacket.Direction) == LL) //left
+	{
+		printf("attack Left ! \n");
+		for (int i = 0; i < playerCount; i++)
+		{
+
+			//타격 판정
+
+			if ((AttackPacket.X - SessionArr[i]._player->_x) >= 0 && (AttackPacket.X - SessionArr[i]._player->_x) <= dfATTACK2_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			{
+				if (AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK2_RANGE_Y || SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y)
+				{
+					//타격 성공 
+
+
+					SessionArr[i]._player->_hp -= dfAttack2Damage;
+
+					for (int j = 0; j < playerCount; j++)
+					{
+						//데미지 메세지 보내기
+
+						PacketHeader DamageHeader;
+						SC_DAMAGE DamagePacket;
+
+						DamageHeader.byCode = 0x89;
+						DamageHeader.bySize = sizeof(DamagePacket);
+						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+						DamagePacket.AttackID = _session->_player->_ID;
+						DamagePacket.DamageID = SessionArr[i]._player->_ID;
+						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+
+						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
+						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+					}
+
+
+				}
+			}
+
+		}
+
+	}
+
+	else
+	{
+		printf("attack Right ! \n");
+		for (int i = 0; i < playerCount; i++)
+		{
+
+			//타격 판정
+
+			if ((SessionArr[i]._player->_x - AttackPacket.X) >= 0 && (SessionArr[i]._player->_x - AttackPacket.X) <= dfATTACK2_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			{
+				if (AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK2_RANGE_Y || SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y)
+				{
+					//타격 성공 
+					SessionArr[i]._player->_hp -= dfAttack2Damage;
+
+					for (int j = 0; j < playerCount; j++)
+					{
+						//데미지 메세지 보내기
+
+						PacketHeader DamageHeader;
+						SC_DAMAGE DamagePacket;
+
+						DamageHeader.byCode = 0x89;
+						DamageHeader.bySize = sizeof(DamagePacket);
+						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+						DamagePacket.AttackID = _session->_player->_ID;
+						DamagePacket.DamageID = SessionArr[i]._player->_ID;
+						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+
+						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
+						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+					}
+
+
+				}
+			}
+
+		}
+
+	}
+
+
+	return true;
+}
+
+bool Attack3(Session* _session)
+{
+	CS_ATTACK3 AttackPacket;
+	if (_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket)) < sizeof(AttackPacket))
+	{
+		printf("Line : %d, Peek error", __LINE__);
+		return false;
+	}
+
+	_session->_recvQ.MoveFront(sizeof(AttackPacket));
+
+	_session->_player->_direction = AttackPacket.Direction;
+
+	PacketHeader AttackHeader;
+	SC_ATTACK3 SCAttackPacket;
+
+	AttackHeader.byCode = 0x89;
+	AttackHeader.bySize = sizeof(SCAttackPacket);
+	AttackHeader.byType = dfPACKET_SC_ATTACK3;
+
+	SCAttackPacket.Direction = AttackPacket.Direction;
+	SCAttackPacket.X = AttackPacket.X;
+	SCAttackPacket.Y = AttackPacket.Y;
+	SCAttackPacket.ID = _session->_player->_ID;
+
+	for (int i = 0; i < playerCount; i++)
+	{
+		if (SessionArr[i]._player->_ID != _session->_player->_ID)
+		{
+			SessionArr[i]._sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader));
+			SessionArr[i]._sendQ.Enqueue((char*)&SCAttackPacket, sizeof(SCAttackPacket));
+		}
+
+	}
+
+
+
+
+	if ((AttackPacket.Direction) == LL) //left
+	{
+		
+		for (int i = 0; i < playerCount; i++)
+		{
+
+			//타격 판정
+
+			if ((AttackPacket.X - SessionArr[i]._player->_x) >= 0 && (AttackPacket.X - SessionArr[i]._player->_x) <= dfATTACK3_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			{
+				if (AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK3_RANGE_Y || SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK3_RANGE_Y)
+				{
+					//타격 성공 
+
+
+					SessionArr[i]._player->_hp -= dfAttack3Damage;
+
+					for (int j = 0; j < playerCount; j++)
+					{
+						//데미지 메세지 보내기
+
+						PacketHeader DamageHeader;
+						SC_DAMAGE DamagePacket;
+
+						DamageHeader.byCode = 0x89;
+						DamageHeader.bySize = sizeof(DamagePacket);
+						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+						DamagePacket.AttackID = _session->_player->_ID;
+						DamagePacket.DamageID = SessionArr[i]._player->_ID;
+						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+
+						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
+						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+					}
+
+
+				}
+			}
+
+		}
+
+	}
+
+	else
+	{
+		for (int i = 0; i < playerCount; i++)
+		{
+
+			//타격 판정
+
+			if ((SessionArr[i]._player->_x - AttackPacket.X) >= 0 && (SessionArr[i]._player->_x - AttackPacket.X) <= dfATTACK3_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			{
+				if (AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK3_RANGE_Y || SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK3_RANGE_Y)
+				{
+					//타격 성공 
+					SessionArr[i]._player->_hp -= dfAttack3Damage;
 
 					for (int j = 0; j < playerCount; j++)
 					{

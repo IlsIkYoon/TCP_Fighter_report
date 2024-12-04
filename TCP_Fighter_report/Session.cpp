@@ -128,6 +128,8 @@ bool CreateNewCharacter(Session* _session) {
 
 bool DecodePacket(Session* _session) 
 {
+
+	//peek이 잘 작동하고 있는지도 확인 필요 
 	PacketHeader pHeader;
 	if (_session->_recvQ.Peek((char*) & pHeader, sizeof(pHeader)) < sizeof(pHeader))
 	{
@@ -135,11 +137,6 @@ bool DecodePacket(Session* _session)
 		return false;
 	}
 
-	PacketHeader* ppHeader;
-	ppHeader = (PacketHeader*)_session->_recvQ.GetFrontBufferPtr();
-
-	printf("\nbyCode : %d, bySize : %d, byType : %d\n", pHeader.byCode, pHeader.bySize, pHeader.byType);
-	printf("ringbuffer data : byCode : %d, bySize : %d, byType : %d\n\n", ppHeader->byCode, ppHeader->bySize, ppHeader->byType);
 
 	if (pHeader.byCode != 0x89)
 	{
@@ -187,19 +184,16 @@ bool DecodePacket(Session* _session)
 
 		break;
 
-	case dfPACKET_SC_ATTACK1:
-
-		break;
 
 	case dfPACKET_CS_ATTACK2:
 
-		break;
-
-	case dfPACKET_SC_ATTACK2:
+		Attack2(_session);
 
 		break;
-
+\
 	case dfPACKET_CS_ATTACK3:
+
+		Attack3(_session);
 
 		break;
 

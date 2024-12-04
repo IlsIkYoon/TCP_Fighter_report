@@ -74,8 +74,8 @@ public:
 		if (_rear < _front) {
 			//한바퀴를 넘어 있는 상황
 			DWORD sum;
-			sum = _bufsize - 1 - _front;
-			sum += _rear + 1;
+			sum = _bufsize - _front;
+			sum += _rear;
 			return sum;
 		}
 		else {

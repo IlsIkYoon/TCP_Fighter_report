@@ -12,6 +12,9 @@ bool TCPFighter() {
 	int i;
 	srand(50);
 
+
+	timeBeginPeriod(1);
+
 	//return value //-----------------------------
 	int wsa_retval;
 	int sock_retval;
@@ -75,8 +78,14 @@ bool TCPFighter() {
 
 	//메인 루프 //-----------------------------------------
 
+
+
+	
+	DWORD dwUpdateTick = timeGetTime() - 20;
+
 	while (1) 
 	{
+		dwUpdateTick += 20; // 50프레임 맞추기 위해 
 
 		//네트워크//----------------------------
 
@@ -124,16 +133,16 @@ bool TCPFighter() {
 			if (FD_ISSET(SessionArr[i]._socket, &readset)) 
 			{
 				//recv 작업 
+				//direct enqueue를 안하는 상황
+
+				char* buf;
+				buf = (char*)malloc(SessionArr[i]._recvQ.GetBufferFree());
+
+				sock_retval = recv(SessionArr[i]._socket, buf, SessionArr[i]._recvQ.GetBufferFree(), 0);
+				/*
 				sock_retval = recv(SessionArr[i]._socket, SessionArr[i]._recvQ.GetRearBufferPtr(),
 					SessionArr[i]._recvQ.DirectEnqueueSize(), 0);
-
-
-				PacketHeader* pHeader;
-				
-				pHeader = (PacketHeader*)SessionArr[i]._recvQ.GetRearBufferPtr();
-
-
-				printf("recv,sock retval : %d, byCode : %d, bySize : %d, byType : %d\n", sock_retval, pHeader->byCode, pHeader->bySize, pHeader->byType);
+				*/
 				
 				
 				
@@ -146,11 +155,20 @@ bool TCPFighter() {
 					}
 				}
 
+				if (SessionArr[i]._recvQ.Enqueue(buf, sock_retval) == false)
+				{
+					printf("Line : %d, Enqueue Error \n", __LINE__);
+					return false;
+				}
+
+				/*
 				if (SessionArr[i]._recvQ.MoveRear(sock_retval) == 0) 
 				{
 					printf("%d recvQ MoveRear error %d\n", __LINE__, GetLastError());
 					return false;
 				}// sock_retval 만큼 moverear;
+				*/
+
 			}
 
 
@@ -158,9 +176,42 @@ bool TCPFighter() {
 			{	
 				if (SessionArr[i]._sendQ.IsEmpty() == false) {
 					//send 작업
+					//direct dequeue는 사용하지 않는 상황으로 일단
+
+					char* sendBuf;
+					int sendVal;
+					sendBuf = (char*)malloc(SessionArr[i]._sendQ.GetBufferUsed());
+					PacketHeader* pHeader;
+					
+					sendVal = SessionArr[i]._sendQ.GetBufferUsed();
+
+					pHeader = (PacketHeader*)SessionArr[i]._sendQ.GetFrontBufferPtr();
+
+					puts("");
+					printf("RingBuf / byCode : %d, bySize : %d, byType : %d\n", pHeader->byCode, pHeader->bySize, pHeader->byType);
+					
+					if (SessionArr[i]._sendQ.Dequeue(sendBuf, SessionArr[i]._sendQ.GetBufferUsed()) == false) {
+						printf("Line : %d, Dequeue error \n", __LINE__);
+						return false;
+					}
+
+					pHeader = (PacketHeader*)&sendBuf;
+					printf("sendBuf / byCode : %d, bySize : %d, byType: %d \n", pHeader->byCode, pHeader->bySize, pHeader->byType);
+
+
+					puts("");
+
+
+					sock_retval = send(SessionArr[i]._socket, sendBuf, sendVal, 0);
+
+
+
+					/*
 					sock_retval = send(SessionArr[i]._socket, SessionArr[i]._sendQ.GetFrontBufferPtr(),
 						SessionArr[i]._sendQ.DirectDequeueSize(), 0);
 					printf("send Retval : %d, direct dequeueSize : %d\n", sock_retval, SessionArr[i]._sendQ.DirectDequeueSize());
+					*/
+
 
 					if (sock_retval == SOCKET_ERROR)
 					{
@@ -171,12 +222,14 @@ bool TCPFighter() {
 						}
 						//send의 wouldblock의 경우에 대한 예외처리 필요
 					}
+					/*
 					if (SessionArr[i]._sendQ.MoveFront(sock_retval) == 0)
 					{
 						printf("%d sendQ MoveFront error : %d\n", __LINE__, GetLastError());
 						return false;
 					}
 
+					*/
 				}
 
 			}
@@ -212,11 +265,20 @@ bool TCPFighter() {
 		for (int i = 0; i < playerCount; i++)
 		{
 			SessionArr[i]._player->Move();
+			//printf("Move ! /////// ID: %d, x: %d, y : %d\n", SessionArr[i]._player->_ID, SessionArr[i]._player->_x, SessionArr[i]._player->_y);
 		}
 
 
 
 
+
+
+
+		DWORD dwTick2 = timeGetTime() - dwUpdateTick;
+		if (dwTick2 < 20)
+		{
+			Sleep(20 - dwTick2);
+		}
 
 
 	}

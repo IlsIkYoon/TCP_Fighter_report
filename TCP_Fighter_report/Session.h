@@ -49,55 +49,55 @@ public:
 		switch (_direction) {
 		case dfPACKET_MOVE_DIR_LL:
 		{
-			_x--;
+			_x -= 3;;
 		}
 			break;
 
 		case dfPACKET_MOVE_DIR_LU:
 		{
-			_x--;
-			_y--;
+			_x -= 3;
+			_y -= 2;
 		}
 
 			break;
 
 		case dfPACKET_MOVE_DIR_UU:
 		{
-			_y--;
+			_y -= 2;
 		}
 
 			break;
 
 		case dfPACKET_MOVE_DIR_RU:
 		{
-			_x++;
-			_y--;
+			_x += 3;
+			_y -= 2;
 		}
 				break;
 
 		case dfPACKET_MOVE_DIR_RR:
 		{
-			_x++;
+			_x += 3;
 		}
 			break;
 
 		case dfPACKET_MOVE_DIR_RD:
 		{
-			_x++;
-			_y++;
+			_x += 3;
+			_y += 2;
 		}
 			break;
 
 		case dfPACKET_MOVE_DIR_DD:
 		{
-			_y++;
+			_y += 2;
 		}
 			break;
 
 		case dfPACKET_MOVE_DIR_LD:
 		{
-			_x--;
-			_y++;
+			_x -= 3;
+			_y += 2;
 		}
 			break;
 
