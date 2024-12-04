@@ -149,17 +149,7 @@ bool DecodePacket(Session* _session)
 
 	switch (pHeader.byType)
 	{
-		/*
-	case dfPACKET_SC_CREATE_MY_CHARACTER:
 
-
-
-		break;
-
-	case dfPACKET_SC_CREATE_OTHER_CHARACTER:
-
-		break;
-		*/
 
 
 	case dfPACKET_CS_MOVE_START:
@@ -174,9 +164,6 @@ bool DecodePacket(Session* _session)
 
 		break;
 
-	case dfPACKET_SC_MOVE_STOP:
-
-		break;
 
 	case dfPACKET_CS_ATTACK1:
 
@@ -194,14 +181,6 @@ bool DecodePacket(Session* _session)
 	case dfPACKET_CS_ATTACK3:
 
 		Attack3(_session);
-
-		break;
-
-	case dfPACKET_SC_ATTACK3:
-
-		break;
-
-	case dfPACKET_SC_DAMAGE:
 
 		break;
 
