@@ -117,6 +117,7 @@ bool TCPFighter() {
 				SessionArr[playerCount]._ip = clientAddr.sin_addr.s_addr;
 				SessionArr[playerCount]._port = clientAddr.sin_port;
 				SessionArr[playerCount]._player = new Player;
+				SessionArr[playerCount]._delete = false; //delete에 false;
 				//초기 생성에 대한 작업들
 				CreateNewCharacter(&SessionArr[playerCount]);
 
@@ -148,7 +149,33 @@ bool TCPFighter() {
 				
 				if (sock_retval == SOCKET_ERROR) 
 				{
-					if (GetLastError() != WSAEWOULDBLOCK) 
+					if (GetLastError() == 10053 || GetLastError () == 10054)
+					{
+						if (SessionArr[i]._delete == false)
+						{
+							PacketHeader DeleteHeader;
+							SC_DELETE_CHARACTER DeletePacket;
+
+							DeleteHeader.byCode = 0x89;
+							DeleteHeader.bySize = sizeof(DeletePacket);
+							DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+
+							DeletePacket.ID = SessionArr[i]._player->_ID;
+
+							for (int j = 0; j < playerCount; j++)
+							{
+								SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
+								SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
+							}
+
+							SessionArr[i]._delete = true;
+							//현재는 딜리트 메세지로 캐릭터들이 사라지고 있음 (소켓 연결 끊어야하나 ?)
+						}
+
+					}
+
+
+					else if (GetLastError() != WSAEWOULDBLOCK && GetLastError() != 10053) //RST 종료에 대한 예외 처리 
 					{
 						printf("%d recv error : %d\n", __LINE__, GetLastError());
 						return false;
@@ -157,8 +184,8 @@ bool TCPFighter() {
 
 				if (SessionArr[i]._recvQ.Enqueue(buf, sock_retval) == false)
 				{
-					printf("Line : %d, Enqueue Error \n", __LINE__);
-					return false;
+					//printf("Line : %d, Enqueue Error \n", __LINE__);
+					//return false;
 				}
 
 				/*
@@ -191,8 +218,8 @@ bool TCPFighter() {
 					printf("RingBuf / byCode : %d, bySize : %d, byType : %d\n", pHeader->byCode, pHeader->bySize, pHeader->byType);
 					
 					if (SessionArr[i]._sendQ.Dequeue(sendBuf, SessionArr[i]._sendQ.GetBufferUsed()) == false) {
-						printf("Line : %d, Dequeue error \n", __LINE__);
-						return false;
+						//printf("Line : %d, Dequeue error \n", __LINE__);
+						//return false;
 					}
 
 					pHeader = (PacketHeader*)&sendBuf;
@@ -215,7 +242,33 @@ bool TCPFighter() {
 
 					if (sock_retval == SOCKET_ERROR)
 					{
-						if (GetLastError() != WSAEWOULDBLOCK)
+						if (GetLastError() == 10053 || GetLastError() == 10054)
+						{
+							if (SessionArr[i]._delete <= false)
+							{
+								PacketHeader DeleteHeader;
+								SC_DELETE_CHARACTER DeletePacket;
+
+								DeleteHeader.byCode = 0x89;
+								DeleteHeader.bySize = sizeof(DeletePacket);
+								DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+
+								DeletePacket.ID = SessionArr[i]._player->_ID;
+
+								for (int j = 0; j < playerCount; j++)
+								{
+									SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
+									SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
+								}
+
+								SessionArr[i]._delete = true;
+								//현재는 딜리트 메세지로 캐릭터들이 사라지고 있음 (소켓 연결 끊어야하나 ?)
+							}
+
+						}
+
+
+						else if (GetLastError() != WSAEWOULDBLOCK && GetLastError() != 10053)
 						{
 							printf("%d send error : %d\n", __LINE__, GetLastError());
 							return false;

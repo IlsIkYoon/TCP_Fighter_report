@@ -65,58 +65,60 @@ bool CreateNewCharacter(Session* _session) {
 
 
 	//다른 캐릭터 생성
-	for (int i = 0; i < playerCount; i++) 
+	for (int i = 0; i < playerCount; i++)
 	{
 
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(other_myCharacter);
-		pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
-		
-		if (SessionArr[i]._sendQ.Enqueue((char*)&pHeader, sizeof(pHeader)) == false)
+		if (SessionArr[i]._delete == false)
 		{
-			printf("Line : %d, Enqueue error : %d\n", __LINE__, GetLastError());
-			return false;
+			pHeader.byCode = 0x89;
+			pHeader.bySize = sizeof(other_myCharacter);
+			pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+
+			if (SessionArr[i]._sendQ.Enqueue((char*)&pHeader, sizeof(pHeader)) == false)
+			{
+				printf("Line : %d, Enqueue error : %d\n", __LINE__, GetLastError());
+				return false;
+			}
+
+			if (SessionArr[i]._sendQ.Enqueue((char*)&other_myCharacter, sizeof(other_myCharacter)) == false)
+			{
+				printf("Line : %d, Enqueue error : %d\n", __LINE__, GetLastError());
+				return false;
+			}
+
+
+
+
+
+			pHeader.byCode = 0x89;
+			pHeader.bySize = sizeof(otherCharacter);
+			pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+
+			if (_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader)) == false)
+			{
+				printf("Line : %d, ringbuffer send error : %d\n", __LINE__, GetLastError());
+				return false;
+			}
+
+
+			otherCharacter.Direction = SessionArr[i]._player->_direction;
+			otherCharacter.HP = SessionArr[i]._player->_hp;
+			otherCharacter.X = SessionArr[i]._player->_x;
+			otherCharacter.Y = SessionArr[i]._player->_y;
+			otherCharacter.ID = i;
+
+			if (_session->_sendQ.Enqueue((char*)&otherCharacter, sizeof(otherCharacter)) == false)
+			{
+				printf("Line : %d, ringbuffer send error : %d\n", __LINE__, GetLastError());
+				return false;
+			}
 		}
-		
-		if (SessionArr[i]._sendQ.Enqueue((char*)&other_myCharacter, sizeof(other_myCharacter)) == false)
-		{
-			printf("Line : %d, Enqueue error : %d\n", __LINE__, GetLastError());
-			return false;
-		}
 
 
 
 
 
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(otherCharacter);
-		pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
-
-		if (_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader)) == false)
-		{
-			printf("Line : %d, ringbuffer send error : %d\n", __LINE__, GetLastError());
-			return false;
-		}
-
-
-		otherCharacter.Direction = SessionArr[i]._player->_direction;
-		otherCharacter.HP = SessionArr[i]._player->_hp;
-		otherCharacter.X = SessionArr[i]._player->_x;
-		otherCharacter.Y = SessionArr[i]._player->_y;
-		otherCharacter.ID = i;
-		
-		if (_session->_sendQ.Enqueue((char*)&otherCharacter, sizeof(otherCharacter)) == false)
-		{
-			printf("Line : %d, ringbuffer send error : %d\n", __LINE__, GetLastError());
-			return false;
-		}
 	}
-
-
-
-
-
-
 
 
 

@@ -201,7 +201,7 @@ bool Attack1(Session* _session)
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
 						}
 
-
+						SessionArr[i]._delete = true;
 						//소켓 연결도 끊어줘야 함..
 					}
 
@@ -267,6 +267,7 @@ bool Attack1(Session* _session)
 
 
 						//소켓 연결도 끊어줘야 함..
+						SessionArr[i]._delete = true;
 					}
 
 
@@ -356,6 +357,8 @@ bool Attack2(Session* _session)
 						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
 					}
 
+					printf("ID : %d, HP : %d ", SessionArr[i]._player->_ID, SessionArr[i]._player->_hp);
+
 					if (SessionArr[i]._player->_hp <= 0)
 					{
 						PacketHeader DeleteHeader;
@@ -373,8 +376,10 @@ bool Attack2(Session* _session)
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
 						}
 
-
+						SessionArr[i]._delete = true;
 						//소켓 연결도 끊어줘야 함..
+
+						printf(" Send Delete Message !\n");
 					}
 
 
@@ -436,6 +441,8 @@ bool Attack2(Session* _session)
 							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
 						}
+
+						SessionArr[i]._delete = true;
 					}
 
 
@@ -542,6 +549,9 @@ bool Attack3(Session* _session)
 							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
 						}
+
+						SessionArr[i]._delete = true;
+
 					}
 
 				}
@@ -602,7 +612,7 @@ bool Attack3(Session* _session)
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
 						}
 
-
+						SessionArr[i]._delete = true;
 						//현재는 딜리트 메세지로 캐릭터들이 사라지고 있음 (소켓 연결 끊어야하나 ?)
 					}
 

@@ -13,7 +13,7 @@ private:
 	bool _move;
 	
 public:
-	BYTE _hp;
+	char _hp;
 	short _x;
 	short _y;
 	BYTE _direction;
@@ -129,6 +129,7 @@ struct Session {
 	RingBuffer _sendQ;
 	Player* _player;
 	
+	bool _delete;
 	//Session* _next; 배열로 가기 때문에 필요 없음
 
 };
