@@ -214,8 +214,8 @@ bool TCPFighter() {
 
 					pHeader = (PacketHeader*)SessionArr[i]._sendQ.GetFrontBufferPtr();
 
-					puts("");
-					printf("RingBuf / byCode : %d, bySize : %d, byType : %d\n", pHeader->byCode, pHeader->bySize, pHeader->byType);
+					//puts("");
+					//printf("RingBuf / byCode : %d, bySize : %d, byType : %d\n", pHeader->byCode, pHeader->bySize, pHeader->byType);
 					
 					if (SessionArr[i]._sendQ.Dequeue(sendBuf, SessionArr[i]._sendQ.GetBufferUsed()) == false) {
 						//printf("Line : %d, Dequeue error \n", __LINE__);
@@ -223,10 +223,10 @@ bool TCPFighter() {
 					}
 
 					pHeader = (PacketHeader*)&sendBuf;
-					printf("sendBuf / byCode : %d, bySize : %d, byType: %d \n", pHeader->byCode, pHeader->bySize, pHeader->byType);
+					//printf("sendBuf / byCode : %d, bySize : %d, byType: %d \n", pHeader->byCode, pHeader->bySize, pHeader->byType);
 
 
-					puts("");
+					//puts("");
 
 
 					sock_retval = send(SessionArr[i]._socket, sendBuf, sendVal, 0);

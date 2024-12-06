@@ -18,8 +18,8 @@ bool MoveStart(Session* _session)
 
 	_session->_player->MoveStart(MoveStartPacket.Direction, MoveStartPacket.X, MoveStartPacket.Y);
 
-	printf("Player ID : %d, Direction : %d, X: %d, Y : %d MoveStart \n", _session->_player->_ID, _session->_player->_direction
-	, _session->_player->_x, _session->_player->_y);
+	//printf("Player ID : %d, Direction : %d, X: %d, Y : %d MoveStart \n", _session->_player->_ID, _session->_player->_direction
+	//, _session->_player->_x, _session->_player->_y);
 
 	//다른 캐릭터들 send q 에 move start enqueue
 
@@ -104,7 +104,7 @@ void MoveStop(Session* _session)
 
 
 
-	printf("Player ID : %d, Direction : %d, MoveStop  \n", _session->_player->_ID, _session->_player->_direction);
+	// printf("Player ID : %d, Direction : %d, MoveStop  \n", _session->_player->_ID, _session->_player->_direction);
 
 }
 
@@ -149,7 +149,7 @@ bool Attack1(Session* _session)
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
-		printf("attack Left ! \n");
+		//printf("attack Left ! \n");
 		for (int i = 0; i < playerCount; i++)
 		{
 			
@@ -215,7 +215,7 @@ bool Attack1(Session* _session)
 
 	else
 	{
-		printf("attack Right ! \n");
+	//	printf("attack Right ! \n");
 		for (int i = 0; i < playerCount; i++)
 		{
 
@@ -322,7 +322,7 @@ bool Attack2(Session* _session)
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
-		printf("attack Left ! \n");
+		//printf("attack Left ! \n");
 		for (int i = 0; i < playerCount; i++)
 		{
 
@@ -357,7 +357,7 @@ bool Attack2(Session* _session)
 						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
 					}
 
-					printf("ID : %d, HP : %d ", SessionArr[i]._player->_ID, SessionArr[i]._player->_hp);
+					//printf("ID : %d, HP : %d ", SessionArr[i]._player->_ID, SessionArr[i]._player->_hp);
 
 					if (SessionArr[i]._player->_hp <= 0)
 					{
@@ -379,7 +379,7 @@ bool Attack2(Session* _session)
 						SessionArr[i]._delete = true;
 						//소켓 연결도 끊어줘야 함..
 
-						printf(" Send Delete Message !\n");
+						//printf(" Send Delete Message !\n");
 					}
 
 
@@ -392,7 +392,7 @@ bool Attack2(Session* _session)
 
 	else
 	{
-		printf("attack Right ! \n");
+	//	printf("attack Right ! \n");
 		for (int i = 0; i < playerCount; i++)
 		{
 

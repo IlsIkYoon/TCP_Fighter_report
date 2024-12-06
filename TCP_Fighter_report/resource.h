@@ -53,7 +53,7 @@
 // 기본 설정
 //-------------------------------------------------------------
 
-#define dfHP 20
+#define dfHP 60
 #define dfAttack1Damage 1
 #define dfAttack2Damage 3
 #define dfAttack3Damage 4

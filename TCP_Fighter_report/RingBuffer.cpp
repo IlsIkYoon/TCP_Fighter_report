@@ -219,7 +219,7 @@ bool RingBuffer::MoveFront(int iSize) {
 		_front = sum;
 	}
 
-	printf(" Move Front/////// Front : %d, Rear : %d//////////\n", _front, _rear);
+	//printf(" Move Front/////// Front : %d, Rear : %d//////////\n", _front, _rear);
 
 	return true;
 }
