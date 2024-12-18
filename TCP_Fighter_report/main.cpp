@@ -1,6 +1,6 @@
 #include "TCPFighter.h"
 
-
+//보낸 메세지 패킷 로깅이 필요함
 
 int main() {
 	

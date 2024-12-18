@@ -5,6 +5,8 @@ SOCKET listen_socket;
 
 extern DWORD playerCount; //63명까지 접속을 받는 상황으로 가정
 
+//서버에서 이상한 패킷을 보내는데 ?
+
 extern Session SessionArr[PLAYERMAXCOUNT];
 
 
@@ -182,6 +184,7 @@ bool TCPFighter() {
 					}
 				}
 
+				
 				if (SessionArr[i]._recvQ.Enqueue(buf, sock_retval) == false)
 				{
 					//printf("Line : %d, Enqueue Error \n", __LINE__);
@@ -195,6 +198,8 @@ bool TCPFighter() {
 					return false;
 				}// sock_retval 만큼 moverear;
 				*/
+
+				free(buf);
 
 			}
 
@@ -215,18 +220,23 @@ bool TCPFighter() {
 					pHeader = (PacketHeader*)SessionArr[i]._sendQ.GetFrontBufferPtr();
 
 					//puts("");
-					//printf("RingBuf / byCode : %d, bySize : %d, byType : %d\n", pHeader->byCode, pHeader->bySize, pHeader->byType);
-					
+					if (pHeader->byCode != 0x89)
+
+					{
+						printf("Send RingBuf / byCode : %d, bySize : %d, byType : %d\n", pHeader->byCode, pHeader->bySize, pHeader->byType);
+					}
 					if (SessionArr[i]._sendQ.Dequeue(sendBuf, SessionArr[i]._sendQ.GetBufferUsed()) == false) {
-						//printf("Line : %d, Dequeue error \n", __LINE__);
+						printf("Line : %d, Dequeue error \n", __LINE__);
 						//return false;
 					}
 
 					pHeader = (PacketHeader*)&sendBuf;
-					//printf("sendBuf / byCode : %d, bySize : %d, byType: %d \n", pHeader->byCode, pHeader->bySize, pHeader->byType);
+					if (pHeader->byCode != 0x89)
+					{
+						//puts("");
+						//printf("sendBuf / byCode : %d, bySize : %d, byType: %d \n", pHeader->byCode, pHeader->bySize, pHeader->byType);
+					}
 
-
-					//puts("");
 
 
 					sock_retval = send(SessionArr[i]._socket, sendBuf, sendVal, 0);

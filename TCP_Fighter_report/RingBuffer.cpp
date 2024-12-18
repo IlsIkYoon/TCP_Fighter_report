@@ -12,7 +12,7 @@ bool RingBuffer::IsEmpty() {
 }
 
 bool RingBuffer::IsFull() {
-	if (_front - 1 == _rear || (_front == 0 && _rear == _bufsize - 1)) {
+	if ((_rear + 1) % _bufsize == _front) {
 		return true;
 	}
 	else {
@@ -23,18 +23,10 @@ bool RingBuffer::IsFull() {
 
 bool RingBuffer::Enqueue(CHAR* chpData, DWORD size) {
 	CHAR* pos; //링버퍼 포인터
-	if (IsFull()) return false;
-
 	DWORD extraBuf;
 
-	if (_front == 0)
-	{
-		extraBuf = _bufsize - _rear - 1;
-	}
-	else
-	{
-		extraBuf = _bufsize - _rear; //배열의 0전까지의 남은 공간
-	}
+	if (GetBufferFree() < size) return false;
+	extraBuf = DirectEnqueueSize();
 	/*
 
 	if (_rear == _bufsize - 1) {
@@ -45,21 +37,20 @@ bool RingBuffer::Enqueue(CHAR* chpData, DWORD size) {
 	*/
 	char* pDest = chpData;
 
-	if (GetBufferFree() < size) return false;
-		
+
 	if (extraBuf < size)
-		{
-			DWORD extraData = size - extraBuf;
-			memcpy_s(&_buf[_rear], GetBufferFree(), pDest, extraBuf);
-			_rear = 0;
-			pDest += extraBuf;
-			memcpy_s(&_buf[_rear], GetBufferFree() - extraBuf, pDest, extraData);
-			_rear = extraData;
-		}
+	{
+		DWORD extraData = size - extraBuf;
+		memcpy_s(&_buf[_rear], extraBuf, pDest, extraBuf);
+		_rear = 0;
+		pDest += extraBuf;
+		memcpy_s(&_buf[_rear], extraData, pDest, extraData);
+		_rear = extraData;
+	}
 	else
 	{
-		memcpy_s(&_buf[_rear], GetBufferFree(), pDest, size);
-		_rear += size;
+		memcpy_s(&_buf[_rear], size, pDest, size);
+		_rear = (_rear + size) % _bufsize;
 	}
 
 
@@ -68,28 +59,28 @@ bool RingBuffer::Enqueue(CHAR* chpData, DWORD size) {
 
 bool RingBuffer::Dequeue(CHAR* chpData, DWORD size) {
 
-	if (IsEmpty()) return false;
 
-	DWORD extraBuf = _bufsize - _front; //배열의 0전까지의 남은 공간 //16
+	if (GetBufferUsed() < size) return false;
+
+	DWORD extraBuf = DirectDequeueSize(); //배열의 0전까지의 남은 공간 //16
 
 	char* pDest = chpData;
 
 
-	if (GetBufferUsed() < size) return false;
 
 
 	if (size > extraBuf) {
-		memcpy(pDest, &_buf[_front], extraBuf);
+		memcpy_s(pDest, extraBuf, &_buf[_front], extraBuf);
 		_front = 0;
 		pDest += extraBuf;
-		memcpy(pDest, &_buf[_front], size - extraBuf);
+		memcpy_s(pDest, size - extraBuf, &_buf[_front], size - extraBuf);
 		_front = size - extraBuf;
 
 	}
 	else {
-		
-		memcpy(pDest, &_buf[_front], size); 
-		_front += size;
+
+		memcpy(pDest, &_buf[_front], size);
+		_front = (_front + size) % _bufsize;
 	}
 
 	return true;
@@ -190,7 +181,7 @@ bool	RingBuffer::MoveRear(int iSize) {
 
 	DWORD sum = _rear + iSize;
 
-	if (sum > _bufsize - 1 ) {
+	if (sum > _bufsize - 1) {
 		_rear = sum - (_bufsize - 1) - 1;
 	}
 	else {
