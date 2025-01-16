@@ -1,239 +1,206 @@
 #include "RingBuffer.h"
 
 
+RingBuffer::RingBuffer()
+{
+	_buf = (char*)malloc(DefaultBufSize);
+	_rear = 0;
+	_front = 0;
+	_bufSize = DefaultBufSize;
+}
+RingBuffer::RingBuffer(int size)
+{
+	_buf = (char*)malloc(size);
+	_rear = 0;
+	_front = 0;
+	_bufSize = size;
 
-bool RingBuffer::IsEmpty() {
-	if (_rear == _front) {
-		return true;
-	}
-	else {
-		return false;
-	}
+}
+RingBuffer::~RingBuffer()
+{
+	delete _buf;
 }
 
-bool RingBuffer::IsFull() {
-	if ((_rear + 1) % _bufsize == _front) {
-		return true;
-	}
-	else {
-		return false;
-	}
+
+
+bool RingBuffer::IsEmpty()
+{
+	if (_rear == _front) return true;
+
+	return false;
+}
+bool RingBuffer::IsFull()
+{
+	if ((_rear == _bufSize - 1) && (_front == 0)) return true;
+	if (_rear == _front - 1) return true;
+
+
+	return false;
 }
 
+unsigned int RingBuffer::GetSizeTotal()
+{
+	return _bufSize - 1;
 
-bool RingBuffer::Enqueue(CHAR* chpData, DWORD size) {
-	CHAR* pos; //링버퍼 포인터
-	DWORD extraBuf;
+}
+unsigned int RingBuffer::GetSizeFree()
+{
+	return GetSizeTotal() - GetSizeUsed();
+}
+unsigned int RingBuffer::GetSizeUsed()
+{
+	if (_rear > _front) return _rear - _front;
+	if (_rear == _front) return 0;
+	if (_front > _rear) return _bufSize - _front + _rear;
+}
 
-	if (GetBufferFree() < size) return false;
-	extraBuf = DirectEnqueueSize();
-	/*
+unsigned int RingBuffer::GetDirectEnqueSize()
+{
+	if (IsFull()) return 0;
 
-	if (_rear == _bufsize - 1) {
-		pos = &_buf[0];
-	}
-	else { pos = &_buf[_rear + 1]; }
-
-	*/
-	char* pDest = chpData;
-
-
-	if (extraBuf < size)
+	if (_front > _rear) return _front - _rear - 1;
+	if (_front == _rear)
 	{
-		DWORD extraData = size - extraBuf;
-		memcpy_s(&_buf[_rear], extraBuf, pDest, extraBuf);
-		_rear = 0;
-		pDest += extraBuf;
-		memcpy_s(&_buf[_rear], extraData, pDest, extraData);
-		_rear = extraData;
+		if (_rear == 0)
+		{
+			return GetSizeTotal();
+		}
+
+		return _bufSize - _rear;
+
+	}
+
+	if (_rear > _front)
+	{
+		if (_front == 0) return _bufSize - _rear - 1;
+
+		//if (_bufSize - _rear == 0) return 1; //front가 0인 상황은 isFull에서 걸러짐
+
+		return _bufSize - _rear;
+
+	}
+
+
+}
+unsigned int RingBuffer::GetDirectDequeSize()
+{
+	if (IsEmpty()) return 0;
+
+	if (_front == _rear) return 0;
+	if (_rear > _front) return _rear - _front;
+	if (_front > _rear)
+	{
+		//if()
+
+		return _bufSize - _front;
+	}
+
+}
+
+
+
+void RingBuffer::MoveRear(int val)
+{
+	_rear = (_rear + val) % _bufSize;
+
+
+}
+void RingBuffer::MoveFront(int val)
+{
+	_front = (_front + val) % _bufSize;
+
+
+}
+
+
+
+
+
+
+bool RingBuffer::Enqueue(char* src, unsigned int dataSize, unsigned int* enqueResult)
+{
+
+	if (IsFull())
+	{
+		*enqueResult = 0;
+		return false;
+	}
+
+
+	int Data;
+	int out;
+
+	if (GetSizeFree() < dataSize) Data = GetSizeFree();
+	else { Data = dataSize; }
+
+	out = Data;
+
+	if (GetDirectEnqueSize() >= Data)
+	{
+		memcpy(&_buf[_rear], src, Data);
+		MoveRear(Data);
+
 	}
 	else
 	{
-		memcpy_s(&_buf[_rear], size, pDest, size);
-		_rear = (_rear + size) % _bufsize;
+		int dir = GetDirectEnqueSize();
+		memcpy(&_buf[_rear], src, dir);
+		Data -= dir;
+		_rear = 0;
+		memcpy(&_buf[_rear], &src[dir], Data);
+		MoveRear(Data);
+
 	}
 
-
+	*enqueResult = out;
 	return true;
-}
-
-bool RingBuffer::Dequeue(CHAR* chpData, DWORD size) {
-
-
-	if (GetBufferUsed() < size) return false;
-
-	DWORD extraBuf = DirectDequeueSize(); //배열의 0전까지의 남은 공간 //16
-
-	char* pDest = chpData;
-
-
-
-
-	if (size > extraBuf) {
-		memcpy_s(pDest, extraBuf, &_buf[_front], extraBuf);
-		_front = 0;
-		pDest += extraBuf;
-		memcpy_s(pDest, size - extraBuf, &_buf[_front], size - extraBuf);
-		_front = size - extraBuf;
-
-	}
-	else {
-
-		memcpy(pDest, &_buf[_front], size);
-		_front = (_front + size) % _bufsize;
-	}
-
-	return true;
-}
-
-DWORD RingBuffer::Peek(char* chpDest, int iSize) {
-	DWORD extraBuf = _bufsize - _front; //배열의 0전까지의 남은 공간
-
-	char* pDest;
-	pDest = chpDest;
-	if (GetBufferUsed() < iSize) return false;
-
-
-	if (iSize > extraBuf) {
-		memcpy(pDest, &_buf[_front], extraBuf);
-		pDest += extraBuf;
-		memcpy(pDest, &_buf[0], iSize - extraBuf);
-
-	}
-	else {
-		memcpy(pDest, &_buf[_front], iSize);
-	}
-
-
 
 }
-
-
-void RingBuffer::ClearBuffer(void) {
-	_front = 0;
-	_rear = 0;
-}
-
-
-DWORD RingBuffer::DirectEnqueueSize(void) {
-
-	/*
-	if (_rear == _bufsize - 1) {
-		//rear가 마지막에 도달했을 때에 대한 예외처리
-
-		return _front;
-
-	}
-	*/
-
-	if (_front = 0)
+bool RingBuffer::Dequeue(char* dest, unsigned int dataSize, unsigned int* dequeResult)
+{
+	if (IsEmpty())
 	{
-		return _bufsize - 1 - _rear;
-	}
-
-	if (_rear < _front) {
-		return _front - _rear - 1;
-	}
-	/*else if (_rear == _front) {
-
-		_rear = 0;
-		_front = 0;
-
-		return _bufsize - 1;
-	}*/
-	else {
-		return _bufsize - _rear;
-	}
-}
-
-DWORD RingBuffer::DirectDequeueSize(void) {
-
-
-
-
-	if (_rear < _front) {
-		return _bufsize - _front;
-
-	}
-
-	/*
-	else if (_rear == _front) {
-		_rear = 0;
-		_front = 0;
-		return 0;
-	}
-	*/
-
-	else {
-		return _rear - _front;
-	}
-
-}
-
-bool	RingBuffer::MoveRear(int iSize) {
-
-	if (iSize > GetBufferFree()) {
-		printf("iSize : %d GetBufferFree : %d\n", iSize, GetBufferFree());
-
+		*dequeResult = 0;
 		return false;
 	}
 
+	int Data;
+	int out;
 
-	DWORD sum = _rear + iSize;
+	if (GetSizeUsed() < dataSize) Data = GetSizeUsed();
+	else { Data = dataSize; }
 
-	if (sum > _bufsize - 1) {
-		_rear = sum - (_bufsize - 1) - 1;
+	out = Data;
+
+	if (GetDirectDequeSize() >= Data)
+	{
+		memcpy(dest, &_buf[_front], Data);
+		MoveFront(Data);
+
 	}
-	else {
-		_rear = sum;
+	else
+	{
+		int dqDir = GetDirectDequeSize();
+		memcpy(dest, &_buf[_front], dqDir);
+		Data -= dqDir;
+		_front = 0;
+		memcpy(&dest[dqDir], &_buf[_front], Data);
+		MoveFront(Data);
+
 	}
 
-
-	printf("\n Move Rear/////// Front : %d, Rear : %d//////////\n", _front, _rear);
-	printf("iSize : %d, GetBufferFree : %d\n\n", iSize, GetBufferFree());
-
-
+	*dequeResult = out;
 	return true;
-}
-bool RingBuffer::MoveFront(int iSize) {
 
-	if (iSize > GetBufferUsed()) {
-		return false;
-	}
-
-	DWORD sum = _front + iSize;
-
-	if (sum > _bufsize - 1) {
-		_front = sum - (_bufsize - 1) - 1;
-	}
-	else {
-		_front = sum;
-	}
-
-	//printf(" Move Front/////// Front : %d, Rear : %d//////////\n", _front, _rear);
-
-	return true;
 }
 
 
 
-
-
-
-
-char* RingBuffer::GetFrontBufferPtr(void) {
-
-
-
-
-
-
-
-	return &_buf[_front];
-}
-char* RingBuffer::GetRearBufferPtr(void) {
-
-
-
+char* RingBuffer::GetRear()
+{
 	return &_buf[_rear];
+}
+char* RingBuffer::GetFront()
+{
+	return &_buf[_front];
 }

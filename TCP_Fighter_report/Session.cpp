@@ -2,9 +2,9 @@
 #include "GameProc.h"
 
 //전역변수
-Session SessionArr[PLAYERMAXCOUNT];
-
-DWORD playerCount = 0; //63명까지 접속을 받는 상황으로 가정
+Session SessionArr[SELECTCOUNT][SELECTDEFINE];
+Session* pSessionArr = (Session*)SessionArr;
+DWORD playerIdex = 0; //63명까지 접속을 받는 상황으로 가정
 
 
 bool CreateNewCharacter(Session* _session) {
@@ -27,9 +27,9 @@ bool CreateNewCharacter(Session* _session) {
 	CreatePacket.HP = _session->_player->_hp;
 	CreatePacket.X = _session->_player->_x;
 	CreatePacket.Y = _session->_player->_y;
-	CreatePacket.ID = playerCount;
+	CreatePacket.ID = playerIdex;
 
-	if (_session->_sendQ.GetBufferFree() <= pHeader.bySize + sizeof(pHeader)) 
+	if (_session->_sendQ.GetSizeFree() <= pHeader.bySize + sizeof(pHeader)) 
 	{
 		printf("Line : %d, Send buffer Full\n", __LINE__);
 		return false;
@@ -57,7 +57,7 @@ bool CreateNewCharacter(Session* _session) {
 	//다른 캐릭터에게 내 캐릭터 보내기//
 	other_myCharacter.Direction = _session->_player->_direction;
 	other_myCharacter.HP = _session->_player->_hp;
-	other_myCharacter.ID = playerCount;
+	other_myCharacter.ID = playerIdex;
 	other_myCharacter.X = _session->_player->_x;
 	other_myCharacter.Y = _session->_player->_y;
 
@@ -65,7 +65,7 @@ bool CreateNewCharacter(Session* _session) {
 
 
 	//다른 캐릭터 생성
-	for (int i = 0; i < playerCount; i++)
+	for (int i = 0; i < playerIdex; i++)
 	{
 
 		if (SessionArr[i]._delete == false)

@@ -2,7 +2,7 @@
 
 extern Session SessionArr[PLAYERMAXCOUNT];
 
-extern DWORD playerCount;
+extern DWORD playerIdex;
 
 bool MoveStart(Session* _session)
 {
@@ -43,7 +43,7 @@ bool MoveStart(Session* _session)
 
 
 
-	for (int i = 0; i < playerCount; i++)
+	for (int i = 0; i < playerIdex; i++)
 	{
 		if (SessionArr[i]._player->_ID != _session->_player->_ID) {
 
@@ -91,7 +91,7 @@ void MoveStop(Session* _session)
 	SC_MoveStopPacket.Y = MoveStopPacket.Y;
 	SC_MoveStopPacket.ID = _session->_player->_ID;
 
-	for (int i = 0; i < playerCount; i++)
+	for (int i = 0; i < playerIdex; i++)
 	{
 		if (SessionArr[i]._player->_ID != _session->_player->_ID)
 		{
@@ -134,7 +134,7 @@ bool Attack1(Session* _session)
 	SCAttackPacket.Y = AttackPacket.Y;
 	SCAttackPacket.ID = _session->_player->_ID;
 
-	for (int i = 0; i < playerCount; i++)
+	for (int i = 0; i < playerIdex; i++)
 	{
 		if (SessionArr[i]._player->_ID != _session->_player->_ID)
 		{
@@ -150,7 +150,7 @@ bool Attack1(Session* _session)
 	if ((AttackPacket.Direction) == LL) //left
 	{
 		//printf("attack Left ! \n");
-		for (int i = 0; i < playerCount; i++)
+		for (int i = 0; i < playerIdex; i++)
 		{
 			
 			//타격 판정
@@ -165,7 +165,7 @@ bool Attack1(Session* _session)
 
 					SessionArr[i]._player->_hp -= dfAttack1Damage;
 
-					for (int j = 0; j < playerCount; j++)
+					for (int j = 0; j < playerIdex; j++)
 					{
 						//데미지 메세지 보내기
 
@@ -195,7 +195,7 @@ bool Attack1(Session* _session)
 
 						DeletePacket.ID = SessionArr[i]._player->_ID;
 
-						for (int j = 0; j < playerCount; j++)
+						for (int j = 0; j < playerIdex; j++)
 						{
 							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
@@ -216,7 +216,7 @@ bool Attack1(Session* _session)
 	else
 	{
 	//	printf("attack Right ! \n");
-		for (int i = 0; i < playerCount; i++)
+		for (int i = 0; i < playerIdex; i++)
 		{
 
 			//타격 판정
@@ -229,7 +229,7 @@ bool Attack1(Session* _session)
 					//타격 성공 
 					SessionArr[i]._player->_hp -= dfAttack1Damage;
 
-					for (int j = 0; j < playerCount; j++)
+					for (int j = 0; j < playerIdex; j++)
 					{
 						//데미지 메세지 보내기
 
@@ -259,7 +259,7 @@ bool Attack1(Session* _session)
 
 						DeletePacket.ID = SessionArr[i]._player->_ID;
 
-						for (int j = 0; j < playerCount; j++)
+						for (int j = 0; j < playerIdex; j++)
 						{
 							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
@@ -307,7 +307,7 @@ bool Attack2(Session* _session)
 	SCAttackPacket.Y = AttackPacket.Y;
 	SCAttackPacket.ID = _session->_player->_ID;
 
-	for (int i = 0; i < playerCount; i++)
+	for (int i = 0; i < playerIdex; i++)
 	{
 		if (SessionArr[i]._player->_ID != _session->_player->_ID)
 		{
@@ -323,7 +323,7 @@ bool Attack2(Session* _session)
 	if ((AttackPacket.Direction) == LL) //left
 	{
 		//printf("attack Left ! \n");
-		for (int i = 0; i < playerCount; i++)
+		for (int i = 0; i < playerIdex; i++)
 		{
 
 			//타격 판정
@@ -338,7 +338,7 @@ bool Attack2(Session* _session)
 
 					SessionArr[i]._player->_hp -= dfAttack2Damage;
 
-					for (int j = 0; j < playerCount; j++)
+					for (int j = 0; j < playerIdex; j++)
 					{
 						//데미지 메세지 보내기
 
@@ -370,7 +370,7 @@ bool Attack2(Session* _session)
 
 						DeletePacket.ID = SessionArr[i]._player->_ID;
 
-						for (int j = 0; j < playerCount; j++)
+						for (int j = 0; j < playerIdex; j++)
 						{
 							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
@@ -393,7 +393,7 @@ bool Attack2(Session* _session)
 	else
 	{
 	//	printf("attack Right ! \n");
-		for (int i = 0; i < playerCount; i++)
+		for (int i = 0; i < playerIdex; i++)
 		{
 
 			//타격 판정
@@ -406,7 +406,7 @@ bool Attack2(Session* _session)
 					//타격 성공 
 					SessionArr[i]._player->_hp -= dfAttack2Damage;
 
-					for (int j = 0; j < playerCount; j++)
+					for (int j = 0; j < playerIdex; j++)
 					{
 						//데미지 메세지 보내기
 
@@ -436,7 +436,7 @@ bool Attack2(Session* _session)
 
 						DeletePacket.ID = SessionArr[i]._player->_ID;
 
-						for (int j = 0; j < playerCount; j++)
+						for (int j = 0; j < playerIdex; j++)
 						{
 							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
@@ -482,7 +482,7 @@ bool Attack3(Session* _session)
 	SCAttackPacket.Y = AttackPacket.Y;
 	SCAttackPacket.ID = _session->_player->_ID;
 
-	for (int i = 0; i < playerCount; i++)
+	for (int i = 0; i < playerIdex; i++)
 	{
 		if (SessionArr[i]._player->_ID != _session->_player->_ID)
 		{
@@ -498,7 +498,7 @@ bool Attack3(Session* _session)
 	if ((AttackPacket.Direction) == LL) //left
 	{
 		
-		for (int i = 0; i < playerCount; i++)
+		for (int i = 0; i < playerIdex; i++)
 		{
 
 			//타격 판정
@@ -513,7 +513,7 @@ bool Attack3(Session* _session)
 
 					SessionArr[i]._player->_hp -= dfAttack3Damage;
 
-					for (int j = 0; j < playerCount; j++)
+					for (int j = 0; j < playerIdex; j++)
 					{
 						//데미지 메세지 보내기
 
@@ -544,7 +544,7 @@ bool Attack3(Session* _session)
 
 						DeletePacket.ID = SessionArr[i]._player->_ID;
 
-						for (int j = 0; j < playerCount; j++)
+						for (int j = 0; j < playerIdex; j++)
 						{
 							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
@@ -563,7 +563,7 @@ bool Attack3(Session* _session)
 
 	else
 	{
-		for (int i = 0; i < playerCount; i++)
+		for (int i = 0; i < playerIdex; i++)
 		{
 
 			//타격 판정
@@ -576,7 +576,7 @@ bool Attack3(Session* _session)
 					//타격 성공 
 					SessionArr[i]._player->_hp -= dfAttack3Damage;
 
-					for (int j = 0; j < playerCount; j++)
+					for (int j = 0; j < playerIdex; j++)
 					{
 						//데미지 메세지 보내기
 
@@ -606,7 +606,7 @@ bool Attack3(Session* _session)
 
 						DeletePacket.ID = SessionArr[i]._player->_ID;
 
-						for (int j = 0; j < playerCount; j++)
+						for (int j = 0; j < playerIdex; j++)
 						{
 							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));

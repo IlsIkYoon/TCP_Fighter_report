@@ -3,12 +3,12 @@
 
 SOCKET listen_socket;
 
-extern DWORD playerCount; //63명까지 접속을 받는 상황으로 가정
+extern DWORD playerIdex; //63명까지 접속을 받는 상황으로 가정
+extern Session SessionArr[SELECTCOUNT][SELECTDEFINE];
+extern Session* pSessionArr;
 
-//서버에서 이상한 패킷을 보내는데 ?
-
-extern Session SessionArr[PLAYERMAXCOUNT];
-
+fd_set readset[SELECTCOUNT];
+fd_set writeset[SELECTCOUNT];
 
 bool TCPFighter() {
 	int i;
@@ -41,13 +41,13 @@ bool TCPFighter() {
 
 
 	//select inteligense//----------------------------
-	fd_set readset;
-	fd_set writeset;
 	TIMEVAL timeout = { 0, 0 };
 
-	FD_ZERO(&readset);
-	FD_ZERO(&writeset);
-
+	for (int i = 0; i < SELECTCOUNT; i++)
+	{
+		FD_ZERO(&readset[i]);
+		FD_ZERO(&writeset[i]);
+	}
 	//NetWork//---------------------------
 
 	wsa_retval = WSAStartup(WINSOCK_VERSION, &wsa);
@@ -91,47 +91,55 @@ bool TCPFighter() {
 
 		//네트워크//----------------------------
 
-		FD_SET(listen_socket, &readset);
+		FD_SET(listen_socket, &readset[0]);
 		//나머지 accept된 소켓들은 아래에서 넣을 예정
 
-		select_retval = select(NULL, &readset, &writeset, NULL, &timeout);
-		if (select_retval == SOCKET_ERROR) 
+		for (int i = 0; i < SELECTCOUNT; i++)
 		{
-			printf("%d select error : %d\n", __LINE__, GetLastError());
+			select_retval = select(NULL, &readset[i], &writeset[i], NULL, &timeout);
+			if (select_retval == SOCKET_ERROR)
+			{
+				printf("Idex : %d, %d select error : %d\n", i, __LINE__, GetLastError());
+			}
 		}
 
-		if (FD_ISSET(listen_socket, &readset)) //캐릭터 초기 생성
+
+
+
+		if (FD_ISSET(listen_socket, &readset[0])) //캐릭터 초기 생성
 		{
 			//세션의 할당 안 된 곳에 accept해 줄 예정//---------------------
 			// 세션을 먼저 구성하고 나서 
 			// -----------------------------------------------------------
-			if (playerCount >= PLAYERMAXCOUNT) 
+			if (playerIdex >= PLAYERMAXCOUNT) 
 			{
-				printf("playercount overflow !! , PlayerCount : %d\n", playerCount);
+				printf("playercount overflow !! , PlayerCount : %d\n", playerIdex);
 			}
 			else 
 			{
-				SessionArr[playerCount]._socket = accept(listen_socket, (SOCKADDR*)&clientAddr, &addrSize);
-				if (SessionArr[playerCount]._socket == INVALID_SOCKET) 
+				pSessionArr[playerIdex]._socket = accept(listen_socket, (SOCKADDR*)&clientAddr, &addrSize);
+				if (pSessionArr[playerIdex]._socket == INVALID_SOCKET) 
 				{
-					printf("Line : %d, playcount : %d,  accept error : %d\n", __LINE__, playerCount, GetLastError());
+					printf("Line : %d, playcount : %d,  accept error : %d\n", __LINE__, playerIdex, GetLastError());
 				}
-				SessionArr[playerCount]._ip = clientAddr.sin_addr.s_addr;
-				SessionArr[playerCount]._port = clientAddr.sin_port;
-				SessionArr[playerCount]._player = new Player;
-				SessionArr[playerCount]._delete = false; //delete에 false;
+				pSessionArr[playerIdex]._ip = clientAddr.sin_addr.s_addr;
+				pSessionArr[playerIdex]._port = clientAddr.sin_port;
+				pSessionArr[playerIdex]._player = new Player;
+				pSessionArr[playerIdex]._delete = false; //delete에 false;
 				//초기 생성에 대한 작업들
-				CreateNewCharacter(&SessionArr[playerCount]);
+				CreateNewCharacter(&pSessionArr[playerIdex]);
 
-				playerCount++;
+				playerIdex++;
 
-				printf("create new character ! %d \n", playerCount);
+				printf("create new character ! %d \n", playerIdex);
 
 
 			}
 		}
 
-		for (i = 0; i < playerCount; i++) 
+		//여기서부터 네트워크 구조 수정 필요 selectcount 
+
+		for (i = 0; i < playerIdex; i++) 
 		{
 			if (FD_ISSET(SessionArr[i]._socket, &readset)) 
 			{
@@ -139,9 +147,9 @@ bool TCPFighter() {
 				//direct enqueue를 안하는 상황
 
 				char* buf;
-				buf = (char*)malloc(SessionArr[i]._recvQ.GetBufferFree());
+				buf = (char*)malloc(SessionArr[i]._recvQ.GetSizeFree());
 
-				sock_retval = recv(SessionArr[i]._socket, buf, SessionArr[i]._recvQ.GetBufferFree(), 0);
+				sock_retval = recv(SessionArr[i]._socket, buf, SessionArr[i]._recvQ.GetSizeFree(), 0);
 				/*
 				sock_retval = recv(SessionArr[i]._socket, SessionArr[i]._recvQ.GetRearBufferPtr(),
 					SessionArr[i]._recvQ.DirectEnqueueSize(), 0);
@@ -164,7 +172,7 @@ bool TCPFighter() {
 
 							DeletePacket.ID = SessionArr[i]._player->_ID;
 
-							for (int j = 0; j < playerCount; j++)
+							for (int j = 0; j < playerIdex; j++)
 							{
 								SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 								SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
@@ -212,12 +220,12 @@ bool TCPFighter() {
 
 					char* sendBuf;
 					int sendVal;
-					sendBuf = (char*)malloc(SessionArr[i]._sendQ.GetBufferUsed());
+					sendBuf = (char*)malloc(SessionArr[i]._sendQ.GetSizeUsed());
 					PacketHeader* pHeader;
 					
-					sendVal = SessionArr[i]._sendQ.GetBufferUsed();
+					sendVal = SessionArr[i]._sendQ.GetSizeUsed();
 
-					pHeader = (PacketHeader*)SessionArr[i]._sendQ.GetFrontBufferPtr();
+					pHeader = (PacketHeader*)SessionArr[i]._sendQ.GetFront();
 
 					//puts("");
 					if (pHeader->byCode != 0x89)
@@ -225,7 +233,7 @@ bool TCPFighter() {
 					{
 						printf("Send RingBuf / byCode : %d, bySize : %d, byType : %d\n", pHeader->byCode, pHeader->bySize, pHeader->byType);
 					}
-					if (SessionArr[i]._sendQ.Dequeue(sendBuf, SessionArr[i]._sendQ.GetBufferUsed()) == false) {
+					if (SessionArr[i]._sendQ.Dequeue(sendBuf, SessionArr[i]._sendQ.GetSizeUsed()) == false) {
 						printf("Line : %d, Dequeue error \n", __LINE__);
 						//return false;
 					}
@@ -265,7 +273,7 @@ bool TCPFighter() {
 
 								DeletePacket.ID = SessionArr[i]._player->_ID;
 
-								for (int j = 0; j < playerCount; j++)
+								for (int j = 0; j < playerIdex; j++)
 								{
 									SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
 									SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
@@ -302,7 +310,7 @@ bool TCPFighter() {
 		FD_ZERO(&readset);
 		FD_ZERO(&writeset);
 
-		for (i = 0; i < playerCount; i++) 
+		for (i = 0; i < playerIdex; i++) 
 		{
 			FD_SET(SessionArr[i]._socket, &readset);
 			FD_SET(SessionArr[i]._socket, &writeset);
@@ -313,7 +321,7 @@ bool TCPFighter() {
 
 		//recvq에 있는 데이터를 뜯어보고 sendq에 데이터를 넣어 줌 
 
-		for (int i = 0; i < playerCount; i++) 
+		for (int i = 0; i < playerIdex; i++) 
 		{
 			if (SessionArr[i]._recvQ.IsEmpty() != true) {
 
@@ -325,7 +333,7 @@ bool TCPFighter() {
 
 
 		//게임 로직//
-		for (int i = 0; i < playerCount; i++)
+		for (int i = 0; i < playerIdex; i++)
 		{
 			SessionArr[i]._player->Move();
 			//printf("Move ! /////// ID: %d, x: %d, y : %d\n", SessionArr[i]._player->_ID, SessionArr[i]._player->_x, SessionArr[i]._player->_y);

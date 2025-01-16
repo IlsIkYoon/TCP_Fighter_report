@@ -18,8 +18,9 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-#define PLAYERMAXCOUNT 63
-
+#define PLAYERMAXCOUNT 7000
+#define SELECTCOUNT 110
+#define SELECTDEFINE 64
 
 //----------------------------------------------------------------
 //# 화면 이동영역-------------------------- -

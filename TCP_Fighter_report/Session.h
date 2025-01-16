@@ -5,7 +5,7 @@
 #include "RingBuffer.h"
 #include "PacketDefine.h"
 
-extern DWORD playerCount;
+extern DWORD playerIdex;
 
 struct Player {
 
@@ -27,7 +27,7 @@ public:
 		_y = 240;
 		_direction = LL;
 		_move = false;
-		_ID = playerCount;
+		_ID = playerIdex;
 	}
 
 	
