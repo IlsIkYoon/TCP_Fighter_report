@@ -5,7 +5,7 @@
 #include "PacketDefine.h"
 #include "Session.h"
 #include "GameProc.h"
-
+#include "NetworkInit.h"
 
 
 bool TCPFighter();

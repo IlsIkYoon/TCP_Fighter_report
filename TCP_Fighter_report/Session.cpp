@@ -1,8 +1,10 @@
 #include "Session.h"
 #include "GameProc.h"
 
+
 //전역변수
 Session SessionArr[SELECTCOUNT][SELECTDEFINE];
+std::vector<Session*> SessionArr;
 Session* pSessionArr = (Session*)SessionArr;
 DWORD playerIdex = 0; //63명까지 접속을 받는 상황으로 가정
 
@@ -29,7 +31,7 @@ bool CreateNewCharacter(Session* _session) {
 	CreatePacket.Y = _session->_player->_y;
 	CreatePacket.ID = playerIdex;
 
-	if (_session->_sendQ.GetSizeFree() <= pHeader.bySize + sizeof(pHeader)) 
+	if (_session->_sendQ.GetSizeFree() < pHeader.bySize + sizeof(pHeader)) 
 	{
 		printf("Line : %d, Send buffer Full\n", __LINE__);
 		return false;

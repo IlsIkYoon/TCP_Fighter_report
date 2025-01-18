@@ -138,7 +138,7 @@ struct Session {
 bool CreateNewCharacter(Session* _session);
 bool DecodePacket(Session* _session);
 
-
+bool DeleteSession(Session* _session);
 
 
 

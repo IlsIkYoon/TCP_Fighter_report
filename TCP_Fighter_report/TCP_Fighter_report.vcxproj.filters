@@ -22,12 +22,15 @@
     <Filter Include="RingBuffer">
       <UniqueIdentifier>{ce024959-7746-4357-b749-f0613fd201dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Networkinit">
+      <UniqueIdentifier>{e615f081-d854-4122-b468-1adc6ebbb36f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session">
+      <UniqueIdentifier>{b03c0133-3739-482e-9fef-0a3df21d4ad2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Session.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="GameProc.cpp">
@@ -39,12 +42,18 @@
     <ClCompile Include="RingBuffer.cpp">
       <Filter>RingBuffer</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkInit.cpp">
+      <Filter>Networkinit</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkInit.h">
+      <Filter>Networkinit</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Session.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="PacketDefine.h">
@@ -58,6 +67,9 @@
     </ClInclude>
     <ClInclude Include="RingBuffer.h">
       <Filter>RingBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Session</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

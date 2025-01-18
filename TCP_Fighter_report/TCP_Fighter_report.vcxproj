@@ -185,6 +185,8 @@
   <ItemGroup>
     <ClCompile Include="GameProc.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NetworkInit.cpp" />
+    <ClCompile Include="NetworkInit.h" />
     <ClCompile Include="RingBuffer.cpp" />
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="TCPFighter.cpp" />

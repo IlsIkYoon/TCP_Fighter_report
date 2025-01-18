@@ -11,7 +11,7 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <iostream>
-
+#include <vector>
 
 #define PORTNUM 5000
 #define GAMEFPS 50
