@@ -5,7 +5,13 @@
 #include "RingBuffer.h"
 #include "PacketDefine.h"
 
+
 extern DWORD playerIdex;
+
+class Object {
+	Object() {};
+
+};
 
 struct Player {
 
@@ -23,9 +29,9 @@ public:
 
 	Player() {
 		_hp = dfHP;
-		_x = 320;
-		_y = 240;
-		_direction = LL;
+		_x = rand() % 6400;
+		_y = rand() % 6400;
+		_direction = (rand() % 2) * 4; //LL == 0, RR == 4
 		_move = false;
 		_ID = playerIdex;
 	}
@@ -120,8 +126,10 @@ public:
 
 };
 
-struct Session {
+struct Session
+{
 	
+public:
 	SOCKET _socket;
 	DWORD _ip;
 	DWORD _port;

@@ -4,13 +4,36 @@ extern Session SessionArr[PLAYERMAXCOUNT];
 
 extern DWORD playerIdex;
 
+extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
+extern Session* pSector;
+std::list<Session*>::iterator it;
+
+
+
 bool MoveStart(Session* _session)
 {
 	CS_MOVE_START MoveStartPacket;
+	unsigned int peekResult;
+	unsigned int dequeResult;
+	unsigned int enqueResult;
+	_session->_recvQ.Peek((char*)&MoveStartPacket, sizeof(MoveStartPacket), &peekResult);
 
-	if (_session->_recvQ.Peek((char*)&MoveStartPacket, sizeof(MoveStartPacket)) < sizeof(MoveStartPacket)) {
+	if (peekResult < sizeof(MoveStartPacket)) {
 		
-		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ._front, _session->_recvQ._rear);
+		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
+		
+		//패킷 헤더 다시 넣는 과정
+		int ExtraBuf = _session->_recvQ.GetSizeUsed();
+		char* backUpBuf = (char*)malloc(ExtraBuf);
+		PacketHeader pHeader;
+		pHeader.byCode = 0x89;
+		pHeader.bySize = sizeof(MoveStartPacket);
+		pHeader.byType = dfPACKET_CS_MOVE_START;
+
+		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
+		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
+
 		return false;
 	}
 	
@@ -18,12 +41,8 @@ bool MoveStart(Session* _session)
 
 	_session->_player->MoveStart(MoveStartPacket.Direction, MoveStartPacket.X, MoveStartPacket.Y);
 
-	//printf("Player ID : %d, Direction : %d, X: %d, Y : %d MoveStart \n", _session->_player->_ID, _session->_player->_direction
-	//, _session->_player->_x, _session->_player->_y);
 
-	//다른 캐릭터들 send q 에 move start enqueue
-
-	
+	//섹터 주변에 뿌려주기
 	PacketHeader MoveHeader;
 	SC_MOVE_START SC_MoveStart_Packet;
 	
@@ -31,53 +50,94 @@ bool MoveStart(Session* _session)
 	MoveHeader.bySize = sizeof(SC_MoveStart_Packet);
 	MoveHeader.byType = dfPACKET_SC_MOVE_START;
 
-
-
-	
 	
 	SC_MoveStart_Packet.Direction = MoveStartPacket.Direction;
 	SC_MoveStart_Packet.X = MoveStartPacket.X;
 	SC_MoveStart_Packet.Y = MoveStartPacket.Y;
 	SC_MoveStart_Packet.ID = _session->_player->_ID;
 
-
-
-
-	for (int i = 0; i < playerIdex; i++)
+	for (int i = -1; i < 2; i++)
 	{
-		if (SessionArr[i]._player->_ID != _session->_player->_ID) {
+		for (int j = -1; j < 2; j++)
+		{
+			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
-			SessionArr[i]._sendQ.Enqueue((char*)&MoveHeader, sizeof(MoveHeader));
-			SessionArr[i]._sendQ.Enqueue((char*)&SC_MoveStart_Packet, sizeof(SC_MoveStart_Packet)); //enqueue가 실패할 경우에 대한 예외처리 필요
+
+			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			{
+
+				if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+				if ((*it)->_sendQ.GetSizeFree() < sizeof(MoveHeader) + MoveHeader.bySize)
+				{
+					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&MoveHeader, sizeof(MoveHeader), &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&SC_MoveStart_Packet, MoveHeader.bySize, &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+			}
 		}
+
 	}
-
-
-
 
 	return true;
 }
 
 
-void MoveStop(Session* _session)
+bool MoveStop(Session* _session)
 {
 
 	CS_MOVE_STOP MoveStopPacket;
-	if (_session->_recvQ.Peek((char*)&MoveStopPacket, sizeof(MoveStopPacket)) < sizeof(MoveStopPacket)) {
-		printf("Line : %d, recvQ Peek Error", __LINE__); 
-		return;
+	unsigned int peekResult;
+	unsigned int dequeResult;
+	unsigned int enqueResult;
+	_session->_recvQ.Peek((char*)&MoveStopPacket, sizeof(MoveStopPacket), &peekResult);
+	if (peekResult < sizeof(MoveStopPacket)) {
+
+		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
+
+		//패킷 헤더 다시 넣는 과정
+		int ExtraBuf = _session->_recvQ.GetSizeUsed();
+		char* backUpBuf = (char*)malloc(ExtraBuf);
+		PacketHeader pHeader;
+		pHeader.byCode = 0x89;
+		pHeader.bySize = sizeof(MoveStopPacket);
+		pHeader.byType = dfPACKET_CS_MOVE_STOP;
+
+		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
+		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
+
+		return false;
 	}
+
+
 
 	_session->_recvQ.MoveFront(sizeof(MoveStopPacket));
 
-	_session->_player->MoveStop();
-	
 	_session->_player->_direction = MoveStopPacket.Direction;
 	_session->_player->_x = MoveStopPacket.X;
 	_session->_player->_y = MoveStopPacket.Y;
 
-	//다른 캐릭터들 send q에 move stop을 넣어줘야 함
 
+	_session->_player->MoveStop();
+	
+	//섹터 주변에 뿌려주기
 	PacketHeader MoveHeader;
 	SC_MOVE_STOP SC_MoveStopPacket;
 
@@ -85,42 +145,86 @@ void MoveStop(Session* _session)
 	MoveHeader.bySize = sizeof(SC_MoveStopPacket);
 	MoveHeader.byType = dfPACKET_SC_MOVE_STOP;
 
-
 	SC_MoveStopPacket.Direction = MoveStopPacket.Direction;
 	SC_MoveStopPacket.X = MoveStopPacket.X;
 	SC_MoveStopPacket.Y = MoveStopPacket.Y;
 	SC_MoveStopPacket.ID = _session->_player->_ID;
 
-	for (int i = 0; i < playerIdex; i++)
+	for (int i = -1; i < 2; i++)
 	{
-		if (SessionArr[i]._player->_ID != _session->_player->_ID)
+		for (int j = -1; j < 2; j++)
 		{
-			SessionArr[i]._sendQ.Enqueue((char*)&MoveHeader, sizeof(MoveHeader));
-			SessionArr[i]._sendQ.Enqueue((char*)&SC_MoveStopPacket, sizeof(SC_MoveStopPacket)); //enqueue실패에 대한 예외처리도 필요
+			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			{
+
+				if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+				if ((*it)->_sendQ.GetSizeFree() < sizeof(MoveHeader) + MoveHeader.bySize)
+				{
+					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&MoveHeader, sizeof(MoveHeader), &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&SC_MoveStopPacket, MoveHeader.bySize, &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+			}
 		}
 	}
 
-
-
-
-
-	// printf("Player ID : %d, Direction : %d, MoveStop  \n", _session->_player->_ID, _session->_player->_direction);
-
+	return true;
 }
 
 
 bool Attack1(Session* _session)
 {
 	CS_ATTACK1 AttackPacket;
-	if (_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket)) < sizeof(AttackPacket))
+	unsigned int peekResult;
+	unsigned int dequeResult;
+	unsigned int enqueResult;
+
+	_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket), &peekResult);
+
+	if (peekResult < sizeof(AttackPacket))
 	{
-		printf("Line : %d, Peek error", __LINE__);
+
+		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
+
+		//패킷 헤더 다시 넣는 과정
+		int ExtraBuf = _session->_recvQ.GetSizeUsed();
+		char* backUpBuf = (char*)malloc(ExtraBuf);
+		PacketHeader pHeader;
+		pHeader.byCode = 0x89;
+		pHeader.bySize = sizeof(AttackPacket);
+		pHeader.byType = dfPACKET_CS_ATTACK1;
+
+		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
+		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
+
 		return false;
 	}
 
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
 	_session->_player->_direction = AttackPacket.Direction;
+
 
 	PacketHeader AttackHeader;
 	SC_ATTACK1 SCAttackPacket;
@@ -134,57 +238,129 @@ bool Attack1(Session* _session)
 	SCAttackPacket.Y = AttackPacket.Y;
 	SCAttackPacket.ID = _session->_player->_ID;
 
-	for (int i = 0; i < playerIdex; i++)
+	//먼저 어택 메세지를 섹터에 뿌려줌
+
+	for (int i = -1; i < 2; i++)
 	{
-		if (SessionArr[i]._player->_ID != _session->_player->_ID)
+		for (int j = -1; j < 2; j++)
 		{
-			SessionArr[i]._sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader));
-			SessionArr[i]._sendQ.Enqueue((char*)&SCAttackPacket, sizeof(SCAttackPacket));
+			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			{
+
+				if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+				if ((*it)->_sendQ.GetSizeFree() < sizeof(AttackHeader) + AttackHeader.bySize)
+				{
+					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+			}
 		}
-
 	}
-
 
 
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
-		//printf("attack Left ! \n");
-		for (int i = 0; i < playerIdex; i++)
+		for (int i = -1; i < 2; i++)
 		{
-			
-			//타격 판정
-
-			if ((AttackPacket.X - SessionArr[i]._player->_x) >= 0 && (AttackPacket.X - SessionArr[i]._player->_x) <= dfATTACK1_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			for (int j = -1; j < 2; j++)
 			{
-				if ((AttackPacket.Y - SessionArr[i]._player->_y >= 0 && AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK1_RANGE_Y) || 
-					(SessionArr[i]._player->_y - AttackPacket.Y >= 0 && SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y))
+				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
 				{
+					if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+					if ((AttackPacket.X - (*it)->_player->_x) < 0 ||
+						(AttackPacket.X - (*it)->_player->_x) > dfATTACK1_RANGE_X) continue; //공격 범위 벗어남
+					
+					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK1_RANGE_Y) ||
+						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y) == false) 
+						continue;
+
 					//타격 성공 
+					(*it)->_player->_hp -= dfAttack1Damage;
 
 
-					SessionArr[i]._player->_hp -= dfAttack1Damage;
+					//데미지 메세지 보내기
 
-					for (int j = 0; j < playerIdex; j++)
+					PacketHeader DamageHeader;
+					SC_DAMAGE DamagePacket;
+					std::list<Session*>::iterator FuncIt;
+
+					DamageHeader.byCode = 0x89;
+					DamageHeader.bySize = sizeof(DamagePacket);
+					DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+					DamagePacket.AttackID = _session->_player->_ID;
+					DamagePacket.DamageID = (*it)->_player->_ID;
+					DamagePacket.DamageHP = (*it)->_player->_hp;
+
+					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
-						//데미지 메세지 보내기
+						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
+						{
+							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
-						PacketHeader DamageHeader;
-						SC_DAMAGE DamagePacket;
 
-						DamageHeader.byCode = 0x89;
-						DamageHeader.bySize = sizeof(DamagePacket);
-						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
 
-						DamagePacket.AttackID = _session->_player->_ID;
-						DamagePacket.DamageID = SessionArr[i]._player->_ID;
-						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
-							 
-						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
-						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							{
+
+								
+
+								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
+								{
+									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+							}
+						}
 					}
 
-					if (SessionArr[i]._player->_hp <= 0)
+					//사망 판정 //
+
+					if ((*it)->_player->_hp <= 0)
 					{
 						PacketHeader DeleteHeader;
 						SC_DELETE_CHARACTER DeletePacket;
@@ -193,62 +369,142 @@ bool Attack1(Session* _session)
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
 
-						DeletePacket.ID = SessionArr[i]._player->_ID;
+						DeletePacket.ID = (*it)->_player->_ID;
 
-						for (int j = 0; j < playerIdex; j++)
+						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
-							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
-							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
+							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
+							{
+								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+
+								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								{
+
+
+
+									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
+									{
+										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+
+
+
+								}
+							}
 						}
 
-						SessionArr[i]._delete = true;
-						//소켓 연결도 끊어줘야 함..
-					}
+						return true; //한명 타격 성공하면 바로 리턴 
+						DeleteSession(*it);
+						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
 
+					}
 
 				}
 			}
-
 		}
 
 	}
 
 	else
 	{
-	//	printf("attack Right ! \n");
-		for (int i = 0; i < playerIdex; i++)
+		for (int i = -1; i < 2; i++)
 		{
-
-			//타격 판정
-
-			if ((SessionArr[i]._player->_x - AttackPacket.X) >= 0 && (SessionArr[i]._player->_x - AttackPacket.X) <= dfATTACK1_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			for (int j = -1; j < 2; j++)
 			{
-				if ((AttackPacket.Y - SessionArr[i]._player->_y >= 0 && AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK1_RANGE_Y) ||
-					(SessionArr[i]._player->_y - AttackPacket.Y >= 0 && SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y))
+				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
 				{
+					if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+					if (((*it)->_player->_x) - AttackPacket.X < 0 ||
+						((*it)->_player->_x) - AttackPacket.X > dfATTACK1_RANGE_X) continue; //공격 범위 벗어남
+
+					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK1_RANGE_Y) ||
+						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y) == false)
+						continue;
+
 					//타격 성공 
-					SessionArr[i]._player->_hp -= dfAttack1Damage;
+					(*it)->_player->_hp -= dfAttack1Damage;
 
-					for (int j = 0; j < playerIdex; j++)
+
+					//데미지 메세지 보내기
+
+					PacketHeader DamageHeader;
+					SC_DAMAGE DamagePacket;
+					std::list<Session*>::iterator FuncIt;
+
+					DamageHeader.byCode = 0x89;
+					DamageHeader.bySize = sizeof(DamagePacket);
+					DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+					DamagePacket.AttackID = _session->_player->_ID;
+					DamagePacket.DamageID = (*it)->_player->_ID;
+					DamagePacket.DamageHP = (*it)->_player->_hp;
+
+					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
-						//데미지 메세지 보내기
+						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
+						{
+							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
-						PacketHeader DamageHeader;
-						SC_DAMAGE DamagePacket;
 
-						DamageHeader.byCode = 0x89;
-						DamageHeader.bySize = sizeof(DamagePacket);
-						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
 
-						DamagePacket.AttackID = _session->_player->_ID;
-						DamagePacket.DamageID = SessionArr[i]._player->_ID;
-						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							{
 
-						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
-						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+
+
+								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
+								{
+									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+							}
+						}
 					}
 
-					if (SessionArr[i]._player->_hp <= 0)
+					//사망 판정 //
+
+					if ((*it)->_player->_hp <= 0)
 					{
 						PacketHeader DeleteHeader;
 						SC_DELETE_CHARACTER DeletePacket;
@@ -257,43 +513,98 @@ bool Attack1(Session* _session)
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
 
-						DeletePacket.ID = SessionArr[i]._player->_ID;
+						DeletePacket.ID = (*it)->_player->_ID;
 
-						for (int j = 0; j < playerIdex; j++)
+						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
-							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
-							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
+							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
+							{
+								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+
+								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								{
+
+
+
+									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
+									{
+										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+
+
+
+								}
+							}
 						}
 
+						return true; //한명 타격 성공하면 바로 리턴 
+						DeleteSession(*it);
+						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
 
-						//소켓 연결도 끊어줘야 함..
-						SessionArr[i]._delete = true;
 					}
-
 
 				}
 			}
-
 		}
 
 	}
 
 
-	return true;
+	return false;
 }
 
 bool Attack2(Session* _session)
 {
 	CS_ATTACK2 AttackPacket;
-	if (_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket)) < sizeof(AttackPacket))
+	unsigned int peekResult;
+	unsigned int dequeResult;
+	unsigned int enqueResult;
+
+	_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket), &peekResult);
+
+	if (peekResult < sizeof(AttackPacket))
 	{
-		printf("Line : %d, Peek error", __LINE__);
+
+		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
+
+		//패킷 헤더 다시 넣는 과정
+		int ExtraBuf = _session->_recvQ.GetSizeUsed();
+		char* backUpBuf = (char*)malloc(ExtraBuf);
+		PacketHeader pHeader;
+		pHeader.byCode = 0x89;
+		pHeader.bySize = sizeof(AttackPacket);
+		pHeader.byType = dfPACKET_CS_ATTACK2;
+
+		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
+		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
+
 		return false;
 	}
 
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
 	_session->_player->_direction = AttackPacket.Direction;
+
 
 	PacketHeader AttackHeader;
 	SC_ATTACK2 SCAttackPacket;
@@ -307,59 +618,129 @@ bool Attack2(Session* _session)
 	SCAttackPacket.Y = AttackPacket.Y;
 	SCAttackPacket.ID = _session->_player->_ID;
 
-	for (int i = 0; i < playerIdex; i++)
+	//먼저 어택 메세지를 섹터에 뿌려줌
+
+	for (int i = -1; i < 2; i++)
 	{
-		if (SessionArr[i]._player->_ID != _session->_player->_ID)
+		for (int j = -1; j < 2; j++)
 		{
-			SessionArr[i]._sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader));
-			SessionArr[i]._sendQ.Enqueue((char*)&SCAttackPacket, sizeof(SCAttackPacket));
+			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			{
+
+				if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+				if ((*it)->_sendQ.GetSizeFree() < sizeof(AttackHeader) + AttackHeader.bySize)
+				{
+					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+			}
 		}
-
 	}
-
 
 
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
-		//printf("attack Left ! \n");
-		for (int i = 0; i < playerIdex; i++)
+		for (int i = -1; i < 2; i++)
 		{
-
-			//타격 판정
-
-			if ((AttackPacket.X - SessionArr[i]._player->_x) >= 0 && (AttackPacket.X - SessionArr[i]._player->_x) <= dfATTACK2_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			for (int j = -1; j < 2; j++)
 			{
-				if ((AttackPacket.Y - SessionArr[i]._player->_y >= 0 && AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK2_RANGE_Y) ||
-					(SessionArr[i]._player->_y - AttackPacket.Y >= 0 && SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y))
+				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
 				{
+					if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+					if ((AttackPacket.X - (*it)->_player->_x) < 0 ||
+						(AttackPacket.X - (*it)->_player->_x) > dfATTACK2_RANGE_X) continue; //공격 범위 벗어남
+
+					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK2_RANGE_Y) ||
+						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y) == false)
+						continue;
+
 					//타격 성공 
+					(*it)->_player->_hp -= dfAttack2Damage;
 
 
-					SessionArr[i]._player->_hp -= dfAttack2Damage;
+					//데미지 메세지 보내기
 
-					for (int j = 0; j < playerIdex; j++)
+					PacketHeader DamageHeader;
+					SC_DAMAGE DamagePacket;
+					std::list<Session*>::iterator FuncIt;
+
+					DamageHeader.byCode = 0x89;
+					DamageHeader.bySize = sizeof(DamagePacket);
+					DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+					DamagePacket.AttackID = _session->_player->_ID;
+					DamagePacket.DamageID = (*it)->_player->_ID;
+					DamagePacket.DamageHP = (*it)->_player->_hp;
+
+					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
-						//데미지 메세지 보내기
+						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
+						{
+							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
-						PacketHeader DamageHeader;
-						SC_DAMAGE DamagePacket;
 
-						DamageHeader.byCode = 0x89;
-						DamageHeader.bySize = sizeof(DamagePacket);
-						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
 
-						DamagePacket.AttackID = _session->_player->_ID;
-						DamagePacket.DamageID = SessionArr[i]._player->_ID;
-						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							{
 
-						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
-						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+
+
+								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
+								{
+									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+							}
+						}
 					}
 
-					//printf("ID : %d, HP : %d ", SessionArr[i]._player->_ID, SessionArr[i]._player->_hp);
+					//사망 판정 //
 
-					if (SessionArr[i]._player->_hp <= 0)
+					if ((*it)->_player->_hp <= 0)
 					{
 						PacketHeader DeleteHeader;
 						SC_DELETE_CHARACTER DeletePacket;
@@ -368,64 +749,142 @@ bool Attack2(Session* _session)
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
 
-						DeletePacket.ID = SessionArr[i]._player->_ID;
+						DeletePacket.ID = (*it)->_player->_ID;
 
-						for (int j = 0; j < playerIdex; j++)
+						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
-							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
-							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
+							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
+							{
+								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+
+								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								{
+
+
+
+									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
+									{
+										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+
+
+
+								}
+							}
 						}
 
-						SessionArr[i]._delete = true;
-						//소켓 연결도 끊어줘야 함..
+						return true; //한명 타격 성공하면 바로 리턴 
+						DeleteSession(*it);
+						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
 
-						//printf(" Send Delete Message !\n");
 					}
-
 
 				}
 			}
-
 		}
 
 	}
 
 	else
 	{
-	//	printf("attack Right ! \n");
-		for (int i = 0; i < playerIdex; i++)
+		for (int i = -1; i < 2; i++)
 		{
-
-			//타격 판정
-
-			if ((SessionArr[i]._player->_x - AttackPacket.X) >= 0 && (SessionArr[i]._player->_x - AttackPacket.X) <= dfATTACK2_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			for (int j = -1; j < 2; j++)
 			{
-				if ((AttackPacket.Y - SessionArr[i]._player->_y >= 0 && AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK2_RANGE_Y) ||
-					(SessionArr[i]._player->_y - AttackPacket.Y >= 0 && SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y))
+				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
 				{
+					if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+					if (((*it)->_player->_x) - AttackPacket.X < 0 ||
+						((*it)->_player->_x) - AttackPacket.X > dfATTACK2_RANGE_X) continue; //공격 범위 벗어남
+
+					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK2_RANGE_Y) ||
+						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y) == false)
+						continue;
+
 					//타격 성공 
-					SessionArr[i]._player->_hp -= dfAttack2Damage;
+					(*it)->_player->_hp -= dfAttack2Damage;
 
-					for (int j = 0; j < playerIdex; j++)
+
+					//데미지 메세지 보내기
+
+					PacketHeader DamageHeader;
+					SC_DAMAGE DamagePacket;
+					std::list<Session*>::iterator FuncIt;
+
+					DamageHeader.byCode = 0x89;
+					DamageHeader.bySize = sizeof(DamagePacket);
+					DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+					DamagePacket.AttackID = _session->_player->_ID;
+					DamagePacket.DamageID = (*it)->_player->_ID;
+					DamagePacket.DamageHP = (*it)->_player->_hp;
+
+					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
-						//데미지 메세지 보내기
+						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
+						{
+							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
-						PacketHeader DamageHeader;
-						SC_DAMAGE DamagePacket;
 
-						DamageHeader.byCode = 0x89;
-						DamageHeader.bySize = sizeof(DamagePacket);
-						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
 
-						DamagePacket.AttackID = _session->_player->_ID;
-						DamagePacket.DamageID = SessionArr[i]._player->_ID;
-						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							{
 
-						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
-						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+
+
+								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
+								{
+									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+							}
+						}
 					}
 
-					if (SessionArr[i]._player->_hp <= 0)
+					//사망 판정 //
+
+					if ((*it)->_player->_hp <= 0)
 					{
 						PacketHeader DeleteHeader;
 						SC_DELETE_CHARACTER DeletePacket;
@@ -434,41 +893,97 @@ bool Attack2(Session* _session)
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
 
-						DeletePacket.ID = SessionArr[i]._player->_ID;
+						DeletePacket.ID = (*it)->_player->_ID;
 
-						for (int j = 0; j < playerIdex; j++)
+						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
-							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
-							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
+							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
+							{
+								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+
+								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								{
+
+
+
+									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
+									{
+										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+
+
+
+								}
+							}
 						}
 
-						SessionArr[i]._delete = true;
-					}
+						return true; //한명 타격 성공하면 바로 리턴 
+						DeleteSession(*it);
+						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
 
+					}
 
 				}
 			}
-
 		}
 
 	}
 
 
-	return true;
+	return false;
 }
-
 bool Attack3(Session* _session)
 {
 	CS_ATTACK3 AttackPacket;
-	if (_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket)) < sizeof(AttackPacket))
+	unsigned int peekResult;
+	unsigned int dequeResult;
+	unsigned int enqueResult;
+
+	_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket), &peekResult);
+
+	if (peekResult < sizeof(AttackPacket))
 	{
-		printf("Line : %d, Peek error", __LINE__);
+
+		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
+
+		//패킷 헤더 다시 넣는 과정
+		int ExtraBuf = _session->_recvQ.GetSizeUsed();
+		char* backUpBuf = (char*)malloc(ExtraBuf);
+		PacketHeader pHeader;
+		pHeader.byCode = 0x89;
+		pHeader.bySize = sizeof(AttackPacket);
+		pHeader.byType = dfPACKET_CS_ATTACK3;
+
+		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
+		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
+
 		return false;
 	}
 
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
 	_session->_player->_direction = AttackPacket.Direction;
+
 
 	PacketHeader AttackHeader;
 	SC_ATTACK3 SCAttackPacket;
@@ -482,58 +997,129 @@ bool Attack3(Session* _session)
 	SCAttackPacket.Y = AttackPacket.Y;
 	SCAttackPacket.ID = _session->_player->_ID;
 
-	for (int i = 0; i < playerIdex; i++)
+	//먼저 어택 메세지를 섹터에 뿌려줌
+
+	for (int i = -1; i < 2; i++)
 	{
-		if (SessionArr[i]._player->_ID != _session->_player->_ID)
+		for (int j = -1; j < 2; j++)
 		{
-			SessionArr[i]._sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader));
-			SessionArr[i]._sendQ.Enqueue((char*)&SCAttackPacket, sizeof(SCAttackPacket));
+			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			{
+
+				if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+				if ((*it)->_sendQ.GetSizeFree() < sizeof(AttackHeader) + AttackHeader.bySize)
+				{
+					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+			}
 		}
-
 	}
-
 
 
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
-		
-		for (int i = 0; i < playerIdex; i++)
+		for (int i = -1; i < 2; i++)
 		{
-
-			//타격 판정
-
-			if ((AttackPacket.X - SessionArr[i]._player->_x) >= 0 && (AttackPacket.X - SessionArr[i]._player->_x) <= dfATTACK3_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			for (int j = -1; j < 2; j++)
 			{
-				if ((AttackPacket.Y - SessionArr[i]._player->_y >= 0 && AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK3_RANGE_Y) ||
-					(SessionArr[i]._player->_y - AttackPacket.Y >= 0 && SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK3_RANGE_Y))
+				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
 				{
+					if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+					if ((AttackPacket.X - (*it)->_player->_x) < 0 ||
+						(AttackPacket.X - (*it)->_player->_x) > dfATTACK3_RANGE_X) continue; //공격 범위 벗어남
+
+					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK3_RANGE_Y) ||
+						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK3_RANGE_Y) == false)
+						continue;
+
 					//타격 성공 
+					(*it)->_player->_hp -= dfAttack3Damage;
 
 
-					SessionArr[i]._player->_hp -= dfAttack3Damage;
+					//데미지 메세지 보내기
 
-					for (int j = 0; j < playerIdex; j++)
+					PacketHeader DamageHeader;
+					SC_DAMAGE DamagePacket;
+					std::list<Session*>::iterator FuncIt;
+
+					DamageHeader.byCode = 0x89;
+					DamageHeader.bySize = sizeof(DamagePacket);
+					DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+					DamagePacket.AttackID = _session->_player->_ID;
+					DamagePacket.DamageID = (*it)->_player->_ID;
+					DamagePacket.DamageHP = (*it)->_player->_hp;
+
+					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
-						//데미지 메세지 보내기
+						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
+						{
+							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
-						PacketHeader DamageHeader;
-						SC_DAMAGE DamagePacket;
 
-						DamageHeader.byCode = 0x89;
-						DamageHeader.bySize = sizeof(DamagePacket);
-						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
 
-						DamagePacket.AttackID = _session->_player->_ID;
-						DamagePacket.DamageID = SessionArr[i]._player->_ID;
-						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							{
 
-						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
-						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
-						//데미지 메세지 전송
+
+
+								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
+								{
+									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+							}
+						}
 					}
 
-					if (SessionArr[i]._player->_hp <= 0)
+					//사망 판정 //
+
+					if ((*it)->_player->_hp <= 0)
 					{
 						PacketHeader DeleteHeader;
 						SC_DELETE_CHARACTER DeletePacket;
@@ -542,60 +1128,142 @@ bool Attack3(Session* _session)
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
 
-						DeletePacket.ID = SessionArr[i]._player->_ID;
+						DeletePacket.ID = (*it)->_player->_ID;
 
-						for (int j = 0; j < playerIdex; j++)
+						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
-							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
-							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
+							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
+							{
+								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+
+								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								{
+
+
+
+									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
+									{
+										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+
+
+
+								}
+							}
 						}
 
-						SessionArr[i]._delete = true;
+						return true; //한명 타격 성공하면 바로 리턴 
+						DeleteSession(*it);
+						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
 
 					}
 
 				}
 			}
-
 		}
 
 	}
 
 	else
 	{
-		for (int i = 0; i < playerIdex; i++)
+		for (int i = -1; i < 2; i++)
 		{
-
-			//타격 판정
-
-			if ((SessionArr[i]._player->_x - AttackPacket.X) >= 0 && (SessionArr[i]._player->_x - AttackPacket.X) <= dfATTACK3_RANGE_X && SessionArr[i]._player->_ID != _session->_player->_ID)
+			for (int j = -1; j < 2; j++)
 			{
-				if ((AttackPacket.Y - SessionArr[i]._player->_y >= 0 && AttackPacket.Y - SessionArr[i]._player->_y < dfATTACK3_RANGE_Y) ||
-					(SessionArr[i]._player->_y - AttackPacket.Y >= 0 && SessionArr[i]._player->_y - AttackPacket.Y < dfATTACK3_RANGE_Y))
+				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
 				{
+					if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+					if (((*it)->_player->_x) - AttackPacket.X < 0 ||
+						((*it)->_player->_x) - AttackPacket.X > dfATTACK3_RANGE_X) continue; //공격 범위 벗어남
+
+					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK3_RANGE_Y) ||
+						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK3_RANGE_Y) == false)
+						continue;
+
 					//타격 성공 
-					SessionArr[i]._player->_hp -= dfAttack3Damage;
+					(*it)->_player->_hp -= dfAttack3Damage;
 
-					for (int j = 0; j < playerIdex; j++)
+
+					//데미지 메세지 보내기
+
+					PacketHeader DamageHeader;
+					SC_DAMAGE DamagePacket;
+					std::list<Session*>::iterator FuncIt;
+
+					DamageHeader.byCode = 0x89;
+					DamageHeader.bySize = sizeof(DamagePacket);
+					DamageHeader.byType = dfPACKET_SC_DAMAGE;
+
+					DamagePacket.AttackID = _session->_player->_ID;
+					DamagePacket.DamageID = (*it)->_player->_ID;
+					DamagePacket.DamageHP = (*it)->_player->_hp;
+
+					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
-						//데미지 메세지 보내기
+						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
+						{
+							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
-						PacketHeader DamageHeader;
-						SC_DAMAGE DamagePacket;
 
-						DamageHeader.byCode = 0x89;
-						DamageHeader.bySize = sizeof(DamagePacket);
-						DamageHeader.byType = dfPACKET_SC_DAMAGE;
+							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
 
-						DamagePacket.AttackID = _session->_player->_ID;
-						DamagePacket.DamageID = SessionArr[i]._player->_ID;
-						DamagePacket.DamageHP = SessionArr[i]._player->_hp;
+							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							{
 
-						SessionArr[j]._sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader));
-						SessionArr[j]._sendQ.Enqueue((char*)&DamagePacket, sizeof(DamagePacket));
+
+
+								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
+								{
+									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
+								{
+									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+									return false;
+								}
+
+							}
+						}
 					}
 
-					if (SessionArr[i]._player->_hp <= 0)
+					//사망 판정 //
+
+					if ((*it)->_player->_hp <= 0)
 					{
 						PacketHeader DeleteHeader;
 						SC_DELETE_CHARACTER DeletePacket;
@@ -604,26 +1272,149 @@ bool Attack3(Session* _session)
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
 
-						DeletePacket.ID = SessionArr[i]._player->_ID;
+						DeletePacket.ID = (*it)->_player->_ID;
 
-						for (int j = 0; j < playerIdex; j++)
+						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
-							SessionArr[j]._sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader));
-							SessionArr[j]._sendQ.Enqueue((char*)&DeletePacket, sizeof(DeletePacket));
+							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
+							{
+								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+
+								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								{
+
+
+
+									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
+									{
+										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
+									{
+										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+										return false;
+									}
+
+
+
+
+								}
+							}
 						}
 
-						SessionArr[i]._delete = true;
-						//현재는 딜리트 메세지로 캐릭터들이 사라지고 있음 (소켓 연결 끊어야하나 ?)
-					}
+						return true; //한명 타격 성공하면 바로 리턴 
+						DeleteSession(*it);
+						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
 
+					}
 
 				}
 			}
-
 		}
 
 	}
 
 
+	return false;
+}
+
+bool Sync(Session* _session)
+{
+	//Sync메세지 안에 있는 좌표를 서버 좌표에 동기화 후 다른 섹터에 뿌려주는 함수
+
+	CS_SYNC CS_Sync;
+	unsigned int peekResult;
+	unsigned int dequeResult;
+	unsigned int enqueResult;
+
+	_session->_recvQ.Peek((char*)&CS_Sync, sizeof(CS_Sync), &peekResult);
+	if (peekResult < sizeof(CS_Sync))
+	{
+		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
+
+		//패킷 헤더 다시 넣는 과정
+		int ExtraBuf = _session->_recvQ.GetSizeUsed();
+		char* backUpBuf = (char*)malloc(ExtraBuf);
+		PacketHeader pHeader;
+		pHeader.byCode = 0x89;
+		pHeader.bySize = sizeof(CS_Sync);
+		pHeader.byType = dfPACKET_CS_SYNC;
+
+		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
+		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
+
+		return false;
+
+	}
+
+	_session->_player->_x = CS_Sync.X;
+	_session->_player->_y = CS_Sync.Y;
+
+
+	PacketHeader pHeader;
+	SC_SYNC SC_Sync;
+	pHeader.byCode = 0x89;
+	pHeader.bySize = sizeof(SC_Sync);
+	pHeader.byType = dfPACKET_SC_SYNC;
+
+	SC_Sync.ID = _session->_player->_ID;
+	SC_Sync.X = _session->_player->_x;
+	SC_Sync.Y = _session->_player->_y;
+
+	for (int i = -1; i < 2; i++)
+	{
+		for (int j = -1; j < 2; j++)
+		{
+			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+
+			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+
+			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			{
+
+				if ((*it)->_player->_ID == _session->_player->_ID) continue;
+
+				if ((*it)->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
+				{
+					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+				if ((*it)->_sendQ.Enqueue((char*)&SC_Sync, pHeader.bySize, &enqueResult) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
+					return false;
+				}
+
+			}
+		}
+	}
+
+
+
 	return true;
+
 }

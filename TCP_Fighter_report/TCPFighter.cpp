@@ -8,6 +8,9 @@ extern std::vector<Session> SessionArr;
 extern Session SessionArr[SELECTCOUNT][SELECTDEFINE];
 extern Session* pSessionArr;
 
+std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
+Session* pSector = (Session*)Sector;
+
 fd_set readset[SELECTCOUNT];
 fd_set writeset[SELECTCOUNT];
 
@@ -63,7 +66,7 @@ bool TCPFighter() {
 
 
 		FD_SET(listen_socket, &readset[0]);
-		//나머지 accept된 소켓들은 아래에서 넣을 예정
+		
 
 
 		
@@ -99,10 +102,10 @@ bool TCPFighter() {
 
 				else if (recv_retval == SOCKET_ERROR && GetLastError() != WSAEWOULDBLOCK)
 				{
-					//if(RST종료라면) CloseSocket하는 과정 필요
+					
 					if (GetLastError() == 10054)
 					{
-						DeleteSession(&SessionArr[i]);
+						DeleteSession(&SessionArr[i]); //Todo//DeleteSession에 대한 함수 정의 만들어야함
 					}
 					
 					printf("recv error : %d , Line : %d\n", GetLastError(), __LINE__);
@@ -134,9 +137,6 @@ bool TCPFighter() {
 
 		if (FD_ISSET(listen_socket, &readset[0])) //캐릭터 초기 생성
 		{
-			//세션의 할당 안 된 곳에 accept해 줄 예정//---------------------
-			// 세션을 먼저 구성하고 나서 
-			// -----------------------------------------------------------
 			if (playerIdex >= PLAYERMAXCOUNT) 
 			{
 				printf("playercount overflow !! , PlayerCount : %d\n", playerIdex);
@@ -148,18 +148,24 @@ bool TCPFighter() {
 				if (SessionArr[playerIdex]._socket == INVALID_SOCKET)
 				{
 					printf("Line : %d, playcount : %d,  accept error : %d\n", __LINE__, playerIdex, GetLastError());
+					//Todo//push_back한 자리를 다시 지워줘야함
 				}
-				SessionArr[playerIdex]._ip = clientAddr.sin_addr.s_addr;
-				SessionArr[playerIdex]._port = clientAddr.sin_port;
-				SessionArr[playerIdex]._player = new Player;
-				SessionArr[playerIdex]._delete = false; //delete에 false;
-				//초기 생성에 대한 작업들
-				CreateNewCharacter(&SessionArr[playerIdex]);
+				else {
+					SessionArr[playerIdex]._ip = clientAddr.sin_addr.s_addr;
+					SessionArr[playerIdex]._port = clientAddr.sin_port;
+					SessionArr[playerIdex]._player = new Player; 
+					SessionArr[playerIdex]._delete = false; //delete에 false;
+					Sector[SessionArr[playerIdex]._player->_x / SECTOR_RATIO][SessionArr[playerIdex]._player->_y / SECTOR_RATIO].push_back(&SessionArr[playerIdex]);
 
-				playerIdex++;
+					
+					//Todo//플레이어를 섹터에 넣어줘야함
+					//초기 생성에 대한 작업들
+					CreateNewCharacter(&SessionArr[playerIdex]);
 
-				printf("create new character ! %d \n", playerIdex);
+					playerIdex++;
 
+					printf("create new character ! %d \n", playerIdex);
+				}
 
 			}
 		}
@@ -168,7 +174,7 @@ bool TCPFighter() {
 	
 
 		//recvq에 있는 데이터를 뜯어보고 sendq에 데이터를 넣어 줌 
-
+		
 		for (int i = 1; i < playerIdex; i++) 
 		{
 			if (SessionArr[i]._recvQ.IsEmpty() != true) {
@@ -181,7 +187,7 @@ bool TCPFighter() {
 
 
 		//게임 로직//
-		//이 부분들이 좀 수정이 필요함
+		//Todo//이 부분들이 좀 수정이 필요함 -> 이동을 프레임별 ++구조가 아닌 시간에 따른 계산 로직으로
 		/*
 		for (int i = 0; i < playerIdex; i++)
 		{

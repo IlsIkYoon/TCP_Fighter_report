@@ -25,6 +25,9 @@ public:
 
 	bool Enqueue(char* src, unsigned int dataSize, unsigned int* enqueResult);
 	bool Dequeue(char* dest, unsigned int dataSize, unsigned int* dequeResult);
+	bool Peek(char* dest, unsigned int dataSize, unsigned int* dequeResult);
+
+	//Todo//Peek ¸¸µé±â//
 	bool IsEmpty();
 	bool IsFull();
 

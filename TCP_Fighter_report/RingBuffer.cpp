@@ -204,3 +204,39 @@ char* RingBuffer::GetFront()
 {
 	return &_buf[_front];
 }
+
+
+bool RingBuffer::Peek(char* dest, unsigned int dataSize, unsigned int* dequeResult)
+{
+	if (IsEmpty())
+	{
+		*dequeResult = 0;
+		return false;
+	}
+
+	int Data;
+	int out;
+
+	if (GetSizeUsed() < dataSize) Data = GetSizeUsed();
+	else { Data = dataSize; }
+
+	out = Data;
+
+	if (GetDirectDequeSize() >= Data)
+	{
+		memcpy(dest, &_buf[_front], Data);
+
+	}
+	else
+	{
+		int dqDir = GetDirectDequeSize();
+		memcpy(dest, &_buf[_front], dqDir);
+		Data -= dqDir;
+		memcpy(&dest[dqDir], &_buf[0], Data);
+
+	}
+
+	*dequeResult = out;
+	return true;
+
+}

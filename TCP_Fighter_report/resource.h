@@ -12,11 +12,14 @@
 #include <windows.h>
 #include <iostream>
 #include <vector>
+#include <list>
 
 #define PORTNUM 5000
 #define GAMEFPS 50
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
+
+#define SECTOR_RATIO 10 //10분의 1 비율
 
 #define PLAYERMAXCOUNT 7000
 #define SELECTCOUNT 110
@@ -25,10 +28,10 @@
 //----------------------------------------------------------------
 //# 화면 이동영역-------------------------- -
 //----------------------------------------------------------------
-#define dfRANGE_MOVE_TOP	50
-#define dfRANGE_MOVE_LEFT	10
-#define dfRANGE_MOVE_RIGHT	630
-#define dfRANGE_MOVE_BOTTOM	470
+#define dfRANGE_MOVE_TOP	0
+#define dfRANGE_MOVE_LEFT	0
+#define dfRANGE_MOVE_RIGHT	6400
+#define dfRANGE_MOVE_BOTTOM	6400
 
 
 
@@ -54,10 +57,10 @@
 // 기본 설정
 //-------------------------------------------------------------
 
-#define dfHP 60
+#define dfHP 100
 #define dfAttack1Damage 1
-#define dfAttack2Damage 3
-#define dfAttack3Damage 4
+#define dfAttack2Damage 2
+#define dfAttack3Damage 3
 
 #define LL 0x00
 #define RR 0x04
@@ -115,6 +118,18 @@ Y 축 - 2
 
 
 #define dfERROR_RANGE		50
+
+//// 30초 이상이 되도록 아무런 메시지 수신도 없는경우 접속 끊음.
+#define dfNETWORK_PACKET_RECV_TIMEOUT	30000
+
+
+//-----------------------------------------------------------------
+// 캐릭터 이동 속도   // 25fps 기준 이동속도
+//-----------------------------------------------------------------
+#define dfSPEED_PLAYER_X	6	// 3   50fps
+#define dfSPEED_PLAYER_Y	4	// 2   50fps
+
+
 
 
 #endif

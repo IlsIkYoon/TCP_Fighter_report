@@ -348,6 +348,13 @@ struct SC_DAMAGE {
 //
 //---------------------------------------------------------------
 
+struct CS_SYNC {
+#pragma pack(push, 1)
+	short X;
+	short Y;
+#pragma pack(pop)
+
+};
 
 #define	dfPACKET_SC_SYNC						251
 //---------------------------------------------------------------
@@ -362,10 +369,43 @@ struct SC_DAMAGE {
 //
 //---------------------------------------------------------------
 
+struct SC_SYNC {
+#pragma pack(push, 1)
+	DWORD ID;
+	short X;
+	short Y;
+#pragma pack(pop)
+
+};
 
 
+#define	dfPACKET_CS_ECHO						252
+//---------------------------------------------------------------
+// Echo 용 패킷					Client -> Server
+//
+//	4	-	Time
+//
+//---------------------------------------------------------------
 
+struct CS_ECHO {
+#pragma pack(push, 1)
+	DWORD Time;
+#pragma pack(pop)
+};
 
+#define	dfPACKET_SC_ECHO						253
+//---------------------------------------------------------------
+// Echo 응답 패킷				Server -> Client
+//
+//	4	-	Time
+//
+//---------------------------------------------------------------
+
+struct SC_ECHO {
+#pragma pack(push, 1)
+	DWORD Time;
+#pragma pack(pop)
+};
 
 
 
