@@ -79,11 +79,12 @@ C : 돌려차기
 
 */
 //# 화면 이동영역 ---------------------------
-
+/*
 #define dfRANGE_MOVE_TOP	50
 #define dfRANGE_MOVE_LEFT	10
 #define dfRANGE_MOVE_RIGHT	630
 #define dfRANGE_MOVE_BOTTOM	470
+*/
 /*
 위 좌표에 가지 못하게 해야하며,
 해당 좌표에 닿는 경우 움직임을 멈추어야 함.

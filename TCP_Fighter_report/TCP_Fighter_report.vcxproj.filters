@@ -28,6 +28,9 @@
     <Filter Include="Session">
       <UniqueIdentifier>{b03c0133-3739-482e-9fef-0a3df21d4ad2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sector">
+      <UniqueIdentifier>{08a52780-41f2-432e-b57d-8bceb7c29a29}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -51,6 +54,9 @@
     <ClCompile Include="Session.cpp">
       <Filter>Session</Filter>
     </ClCompile>
+    <ClCompile Include="Sector.cpp">
+      <Filter>Sector</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -69,6 +75,12 @@
       <Filter>RingBuffer</Filter>
     </ClInclude>
     <ClInclude Include="Session.h">
+      <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="Sector.h">
+      <Filter>Sector</Filter>
+    </ClInclude>
+    <ClInclude Include="Session2.h">
       <Filter>Session</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1418,3 +1418,64 @@ bool Sync(Session* _session)
 	return true;
 
 }
+
+
+
+
+bool Echo(Session* _session)
+{
+	CS_ECHO CS_Echo;
+	unsigned int peekResult;
+	unsigned int dequeResult;
+	unsigned int enqueResult;
+
+	_session->_recvQ.Peek((char*)&CS_Echo, sizeof(CS_Echo), &peekResult);
+	if (peekResult < sizeof(CS_Echo))
+	{
+		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
+
+		//패킷 헤더 다시 넣는 과정
+		int ExtraBuf = _session->_recvQ.GetSizeUsed();
+		char* backUpBuf = (char*)malloc(ExtraBuf);
+		PacketHeader pHeader;
+		pHeader.byCode = 0x89;
+		pHeader.bySize = sizeof(CS_Echo);
+		pHeader.byType = dfPACKET_CS_ECHO;
+
+		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
+		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
+
+		return false;
+
+	}
+
+	_session->_recvQ.MoveFront(sizeof(CS_Echo));
+
+
+	//에코 메세지 다시 그 클라에 쏴주기
+
+	PacketHeader pHeader;
+	SC_ECHO SC_Echo;
+
+	pHeader.byCode = 0x89;
+	pHeader.bySize = sizeof(SC_Echo);
+	pHeader.byType = dfPACKET_SC_ECHO;
+
+	SC_Echo.Time = CS_Echo.Time;
+
+	/*
+	send(_session->_socket, (char*)&pHeader, sizeof(pHeader), NULL);
+	send(_session->_socket, (char*)&SC_Echo, pHeader.bySize, NULL);
+	*/
+	printf("Echo 전송\n");
+
+	
+	_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+	_session->_sendQ.Enqueue((char*)&SC_Echo, pHeader.bySize, &enqueResult);
+	
+
+
+
+	return true;
+}

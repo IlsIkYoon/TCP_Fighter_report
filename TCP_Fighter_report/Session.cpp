@@ -1,10 +1,13 @@
 #include "Session.h"
 #include "GameProc.h"
-
+#include "Sector.h"
+#include "Session2.h"
 
 //전역변수
 //Session SessionArr[SELECTCOUNT][SELECTDEFINE];
-std::vector<Session> SessionArr;
+//std::vector<Session> SessionArr;
+std::list<Session*> SessionArr;
+std::list<Session*>::iterator s_ArrIt;
 
 DWORD playerIdex = 0; //63명까지 접속을 받는 상황으로 가정
 
@@ -166,106 +169,221 @@ bool CreateNewCharacter(Session* _session) {
 }
 
 
-bool DecodePacket(Session* _session) 
+bool DecodeMessages(Session* _session) 
 {
+
+
+
 	unsigned int peekResult;
 	PacketHeader pHeader;
-	_session->_recvQ.Peek((char*)&pHeader, sizeof(pHeader), &peekResult);
 
-	if(peekResult < sizeof(pHeader))
+	while (1)
 	{
-		printf("Line : %d, header error\n", __LINE__); //헤더도 안 온 경우엔 바로 리턴
-		return false;
+		ZeroMemory(&pHeader, sizeof(pHeader));
+
+		if (_session->_recvQ.IsEmpty() == true) break; //버퍼 빌 때까지 
+
+		_session->_recvQ.Peek((char*)&pHeader, sizeof(pHeader), &peekResult);
+		printf("pHeader : %d, %d, %d\n", pHeader.byCode, pHeader.bySize, pHeader.byType);
+
+		if (peekResult < sizeof(pHeader))
+		{
+			printf("Line : %d, header error\n", __LINE__); //헤더도 안 온 경우엔 바로 리턴
+			return false;
+		}
+
+
+		if (pHeader.byCode != 0x89)
+		{
+			printf("protocol code error : %d\n", pHeader.byCode);
+			DeleteSession(_session); //맞는 코드가 아니라면 소켓 연결 종료
+			return false;
+		}
+
+		_session->_recvQ.MoveFront(sizeof(pHeader));
+
+		switch (pHeader.byType)
+		{
+
+
+
+		case dfPACKET_CS_MOVE_START:
+
+			MoveStart(_session);
+
+
+			break;
+
+		case dfPACKET_CS_MOVE_STOP:
+			MoveStop(_session);
+
+			break;
+
+
+		case dfPACKET_CS_ATTACK1:
+
+			Attack1(_session);
+
+			break;
+
+
+		case dfPACKET_CS_ATTACK2:
+
+			Attack2(_session);
+
+			break;
+			
+		case dfPACKET_CS_ATTACK3:
+
+			Attack3(_session);
+
+			break;
+
+
+		case dfPACKET_CS_SYNC:
+			//Todo//CS SYnc메세지를 받으면 그 해당 캐릭터 좌표를 서버에서 입력하고 섹터에 캐릭터 좌표를 SC_SYNC로 뿌려야함
+			Sync(_session);
+			break;
+
+		case dfPACKET_CS_ECHO:
+			Echo(_session);
+
+			break;
+
+
+
+		default:
+
+			break;
+		}
+		printf("Decode Complete\n");
 	}
 
-
-	if (pHeader.byCode != 0x89)
-	{
-		printf("protocol code error : %d\n", pHeader.byCode);
-		DeleteSession(_session); //맞는 코드가 아니라면 소켓 연결 종료
-		return false;
-	}
-	
-	_session->_recvQ.MoveFront(sizeof(pHeader));
-
-	switch (pHeader.byType)
-	{
-
-
-
-	case dfPACKET_CS_MOVE_START:
-
-		MoveStart(_session);
-
-
-		break;
-
-	case dfPACKET_CS_MOVE_STOP:
-		MoveStop(_session);
-
-		break;
-
-
-	case dfPACKET_CS_ATTACK1:
-
-		Attack1(_session);
-
-		break;
-
-
-	case dfPACKET_CS_ATTACK2:
-
-		Attack2(_session);
-
-		break;
-\
-	case dfPACKET_CS_ATTACK3:
-
-		Attack3(_session);
-
-		break;
-
-
-	case dfPACKET_CS_SYNC:
-		//Todo//CS SYnc메세지를 받으면 그 해당 캐릭터 좌표를 서버에서 입력하고 섹터에 캐릭터 좌표를 SC_SYNC로 뿌려야함
-		Sync(_session);
-		break;
-
-	
-
-
-
-
-
-	default:
-
-		break;
-	}
-
-
-
-
-
-
-
-
-
+		return true;
 
 }
 
 
 bool DeleteSession(Session* _session)
 {
-	//지연 삭제를 안하고 있음 일단 // 세션을 아예 벡터에서 보관하는 중 // 메모리 상에서 나열 시키려는 의도임
+
+
 	_session->_delete = true;
-	Sector[_session->_player->_x / SECTOR_RATIO][_session->_player->_y / SECTOR_RATIO].remove(_session);
-	//Sector에서 삭제
+	DeleteArr.push_back(_session); // 지연 삭제를 위해 DeleteArr에 보관
 
-	std::vector<Session>::iterator it;
-	it = std::remove(SessionArr.begin(), SessionArr.end(), *_session);
-	SessionArr.erase(it);
 
-	playerIdex--;
+	return true;
+}
+
+
+
+
+bool Player::Move() {
+	if (_move == false) return false;
+
+	if (_x > dfRANGE_MOVE_RIGHT || _x < dfRANGE_MOVE_LEFT || _y > dfRANGE_MOVE_BOTTOM || _y < dfRANGE_MOVE_TOP) return false;
+
+
+	int oldX = _x;
+	int oldY = _y;
+
+
+	switch (_direction) {
+	case dfPACKET_MOVE_DIR_LL:
+	{
+		if (_x - 3 < dfRANGE_MOVE_LEFT) return false;
+		_x -= 3;;
+	}
+	break;
+
+	case dfPACKET_MOVE_DIR_LU:
+	{
+		if (_x - 3 < dfRANGE_MOVE_LEFT || _y - 2 < dfRANGE_MOVE_TOP) return false;
+		_x -= 3;
+		_y -= 2;
+	}
+
+	break;
+
+	case dfPACKET_MOVE_DIR_UU:
+	{
+		if (_y - 2 < dfRANGE_MOVE_TOP) return false;
+		_y -= 2;
+	}
+
+	break;
+
+	case dfPACKET_MOVE_DIR_RU:
+	{
+		if (_x + 3 > dfRANGE_MOVE_RIGHT || _y - 2 < dfRANGE_MOVE_TOP) return false;
+		_x += 3;
+		_y -= 2;
+	}
+	break;
+
+	case dfPACKET_MOVE_DIR_RR:
+	{
+		if (_x + 3 > dfRANGE_MOVE_RIGHT) return false;
+		_x += 3;
+	}
+	break;
+
+	case dfPACKET_MOVE_DIR_RD:
+	{
+		if (_x + 3 > dfRANGE_MOVE_RIGHT || _y + 2 < dfRANGE_MOVE_BOTTOM) return false;
+		_x += 3;
+		_y += 2;
+	}
+	break;
+
+	case dfPACKET_MOVE_DIR_DD:
+	{
+		if (_y + 2 < dfRANGE_MOVE_BOTTOM) return false;
+		_y += 2;
+	}
+	break;
+
+	case dfPACKET_MOVE_DIR_LD:
+	{
+		if (_x - 3 < dfRANGE_MOVE_LEFT || _y + 2 < dfRANGE_MOVE_BOTTOM) return false;
+		_x -= 3;
+		_y += 2;
+	}
+	break;
+
+defalut:
+
+	break;
+	}
+
+	//Todo//이동된 섹터에 따른 캐릭터 생성과 삭제 작업 필요
+	
+	if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO) return true;
+
+	Sector[_x / SECTOR_RATIO][_y / SECTOR_RATIO].push_back(pSession);
+	Sector[oldX / SECTOR_RATIO][oldY / SECTOR_RATIO].remove(pSession);
+
+	if (_x > oldX) //오른쪽으로 간 상황
+	{
+		MoveSectorR(pSession, _x, _y, oldX, oldY);
+
+	}
+	if (oldX > _x) //왼쪽으로 간 상황
+	{
+		MoveSectorL(pSession, _x, _y, oldX, oldY);
+
+	}
+	if (_y > oldY) //아래로 간 상황
+	{
+		MoveSectorD(pSession, _x, _y, oldX, oldY);
+
+	}
+	if (oldY > _y) //위로 간 상황
+	{
+
+		MoveSectorU(pSession, _x, _y, oldX, oldY);
+
+	}
 
 
 	return true;

@@ -8,12 +8,11 @@
 
 extern DWORD playerIdex;
 
-class Object {
-	Object() {};
 
-};
+struct Session;
 
-struct Player {
+
+class Player {
 
 private:
 	bool _move;
@@ -24,6 +23,8 @@ public:
 	short _y;
 	BYTE _direction;
 	int _ID;
+
+	Session* pSession;
 	
 
 
@@ -36,6 +37,16 @@ public:
 		_ID = playerIdex;
 	}
 
+	Player(Session* pSes) {
+		_hp = dfHP;
+		_x = rand() % 6400;
+		_y = rand() % 6400;
+		_direction = (rand() % 2) * 4; //LL == 0, RR == 4
+		_move = false;
+		_ID = playerIdex;
+		pSession = pSes;
+	}
+
 	
 	bool MoveStart(BYTE Direction, short X, short Y) {
 		_direction = Direction;
@@ -46,75 +57,7 @@ public:
 		return true;
 	}
 
-	bool Move() {
-		if (_move == false) return false;
-
-		if (_x > dfRANGE_MOVE_RIGHT || _x < dfRANGE_MOVE_LEFT || _y > dfRANGE_MOVE_BOTTOM || _y < dfRANGE_MOVE_TOP) return false;
-
-		
-		switch (_direction) {
-		case dfPACKET_MOVE_DIR_LL:
-		{
-			_x -= 3;;
-		}
-			break;
-
-		case dfPACKET_MOVE_DIR_LU:
-		{
-			_x -= 3;
-			_y -= 2;
-		}
-
-			break;
-
-		case dfPACKET_MOVE_DIR_UU:
-		{
-			_y -= 2;
-		}
-
-			break;
-
-		case dfPACKET_MOVE_DIR_RU:
-		{
-			_x += 3;
-			_y -= 2;
-		}
-				break;
-
-		case dfPACKET_MOVE_DIR_RR:
-		{
-			_x += 3;
-		}
-			break;
-
-		case dfPACKET_MOVE_DIR_RD:
-		{
-			_x += 3;
-			_y += 2;
-		}
-			break;
-
-		case dfPACKET_MOVE_DIR_DD:
-		{
-			_y += 2;
-		}
-			break;
-
-		case dfPACKET_MOVE_DIR_LD:
-		{
-			_x -= 3;
-			_y += 2;
-		}
-			break;
-
-		defalut : 
-
-			break;
-		}
-
-		return true;
-	}
-
+	bool Move();
 	void MoveStop() 
 	{
 		_move = false;
@@ -128,7 +71,7 @@ public:
 
 struct Session
 {
-	
+
 public:
 	SOCKET _socket;
 	DWORD _ip;
@@ -136,15 +79,16 @@ public:
 	RingBuffer _recvQ;
 	RingBuffer _sendQ;
 	Player* _player;
-	
+
 	bool _delete;
 	//Session* _next; 배열로 가기 때문에 필요 없음
 
 };
 
 
+
 bool CreateNewCharacter(Session* _session);
-bool DecodePacket(Session* _session);
+bool DecodeMessages(Session* _session);
 
 bool DeleteSession(Session* _session);
 

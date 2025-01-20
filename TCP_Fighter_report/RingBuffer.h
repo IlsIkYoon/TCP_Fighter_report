@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#define DefaultBufSize 16
+#define DefaultBufSize 4 * 1024
 
 
 
