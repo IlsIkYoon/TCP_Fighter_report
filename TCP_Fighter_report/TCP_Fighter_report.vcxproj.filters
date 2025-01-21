@@ -80,8 +80,5 @@
     <ClInclude Include="Sector.h">
       <Filter>Sector</Filter>
     </ClInclude>
-    <ClInclude Include="Session2.h">
-      <Filter>Session</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

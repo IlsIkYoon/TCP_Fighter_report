@@ -1,13 +1,14 @@
 #include "Session.h"
 #include "GameProc.h"
 #include "Sector.h"
-#include "Session2.h"
+
 
 //전역변수
 //Session SessionArr[SELECTCOUNT][SELECTDEFINE];
 //std::vector<Session> SessionArr;
 std::list<Session*> SessionArr;
 std::list<Session*>::iterator s_ArrIt;
+
 
 DWORD playerIdex = 0; //63명까지 접속을 받는 상황으로 가정
 
@@ -356,35 +357,121 @@ defalut:
 	break;
 	}
 
+	
 	//Todo//이동된 섹터에 따른 캐릭터 생성과 삭제 작업 필요
 	
-	if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO) return true;
+	if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO) 
+		return true;
+
+
+
+	auto removeCount = Sector[oldX / SECTOR_RATIO][oldY / SECTOR_RATIO].remove(pSession);
+	if (removeCount != 1)
+		__debugbreak();
 
 	Sector[_x / SECTOR_RATIO][_y / SECTOR_RATIO].push_back(pSession);
-	Sector[oldX / SECTOR_RATIO][oldY / SECTOR_RATIO].remove(pSession);
+
+	std::cout << "!!!!!!!!!!!!!!!!!!!!!! Remove : " << oldX / SECTOR_RATIO << " " << oldY / SECTOR_RATIO << std::endl;
+	std::cout << "!!!! CREATE : " << _x / SECTOR_RATIO << " " << _y / SECTOR_RATIO << std::endl;
+	
+	int paramX;
+	int paramY;
+
 
 	if (_x > oldX) //오른쪽으로 간 상황
 	{
-		MoveSectorR(pSession, _x, _y, oldX, oldY);
-
+		
+		paramX = oldX + dfSPEED_PLAYER_X;
+		paramY = oldY;
+		MoveSectorR(pSession, paramX, paramY, oldX, oldY);
+		oldX = paramX;
+		oldY = paramY;
 	}
 	if (oldX > _x) //왼쪽으로 간 상황
 	{
-		MoveSectorL(pSession, _x, _y, oldX, oldY);
-
+		paramX = oldX - dfSPEED_PLAYER_X;
+		paramY = oldY;
+		MoveSectorL(pSession, paramX, paramY, oldX, oldY);
+		oldX = paramX;
+		oldY = paramY;
 	}
 	if (_y > oldY) //아래로 간 상황
 	{
-		MoveSectorD(pSession, _x, _y, oldX, oldY);
-
+		paramX = oldX;
+		paramY = oldY + dfSPEED_PLAYER_Y;
+		MoveSectorD(pSession, paramX, paramY, oldX, oldY);
+		oldX = paramX;
+		oldY = paramY;
 	}
 	if (oldY > _y) //위로 간 상황
 	{
-
+		paramX = oldX;
+		paramY = oldY - dfSPEED_PLAYER_Y;
 		MoveSectorU(pSession, _x, _y, oldX, oldY);
-
+		oldX = paramX;
+		oldY = paramY;
 	}
 
+	//printf("섹터 이동 완료\n");
+	return true;
+}
+
+
+
+bool Player::MoveStart(BYTE Direction, short X, short Y) {
+
+	int oldSectorX = _x / SECTOR_RATIO;
+	int oldSectorY = _y / SECTOR_RATIO;
+	int newSectorX = X / SECTOR_RATIO;
+	int newSectorY = Y / SECTOR_RATIO;
+
+
+
+	_direction = Direction;
+	_x = X;
+	_y = Y;
+	_move = true;
+
+	if (oldSectorX == newSectorX && oldSectorY == newSectorY) return true;
+
+	//섹터 동기화 작업
+
+	SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
+
+
+	printf("ID : %d || Sector 동기화\n", _ID);
 
 	return true;
+}
+
+
+
+void Player::MoveStop(int Dir, int x, int y)
+{
+	int oldSectorX = _x / SECTOR_RATIO;
+	int oldSectorY = _y / SECTOR_RATIO;
+	int newSectorX = x / SECTOR_RATIO;
+	int newSectorY = y / SECTOR_RATIO;
+	
+	_direction = Dir;
+	_x = x;
+	_y = y;
+	_move = false;
+
+
+	if (oldSectorX == newSectorX && oldSectorY == newSectorY) return;
+
+	//섹터 동기화 작업
+
+	SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
+
+
+	printf("ID : %d || Sector 동기화\n", _ID);
+
+	//Todo//StopMessage보내기
+
+	
+
+
+
 }

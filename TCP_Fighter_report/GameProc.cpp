@@ -130,12 +130,10 @@ bool MoveStop(Session* _session)
 
 	_session->_recvQ.MoveFront(sizeof(MoveStopPacket));
 
-	_session->_player->_direction = MoveStopPacket.Direction;
-	_session->_player->_x = MoveStopPacket.X;
-	_session->_player->_y = MoveStopPacket.Y;
 
 
-	_session->_player->MoveStop();
+	
+	_session->_player->MoveStop(MoveStopPacket.Direction, MoveStopPacket.X, MoveStopPacket.Y);
 	
 	//섹터 주변에 뿌려주기
 	PacketHeader MoveHeader;

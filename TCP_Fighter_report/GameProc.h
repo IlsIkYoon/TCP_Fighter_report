@@ -3,7 +3,8 @@
 
 #include "resource.h"
 #include "Session.h"
-//#include "Session2.h"
+
+
 
 bool MoveStart(Session* _session);
 bool MoveStop(Session* _session);

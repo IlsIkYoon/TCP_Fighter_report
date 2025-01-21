@@ -1,6 +1,7 @@
 #include "TCPFighter.h"
 
 
+
 SOCKET listen_socket;
 
 
@@ -223,13 +224,20 @@ bool TCPFighter() {
 		}
 
 
+		if (playerIdex > 1) {
+			s_ArrIt = SessionArr.begin();
+			s_ArrIt++; //listenSocket 넘기기
 
-		//listensocket 다음거를 바라보는 상황
-		for (s_ArrIt = ++SessionArr.begin(); s_ArrIt != SessionArr.end(); s_ArrIt++)
-		{
-			(*s_ArrIt)->_player->Move();
+			//listensocket 다음거를 바라보는 상황
+
+			for (; s_ArrIt != SessionArr.end(); s_ArrIt++)
+			{
+				
+				(*s_ArrIt)->_player->Move();
+
+				
+			}
 		}
-
 
 		//*/
 

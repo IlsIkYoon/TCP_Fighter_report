@@ -4,9 +4,8 @@
 #include "resource.h"
 #include "PacketDefine.h"
 #include "Session.h"
-#include "GameProc.h"
 #include "NetworkInit.h"
-
+#include "GameProc.h"
 
 bool TCPFighter();
 

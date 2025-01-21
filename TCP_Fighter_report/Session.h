@@ -9,15 +9,30 @@
 extern DWORD playerIdex;
 
 
-struct Session;
+class Player;
 
+struct Session
+{
+
+public:
+	SOCKET _socket;
+	DWORD _ip;
+	DWORD _port;
+	RingBuffer _recvQ;
+	RingBuffer _sendQ;
+	Player* _player;
+
+	bool _delete;
+	//Session* _next; 배열로 가기 때문에 필요 없음
+
+};
 
 class Player {
 
 private:
-	bool _move;
 	
 public:
+	bool _move;
 	char _hp;
 	short _x;
 	short _y;
@@ -48,42 +63,16 @@ public:
 	}
 
 	
-	bool MoveStart(BYTE Direction, short X, short Y) {
-		_direction = Direction;
-		_x = X;
-		_y = Y;
-		_move = true;
-
-		return true;
-	}
+	bool MoveStart(BYTE Direction, short X, short Y);
 
 	bool Move();
-	void MoveStop() 
-	{
-		_move = false;
-	}
-
+	void MoveStop(int Dir, int x, int y);
 
 	//공격 (3가지)
 
 
 };
 
-struct Session
-{
-
-public:
-	SOCKET _socket;
-	DWORD _ip;
-	DWORD _port;
-	RingBuffer _recvQ;
-	RingBuffer _sendQ;
-	Player* _player;
-
-	bool _delete;
-	//Session* _next; 배열로 가기 때문에 필요 없음
-
-};
 
 
 

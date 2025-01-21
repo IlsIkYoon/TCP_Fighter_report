@@ -19,7 +19,7 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-#define SECTOR_RATIO 10 //10분의 1 비율
+#define SECTOR_RATIO 100 //100분의 1 비율
 
 #define PLAYERMAXCOUNT 7000
 #define SELECTCOUNT 110
@@ -127,8 +127,8 @@ Y 축 - 2
 //-----------------------------------------------------------------
 // 캐릭터 이동 속도   // 25fps 기준 이동속도
 //-----------------------------------------------------------------
-#define dfSPEED_PLAYER_X	6	// 3   50fps
-#define dfSPEED_PLAYER_Y	4	// 2   50fps
+#define dfSPEED_PLAYER_X	3//6	// 3   50fps
+#define dfSPEED_PLAYER_Y	2//4	// 2   50fps
 
 
 

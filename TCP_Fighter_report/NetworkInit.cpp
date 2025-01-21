@@ -1,5 +1,6 @@
 #include "NetworkInit.h"
 
+
 extern SOCKET listen_socket;
 
 bool NetworkInit() {
@@ -49,5 +50,5 @@ bool NetworkInit() {
 
 
 
-
+	return true;
 }
