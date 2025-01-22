@@ -4,8 +4,6 @@
 
 
 //전역변수
-//Session SessionArr[SELECTCOUNT][SELECTDEFINE];
-//std::vector<Session> SessionArr;
 std::list<Session*> SessionArr;
 std::list<Session*>::iterator s_ArrIt;
 

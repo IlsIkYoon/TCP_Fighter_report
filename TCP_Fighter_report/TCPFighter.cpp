@@ -84,7 +84,7 @@ bool TCPFighter() {
 
 
 		
-		//Todo//이터레이터 연산으로 다 수정해야함
+		
 		iDex = 0;
 		for (s_ArrIt = SessionArr.begin(); s_ArrIt != SessionArr.end(); s_ArrIt++)
 		{
@@ -183,7 +183,7 @@ bool TCPFighter() {
 				if (newSession->_socket == INVALID_SOCKET)
 				{
 					printf("Line : %d, playcount : %d,  accept error : %d\n", __LINE__, playerIdex, GetLastError());
-					//Todo//push_back한 자리를 다시 지워줘야함
+					delete newSession;
 				}
 				else {
 					newSession->_ip = clientAddr.sin_addr.s_addr;
@@ -191,7 +191,7 @@ bool TCPFighter() {
 					newSession->_player = new Player(newSession);
 					newSession->_delete = false; //delete에 false;
 					Sector[newSession->_player->_x / SECTOR_RATIO][newSession->_player->_y / SECTOR_RATIO].push_back(newSession);
-					//Todo//플레이어를 섹터에 넣어줘야함
+					
 					//초기 생성에 대한 작업들
 					CreateNewCharacter(newSession);
 

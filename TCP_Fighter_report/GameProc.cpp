@@ -56,17 +56,26 @@ bool MoveStart(Session* _session)
 	SC_MoveStart_Packet.Y = MoveStartPacket.Y;
 	SC_MoveStart_Packet.ID = _session->_player->_ID;
 
+	//Todo // 현재 문제 : 섹터 주변에 메세지를 뿌리는 것이 아닌 이상한 곳에 뿌리고 있음 
+	// 좌표를 인덱스가 아닌 좌표 / SECTOR_RATIO한 값을 인덱스로 뿌려줘야 함
+
+	
+	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
+	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
+	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
+	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
+
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
 		{
-			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 
-			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+			it = Sector[sectorX+ i][sectorY + j].begin();
 
-			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 			{
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
@@ -148,17 +157,24 @@ bool MoveStop(Session* _session)
 	SC_MoveStopPacket.Y = MoveStopPacket.Y;
 	SC_MoveStopPacket.ID = _session->_player->_ID;
 
+
+	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
+	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
+	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
+	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
+
+
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
 		{
-			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if (sectorX+ i < 0 || sectorX + i >= sectorXRange) continue;
+			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 
-			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+			it = Sector[sectorX + i][sectorY + j].begin();
 
-			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 			{
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
@@ -238,17 +254,24 @@ bool Attack1(Session* _session)
 
 	//먼저 어택 메세지를 섹터에 뿌려줌
 
+	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
+	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
+	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
+	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
+
+
+
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
 		{
-			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 
-			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+			it = Sector[sectorX + i][sectorY + j].begin();
 
-			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 			{
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
@@ -284,12 +307,12 @@ bool Attack1(Session* _session)
 		{
 			for (int j = -1; j < 2; j++)
 			{
-				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
-				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+				it = Sector[sectorX + i][sectorY + j].begin();
 
-				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
@@ -322,13 +345,13 @@ bool Attack1(Session* _session)
 					{
 						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
 						{
-							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
+							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
 
 
-							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
+							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
 
-							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
 
 								
@@ -373,13 +396,13 @@ bool Attack1(Session* _session)
 						{
 							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
 							{
-								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
+								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
 
 
-								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
-								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
 
 
@@ -412,7 +435,7 @@ bool Attack1(Session* _session)
 
 						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
+						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
 
 					}
 
@@ -428,12 +451,12 @@ bool Attack1(Session* _session)
 		{
 			for (int j = -1; j < 2; j++)
 			{
-				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+				if (sectorX  + i < 0 || sectorX + i >= sectorXRange) continue;
+				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
-				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+				it = Sector[sectorX + i][sectorY + j].begin();
 
-				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
@@ -466,13 +489,13 @@ bool Attack1(Session* _session)
 					{
 						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
 						{
-							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
+							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
 
 
-							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
+							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
 
-							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
 
 
@@ -517,13 +540,13 @@ bool Attack1(Session* _session)
 						{
 							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
 							{
-								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
+								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
 
 
-								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
-								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
 
 
@@ -556,7 +579,7 @@ bool Attack1(Session* _session)
 
 						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
+						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
 
 					}
 
@@ -616,19 +639,25 @@ bool Attack2(Session* _session)
 	SCAttackPacket.Y = AttackPacket.Y;
 	SCAttackPacket.ID = _session->_player->_ID;
 
+	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
+	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
+	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
+	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
+
+
 	//먼저 어택 메세지를 섹터에 뿌려줌
 
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
 		{
-			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if (sectorX< 0 || sectorX+ i >= sectorXRange) continue;
+			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 
-			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+			it = Sector[sectorX + i][sectorY + j].begin();
 
-			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			for (; it != Sector[sectorX + i][sectorY+ j].end(); it++)
 			{
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
@@ -664,12 +693,12 @@ bool Attack2(Session* _session)
 		{
 			for (int j = -1; j < 2; j++)
 			{
-				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+				if (sectorX + j < 0 || sectorY + j >= sectorYRange) continue;
 
-				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+				it = Sector[sectorX + i][sectorY + j].begin();
 
-				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
@@ -702,13 +731,13 @@ bool Attack2(Session* _session)
 					{
 						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
 						{
-							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+							if (sectorX + damageIdex < 0 || sectorX+ damageIdex >= sectorXRange) continue;
+							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
 
 
-							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
+							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
 
-							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							for (; FuncIt != Sector[sectorX+ damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
 
 
@@ -753,13 +782,13 @@ bool Attack2(Session* _session)
 						{
 							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
 							{
-								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
+								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
 
 
-								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
-								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
 
 
@@ -792,7 +821,7 @@ bool Attack2(Session* _session)
 
 						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
+						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
 
 					}
 
@@ -808,12 +837,12 @@ bool Attack2(Session* _session)
 		{
 			for (int j = -1; j < 2; j++)
 			{
-				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
-				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+				it = Sector[sectorX + i][sectorY + j].begin();
 
-				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
@@ -846,13 +875,13 @@ bool Attack2(Session* _session)
 					{
 						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
 						{
-							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
+							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
 
 
-							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
+							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
 
-							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
 
 
@@ -897,13 +926,13 @@ bool Attack2(Session* _session)
 						{
 							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
 							{
-								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
+								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
 
 
-								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
-								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
 
 
@@ -936,7 +965,7 @@ bool Attack2(Session* _session)
 
 						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
+						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
 
 					}
 
@@ -995,19 +1024,25 @@ bool Attack3(Session* _session)
 	SCAttackPacket.Y = AttackPacket.Y;
 	SCAttackPacket.ID = _session->_player->_ID;
 
+	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
+	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
+	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
+	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
+
+
 	//먼저 어택 메세지를 섹터에 뿌려줌
 
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
 		{
-			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if (sectorX+ i < 0 || sectorX + i >= sectorXRange) continue;
+			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 
-			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+			it = Sector[sectorX + i][sectorY + j].begin();
 
-			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 			{
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
@@ -1043,12 +1078,12 @@ bool Attack3(Session* _session)
 		{
 			for (int j = -1; j < 2; j++)
 			{
-				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
-				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+				it = Sector[sectorX + i][sectorY + j].begin();
 
-				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
@@ -1081,13 +1116,13 @@ bool Attack3(Session* _session)
 					{
 						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
 						{
-							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
+							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
 
 
-							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
+							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
 
-							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
 
 
@@ -1132,13 +1167,13 @@ bool Attack3(Session* _session)
 						{
 							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
 							{
-								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
+								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
 
 
-								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
-								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
 
 
@@ -1171,7 +1206,7 @@ bool Attack3(Session* _session)
 
 						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
+						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
 
 					}
 
@@ -1187,12 +1222,12 @@ bool Attack3(Session* _session)
 		{
 			for (int j = -1; j < 2; j++)
 			{
-				if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-				if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
-				it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+				it = Sector[sectorX + i][sectorY + j].begin();
 
-				for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
@@ -1225,13 +1260,13 @@ bool Attack3(Session* _session)
 					{
 						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
 						{
-							if ((_session->_player->_x + damageIdex) < 0 || _session->_player->_x + damageIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-							if ((_session->_player->_y + damageJdex) < 0 || _session->_player->_y + damageJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
+							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
 
 
-							FuncIt = Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].begin();
+							FuncIt = Sector[sectorX+ damageIdex][sectorY+ damageJdex].begin();
 
-							for (; FuncIt != Sector[_session->_player->_x + damageIdex][_session->_player->_y + damageJdex].end(); FuncIt++)
+							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
 
 
@@ -1276,13 +1311,13 @@ bool Attack3(Session* _session)
 						{
 							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
 							{
-								if ((_session->_player->_x + deleteIdex) < 0 || _session->_player->_x + deleteIdex >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-								if ((_session->_player->_y + deleteJdex) < 0 || _session->_player->_y + deleteJdex >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
+								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
 
 
-								FuncIt = Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].begin();
+								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
-								for (; FuncIt != Sector[_session->_player->_x + deleteIdex][_session->_player->_y + deleteJdex].end(); FuncIt++)
+								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
 
 
@@ -1315,7 +1350,7 @@ bool Attack3(Session* _session)
 
 						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[_session->_player->_x + i][_session->_player->_y + j].erase(it); //Sector 리스트에서 삭제
+						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
 
 					}
 
@@ -1373,17 +1408,22 @@ bool Sync(Session* _session)
 	SC_Sync.X = _session->_player->_x;
 	SC_Sync.Y = _session->_player->_y;
 
+	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
+	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
+	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
+	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
+
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
 		{
-			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 
-			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
+			it = Sector[sectorX + i][sectorY + j].begin();
 
-			for (; it != Sector[_session->_player->_x + i][_session->_player->_y + j].end(); it++)
+			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
 			{
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
