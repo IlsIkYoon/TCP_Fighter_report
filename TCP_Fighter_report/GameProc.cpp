@@ -21,7 +21,9 @@ bool MoveStart(Session* _session)
 	if (peekResult < sizeof(MoveStartPacket)) {
 		
 		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-		
+		__debugbreak();
+
+
 		//패킷 헤더 다시 넣는 과정
 		int ExtraBuf = _session->_recvQ.GetSizeUsed();
 		char* backUpBuf = (char*)malloc(ExtraBuf);
@@ -55,9 +57,6 @@ bool MoveStart(Session* _session)
 	SC_MoveStart_Packet.X = MoveStartPacket.X;
 	SC_MoveStart_Packet.Y = MoveStartPacket.Y;
 	SC_MoveStart_Packet.ID = _session->_player->_ID;
-
-	//Todo // 현재 문제 : 섹터 주변에 메세지를 뿌리는 것이 아닌 이상한 곳에 뿌리고 있음 
-	// 좌표를 인덱스가 아닌 좌표 / SECTOR_RATIO한 값을 인덱스로 뿌려줘야 함
 
 	
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
@@ -119,7 +118,7 @@ bool MoveStop(Session* _session)
 	if (peekResult < sizeof(MoveStopPacket)) {
 
 		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-
+		__debugbreak();
 		//패킷 헤더 다시 넣는 과정
 		int ExtraBuf = _session->_recvQ.GetSizeUsed();
 		char* backUpBuf = (char*)malloc(ExtraBuf);
@@ -219,7 +218,7 @@ bool Attack1(Session* _session)
 	{
 
 		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-
+		__debugbreak();
 		//패킷 헤더 다시 넣는 과정
 		int ExtraBuf = _session->_recvQ.GetSizeUsed();
 		char* backUpBuf = (char*)malloc(ExtraBuf);
@@ -389,6 +388,7 @@ bool Attack1(Session* _session)
 						DeleteHeader.byCode = 0x89;
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+						
 
 						DeletePacket.ID = (*it)->_player->_ID;
 
@@ -533,6 +533,7 @@ bool Attack1(Session* _session)
 						DeleteHeader.byCode = 0x89;
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+						
 
 						DeletePacket.ID = (*it)->_player->_ID;
 
@@ -606,7 +607,7 @@ bool Attack2(Session* _session)
 	{
 
 		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-
+		__debugbreak();
 		//패킷 헤더 다시 넣는 과정
 		int ExtraBuf = _session->_recvQ.GetSizeUsed();
 		char* backUpBuf = (char*)malloc(ExtraBuf);
@@ -651,7 +652,7 @@ bool Attack2(Session* _session)
 	{
 		for (int j = -1; j < 2; j++)
 		{
-			if (sectorX< 0 || sectorX+ i >= sectorXRange) continue;
+			if (sectorX + i < 0 || sectorX+ i >= sectorXRange) continue;
 			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 
@@ -775,6 +776,7 @@ bool Attack2(Session* _session)
 						DeleteHeader.byCode = 0x89;
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+						
 
 						DeletePacket.ID = (*it)->_player->_ID;
 
@@ -919,6 +921,7 @@ bool Attack2(Session* _session)
 						DeleteHeader.byCode = 0x89;
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+						
 
 						DeletePacket.ID = (*it)->_player->_ID;
 
@@ -992,6 +995,7 @@ bool Attack3(Session* _session)
 
 		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
 
+		__debugbreak();
 		//패킷 헤더 다시 넣는 과정
 		int ExtraBuf = _session->_recvQ.GetSizeUsed();
 		char* backUpBuf = (char*)malloc(ExtraBuf);
@@ -1160,6 +1164,7 @@ bool Attack3(Session* _session)
 						DeleteHeader.byCode = 0x89;
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+						
 
 						DeletePacket.ID = (*it)->_player->_ID;
 
@@ -1304,6 +1309,7 @@ bool Attack3(Session* _session)
 						DeleteHeader.byCode = 0x89;
 						DeleteHeader.bySize = sizeof(DeletePacket);
 						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+						
 
 						DeletePacket.ID = (*it)->_player->_ID;
 
@@ -1377,7 +1383,7 @@ bool Sync(Session* _session)
 	if (peekResult < sizeof(CS_Sync))
 	{
 		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-
+		__debugbreak();
 		//패킷 헤더 다시 넣는 과정
 		int ExtraBuf = _session->_recvQ.GetSizeUsed();
 		char* backUpBuf = (char*)malloc(ExtraBuf);
@@ -1471,7 +1477,7 @@ bool Echo(Session* _session)
 	if (peekResult < sizeof(CS_Echo))
 	{
 		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-
+		__debugbreak();
 		//패킷 헤더 다시 넣는 과정
 		int ExtraBuf = _session->_recvQ.GetSizeUsed();
 		char* backUpBuf = (char*)malloc(ExtraBuf);
@@ -1506,7 +1512,7 @@ bool Echo(Session* _session)
 	send(_session->_socket, (char*)&pHeader, sizeof(pHeader), NULL);
 	send(_session->_socket, (char*)&SC_Echo, pHeader.bySize, NULL);
 	*/
-	printf("Echo 전송\n");
+	
 
 	
 	_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);

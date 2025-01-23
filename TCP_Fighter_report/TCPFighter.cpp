@@ -121,7 +121,7 @@ bool TCPFighter() {
 
 				if (recv_retval == 0)
 				{
-					//recv retval 0이면 정상 종료에 대한 로직
+					
 					printf("delete Session : %d\n", (*s_ArrIt)->_player->_ID);
 					DeleteSession(*s_ArrIt);
 				}

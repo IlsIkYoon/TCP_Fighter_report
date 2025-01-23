@@ -26,8 +26,8 @@ bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 		oldSectorX = oldX / SECTOR_RATIO + 1;
 		oldSectorY = oldY / SECTOR_RATIO + i;
 
-		if (oldSectorX < 0 || oldSectorX > sectorRightMax) break;
-		if (oldSectorY < 0 || oldSectorX > sectorBottomMax) continue;
+		if (oldSectorX < 0 || oldSectorX >= sectorRightMax) break;
+		if (oldSectorY < 0 || oldSectorY >= sectorBottomMax) continue;
 
 
 		for (stat_ArrIt = Sector[oldSectorX][oldSectorY].begin();
@@ -41,6 +41,7 @@ bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 			pHeader.byCode = 0x89;
 			pHeader.bySize = sizeof(deleteMsg);
 			pHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+			printf("Delete Message|| Line: %d, \n", __LINE__);
 
 			deleteMsg.ID = _session->_player->_ID;
 
@@ -61,6 +62,7 @@ bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 			pMyHeader.byCode = 0x89;
 			pMyHeader.bySize = sizeof(myDeleteMsg);
 			pMyHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+			
 
 			myDeleteMsg.ID = (*stat_ArrIt)->_player->_ID;
 
@@ -86,6 +88,7 @@ bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 			pHeader.byCode = 0x89;
 			pHeader.bySize = sizeof(createMyMsg);
 			pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+			
 
 			createMyMsg.Direction = _session->_player->_direction;
 			createMyMsg.HP = _session->_player->_hp;
@@ -98,8 +101,8 @@ bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 		newSectorY = y / SECTOR_RATIO + i;
 
 
-		if (newSectorX< 0 || newSectorX> sectorRightMax) break;
-		if (newSectorY< 0 || newSectorY> sectorBottomMax) continue;
+		if (newSectorX< 0 || newSectorX>= sectorRightMax) break;
+		if (newSectorY< 0 || newSectorY>= sectorBottomMax) continue;
 
 		for (stat_ArrIt = Sector[newSectorX][newSectorY].begin();
 			stat_ArrIt != Sector[newSectorX][newSectorY].end(); stat_ArrIt++)
@@ -193,8 +196,8 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 		oldSectorX = oldX / SECTOR_RATIO - 1;
 		oldSectorY = oldY / SECTOR_RATIO + i;
 
-		if (oldSectorX< 0 || oldSectorX> sectorRightMax) break;
-		if (oldSectorY< 0 || oldSectorY> sectorBottomMax) continue;
+		if (oldSectorX< 0 || oldSectorX>= sectorRightMax) break;
+		if (oldSectorY< 0 || oldSectorY>= sectorBottomMax) continue;
 
 
 		for (stat_ArrIt = Sector[oldSectorX][oldSectorY].begin();
@@ -206,6 +209,7 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 			pHeader.byCode = 0x89;
 			pHeader.bySize = sizeof(deleteMsg);
 			pHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+			
 
 			deleteMsg.ID = _session->_player->_ID;
 
@@ -226,6 +230,7 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 			pMyHeader.byCode = 0x89;
 			pMyHeader.bySize = sizeof(myDeleteMsg);
 			pMyHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+			
 
 			myDeleteMsg.ID = (*stat_ArrIt)->_player->_ID;
 
@@ -251,6 +256,7 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(createMyMsg);
 	pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+	
 
 	createMyMsg.Direction = _session->_player->_direction;
 	createMyMsg.HP = _session->_player->_hp;
@@ -261,8 +267,8 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 	{
 		newSectorX = x / SECTOR_RATIO + 1;
 		newSectorY = y / SECTOR_RATIO + i;
-		if (newSectorX< 0 || newSectorX> sectorRightMax) break;
-		if (newSectorY< 0 || newSectorY> sectorBottomMax) continue;
+		if (newSectorX< 0 || newSectorX>= sectorRightMax) break;
+		if (newSectorY< 0 || newSectorY>= sectorBottomMax) continue;
 
 		for (stat_ArrIt = Sector[newSectorX][newSectorY].begin();
 			stat_ArrIt != Sector[newSectorX][newSectorY].end(); stat_ArrIt++)
@@ -359,8 +365,8 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 		oldSectorY = oldY / SECTOR_RATIO + 1;
 
 
-		if (oldSectorY< 0 || oldSectorY> sectorBottomMax) break;
-		if (oldSectorX< 0 || oldSectorX> sectorRightMax) continue;
+		if (oldSectorY< 0 || oldSectorY>= sectorBottomMax) break;
+		if (oldSectorX< 0 || oldSectorX>= sectorRightMax) continue;
 
 
 		for (stat_ArrIt = Sector[oldSectorX][oldSectorY].begin();
@@ -372,6 +378,7 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 			pHeader.byCode = 0x89;
 			pHeader.bySize = sizeof(deleteMsg);
 			pHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+			
 
 			deleteMsg.ID = _session->_player->_ID;
 
@@ -392,6 +399,7 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 			pMyHeader.byCode = 0x89;
 			pMyHeader.bySize = sizeof(myDeleteMsg);
 			pMyHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+			
 
 			myDeleteMsg.ID = (*stat_ArrIt)->_player->_ID;
 
@@ -420,6 +428,7 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(createMyMsg);
 	pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+	
 
 	createMyMsg.Direction = _session->_player->_direction;
 	createMyMsg.HP = _session->_player->_hp;
@@ -431,8 +440,8 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 		newSectorX = x / SECTOR_RATIO + i;
 		newSectorY = y / SECTOR_RATIO - 1;
 
-		if (newSectorY|| newSectorY> sectorBottomMax) break;
-		if (newSectorX< 0 || newSectorX> sectorRightMax) continue;
+		if (newSectorY < 0|| newSectorY>= sectorBottomMax) break;
+		if (newSectorX< 0 || newSectorX>= sectorRightMax) continue;
 
 		for (stat_ArrIt = Sector[newSectorX][newSectorY].begin();
 			stat_ArrIt != Sector[newSectorX][newSectorY].end(); stat_ArrIt++)
@@ -526,8 +535,8 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 		oldSectorX = oldX / SECTOR_RATIO + i;
 		oldSectorY = oldY / SECTOR_RATIO - 1;
 
-		if (oldSectorY< 0 ||oldSectorY> sectorBottomMax) break;
-		if (oldSectorX< 0 ||oldSectorX> sectorRightMax) continue;
+		if (oldSectorY< 0 ||oldSectorY>= sectorBottomMax) break;
+		if (oldSectorX< 0 ||oldSectorX>= sectorRightMax) continue;
 
 
 		for (stat_ArrIt = Sector[oldSectorX][oldSectorY].begin();
@@ -539,6 +548,7 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 			pHeader.byCode = 0x89;
 			pHeader.bySize = sizeof(deleteMsg);
 			pHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+			
 
 			deleteMsg.ID = _session->_player->_ID;
 
@@ -559,6 +569,7 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 			pMyHeader.byCode = 0x89;
 			pMyHeader.bySize = sizeof(myDeleteMsg);
 			pMyHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+			
 
 			myDeleteMsg.ID = (*stat_ArrIt)->_player->_ID;
 
@@ -584,6 +595,7 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(createMyMsg);
 	pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+	
 
 	createMyMsg.Direction = _session->_player->_direction;
 	createMyMsg.HP = _session->_player->_hp;
@@ -596,11 +608,11 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 		newSectorY = y / SECTOR_RATIO + 1;
 
 
-		if (newSectorY< 0 || newSectorY> sectorBottomMax) break;
-		if (newSectorX< 0 || newSectorX> sectorRightMax) continue;
+		if (newSectorY< 0 || newSectorY>= sectorBottomMax) break;
+		if (newSectorX< 0 || newSectorX>= sectorRightMax) continue;
 
 		for (stat_ArrIt = Sector[newSectorX][newSectorY].begin();
-			stat_ArrIt != Sector[newSectorY][newSectorY].end(); stat_ArrIt++)
+			stat_ArrIt != Sector[newSectorX][newSectorY].end(); stat_ArrIt++)
 		{
 			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
 			createOtherMsg.Direction = (*stat_ArrIt)->_player->_direction;
@@ -685,8 +697,8 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 		for (int j = -1; j < 2; j++)
 		{
 
-			if (oldSecX + i < 0 || oldSecX + i > dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if (oldSecY + j < 0 || oldSecY + j > dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if (oldSecX + i < 0 || oldSecX + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if (oldSecY + j < 0 || oldSecY + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
 			for (stat_ArrIt = Sector[oldSecX + i][oldSecY + j].begin();
 				stat_ArrIt != Sector[oldSecX + i][oldSecY + j].end(); stat_ArrIt++)
@@ -699,6 +711,7 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 				pHeader.byCode = 0x89;
 				pHeader.bySize = sizeof(deletePacket);
 				pHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
+				
 
 				deletePacket.ID = _session->_player->_ID;
 
@@ -727,8 +740,8 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 		for (int j = -1; j < 2; j++)
 		{
 
-			if (newSecX + i < 0 || newSecX + i > dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if (newSecY + j < 0 || newSecY + j > dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if (newSecX + i < 0 || newSecX + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if (newSecY + j < 0 || newSecY + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
 			for (stat_ArrIt = Sector[newSecX + i][newSecY + j].begin();
 				stat_ArrIt != Sector[newSecX + i][newSecY + j].end(); stat_ArrIt++)
@@ -819,3 +832,7 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 
 	return true;
 }
+
+
+
+

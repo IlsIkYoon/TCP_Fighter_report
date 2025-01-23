@@ -68,6 +68,7 @@ bool CreateNewCharacter(Session* _session) {
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(otherCharacter);
 	pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+	
 
 
 	for (int i = -1; i < 2; i++)
@@ -183,7 +184,6 @@ bool DecodeMessages(Session* _session)
 		if (_session->_recvQ.IsEmpty() == true) break; //버퍼 빌 때까지 
 
 		_session->_recvQ.Peek((char*)&pHeader, sizeof(pHeader), &peekResult);
-		printf("pHeader : %d, %d, %d\n", pHeader.byCode, pHeader.bySize, pHeader.byType);
 
 		if (peekResult < sizeof(pHeader))
 		{
@@ -200,6 +200,21 @@ bool DecodeMessages(Session* _session)
 		}
 
 		_session->_recvQ.MoveFront(sizeof(pHeader));
+
+		int bufUsed = _session->_recvQ.GetSizeUsed();
+		if (bufUsed < pHeader.bySize) //PayLoad가 다 안왔으면 다시 헤더를 넣고 리턴
+		{
+			char* extraBuf = (char*)malloc(bufUsed);
+			unsigned int dequeResult;
+			unsigned int enqueResult;
+			_session->_recvQ.Dequeue(extraBuf, bufUsed, &dequeResult);
+			_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+			_session->_recvQ.Enqueue(extraBuf, bufUsed, &enqueResult);
+			return false;
+		}
+
+
+
 
 		switch (pHeader.byType)
 		{
@@ -255,7 +270,6 @@ bool DecodeMessages(Session* _session)
 
 			break;
 		}
-		printf("Decode Complete\n");
 	}
 
 		return true;
@@ -280,13 +294,13 @@ bool DeleteSession(Session* _session)
 bool Player::Move() {
 	if (_move == false) return false;
 
-	if (_x > dfRANGE_MOVE_RIGHT || _x < dfRANGE_MOVE_LEFT || _y > dfRANGE_MOVE_BOTTOM || _y < dfRANGE_MOVE_TOP) return false;
+	if (_x >= dfRANGE_MOVE_RIGHT || _x < dfRANGE_MOVE_LEFT || _y >= dfRANGE_MOVE_BOTTOM || _y < dfRANGE_MOVE_TOP) return false;
 
 
 	int oldX = _x;
 	int oldY = _y;
 
-
+	
 	switch (_direction) {
 	case dfPACKET_MOVE_DIR_LL:
 	{
@@ -314,7 +328,7 @@ bool Player::Move() {
 
 	case dfPACKET_MOVE_DIR_RU:
 	{
-		if (_x + 3 > dfRANGE_MOVE_RIGHT || _y - 2 < dfRANGE_MOVE_TOP) return false;
+		if (_x + 3 >= dfRANGE_MOVE_RIGHT || _y - 2 < dfRANGE_MOVE_TOP) return false;
 		_x += 3;
 		_y -= 2;
 	}
@@ -322,31 +336,35 @@ bool Player::Move() {
 
 	case dfPACKET_MOVE_DIR_RR:
 	{
-		if (_x + 3 > dfRANGE_MOVE_RIGHT) return false;
+		if (_x + 3 >= dfRANGE_MOVE_RIGHT) return false;
 		_x += 3;
+		
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_RD:
 	{
-		if (_x + 3 > dfRANGE_MOVE_RIGHT || _y + 2 < dfRANGE_MOVE_BOTTOM) return false;
+		if (_x + 3 >= dfRANGE_MOVE_RIGHT || _y + 2 >= dfRANGE_MOVE_BOTTOM) return false;
 		_x += 3;
 		_y += 2;
+	
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_DD:
 	{
-		if (_y + 2 < dfRANGE_MOVE_BOTTOM) return false;
+		if (_y + 2 >= dfRANGE_MOVE_BOTTOM) return false;
 		_y += 2;
+	
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_LD:
 	{
-		if (_x - 3 < dfRANGE_MOVE_LEFT || _y + 2 < dfRANGE_MOVE_BOTTOM) return false;
+		if (_x - 3 < dfRANGE_MOVE_LEFT || _y + 2 >= dfRANGE_MOVE_BOTTOM) return false;
 		_x -= 3;
 		_y += 2;
+	
 	}
 	break;
 
@@ -363,18 +381,15 @@ defalut:
 
 
 
-	auto removeCount = Sector[oldX / SECTOR_RATIO][oldY / SECTOR_RATIO].remove(pSession);
-	if (removeCount != 1)
-		__debugbreak();
-
+	Sector[oldX / SECTOR_RATIO][oldY / SECTOR_RATIO].remove(pSession);
 	Sector[_x / SECTOR_RATIO][_y / SECTOR_RATIO].push_back(pSession);
 
-	std::cout << "!!!!!!!!!!!!!!!!!!!!!! Remove : " << oldX / SECTOR_RATIO << " " << oldY / SECTOR_RATIO << std::endl;
+	std::cout << "ID : " << _ID << std::endl;
+	std::cout << "!!!!!!!!!!!!!!!!!!! Remove : " << oldX / SECTOR_RATIO << " " << oldY / SECTOR_RATIO << std::endl;
 	std::cout << "!!!! CREATE : " << _x / SECTOR_RATIO << " " << _y / SECTOR_RATIO << std::endl;
 	
 	int paramX;
 	int paramY;
-
 
 	if (_x > oldX) //오른쪽으로 간 상황
 	{
@@ -384,14 +399,17 @@ defalut:
 		MoveSectorR(pSession, paramX, paramY, oldX, oldY);
 		oldX = paramX;
 		oldY = paramY;
+		
 	}
-	if (oldX > _x) //왼쪽으로 간 상황
+	else if (oldX > _x) //왼쪽으로 간 상황
 	{
 		paramX = oldX - dfSPEED_PLAYER_X;
 		paramY = oldY;
 		MoveSectorL(pSession, paramX, paramY, oldX, oldY);
 		oldX = paramX;
 		oldY = paramY;
+		
+		
 	}
 	if (_y > oldY) //아래로 간 상황
 	{
@@ -400,17 +418,20 @@ defalut:
 		MoveSectorD(pSession, paramX, paramY, oldX, oldY);
 		oldX = paramX;
 		oldY = paramY;
+		
 	}
-	if (oldY > _y) //위로 간 상황
+	else if (oldY > _y) //위로 간 상황
 	{
 		paramX = oldX;
 		paramY = oldY - dfSPEED_PLAYER_Y;
-		MoveSectorU(pSession, _x, _y, oldX, oldY);
+
+		MoveSectorU(pSession, paramX, paramY, oldX, oldY);
 		oldX = paramX;
 		oldY = paramY;
+
 	}
 
-	//printf("섹터 이동 완료\n");
+	
 	return true;
 }
 
@@ -437,7 +458,7 @@ bool Player::MoveStart(BYTE Direction, short X, short Y) {
 	SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
 
 
-	printf("ID : %d || Sector 동기화\n", _ID);
+	
 
 	return true;
 }
@@ -464,7 +485,7 @@ void Player::MoveStop(int Dir, int x, int y)
 	SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
 
 
-	printf("ID : %d || Sector 동기화\n", _ID);
+	
 
 	//Todo//StopMessage보내기
 
