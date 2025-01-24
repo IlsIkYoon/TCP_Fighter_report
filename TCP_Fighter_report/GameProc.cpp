@@ -1,4 +1,5 @@
 #include "GameProc.h"
+#include "Message.h"
 
 extern Session SessionArr[PLAYERMAXCOUNT];
 
@@ -45,20 +46,7 @@ bool MoveStart(Session* _session)
 
 
 	//섹터 주변에 뿌려주기
-	PacketHeader MoveHeader;
-	SC_MOVE_START SC_MoveStart_Packet;
-	
-	MoveHeader.byCode = 0x89;
-	MoveHeader.bySize = sizeof(SC_MoveStart_Packet);
-	MoveHeader.byType = dfPACKET_SC_MOVE_START;
 
-	
-	SC_MoveStart_Packet.Direction = MoveStartPacket.Direction;
-	SC_MoveStart_Packet.X = MoveStartPacket.X;
-	SC_MoveStart_Packet.Y = MoveStartPacket.Y;
-	SC_MoveStart_Packet.ID = _session->_player->_ID;
-
-	
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
 	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
@@ -71,7 +59,6 @@ bool MoveStart(Session* _session)
 			if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
 			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
-
 			it = Sector[sectorX+ i][sectorY + j].begin();
 
 			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
@@ -79,28 +66,9 @@ bool MoveStart(Session* _session)
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-				if ((*it)->_sendQ.GetSizeFree() < sizeof(MoveHeader) + MoveHeader.bySize)
-				{
-					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&MoveHeader, sizeof(MoveHeader), &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&SC_MoveStart_Packet, MoveHeader.bySize, &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
+				SendMoveStartMessage((char*)_session, (char*)(*it));
 			}
 		}
-
 	}
 
 	return true;
@@ -134,28 +102,11 @@ bool MoveStop(Session* _session)
 		return false;
 	}
 
-
-
 	_session->_recvQ.MoveFront(sizeof(MoveStopPacket));
-
-
-
 	
+
 	_session->_player->MoveStop(MoveStopPacket.Direction, MoveStopPacket.X, MoveStopPacket.Y);
 	
-	//섹터 주변에 뿌려주기
-	PacketHeader MoveHeader;
-	SC_MOVE_STOP SC_MoveStopPacket;
-
-	MoveHeader.byCode = 0x89;
-	MoveHeader.bySize = sizeof(SC_MoveStopPacket);
-	MoveHeader.byType = dfPACKET_SC_MOVE_STOP;
-
-	SC_MoveStopPacket.Direction = MoveStopPacket.Direction;
-	SC_MoveStopPacket.X = MoveStopPacket.X;
-	SC_MoveStopPacket.Y = MoveStopPacket.Y;
-	SC_MoveStopPacket.ID = _session->_player->_ID;
-
 
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
@@ -178,24 +129,7 @@ bool MoveStop(Session* _session)
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-				if ((*it)->_sendQ.GetSizeFree() < sizeof(MoveHeader) + MoveHeader.bySize)
-				{
-					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&MoveHeader, sizeof(MoveHeader), &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&SC_MoveStopPacket, MoveHeader.bySize, &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
+				SendMoveStopMessage((char*)_session, (char*)(*it));
 
 			}
 		}
@@ -238,19 +172,6 @@ bool Attack1(Session* _session)
 
 	_session->_player->_direction = AttackPacket.Direction;
 
-
-	PacketHeader AttackHeader;
-	SC_ATTACK1 SCAttackPacket;
-
-	AttackHeader.byCode = 0x89;
-	AttackHeader.bySize = sizeof(SCAttackPacket);
-	AttackHeader.byType = dfPACKET_SC_ATTACK1;
-
-	SCAttackPacket.Direction = AttackPacket.Direction;
-	SCAttackPacket.X = AttackPacket.X;
-	SCAttackPacket.Y = AttackPacket.Y;
-	SCAttackPacket.ID = _session->_player->_ID;
-
 	//먼저 어택 메세지를 섹터에 뿌려줌
 
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
@@ -274,25 +195,7 @@ bool Attack1(Session* _session)
 			{
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-				if ((*it)->_sendQ.GetSizeFree() < sizeof(AttackHeader) + AttackHeader.bySize)
-				{
-					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
+				SendAttack1Message((char*)_session,(char*)(*it), (char*)&AttackPacket);
 
 			}
 		}
@@ -328,17 +231,8 @@ bool Attack1(Session* _session)
 
 					//데미지 메세지 보내기
 
-					PacketHeader DamageHeader;
-					SC_DAMAGE DamagePacket;
 					std::list<Session*>::iterator FuncIt;
 
-					DamageHeader.byCode = 0x89;
-					DamageHeader.bySize = sizeof(DamagePacket);
-					DamageHeader.byType = dfPACKET_SC_DAMAGE;
-
-					DamagePacket.AttackID = _session->_player->_ID;
-					DamagePacket.DamageID = (*it)->_player->_ID;
-					DamagePacket.DamageHP = (*it)->_player->_hp;
 
 					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
@@ -352,28 +246,7 @@ bool Attack1(Session* _session)
 
 							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
-
-								
-
-								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
-								{
-									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
+								SendDamageMessage((char*)_session, (char*)(*it), (char*)(*FuncIt));
 							}
 						}
 					}
@@ -382,15 +255,6 @@ bool Attack1(Session* _session)
 
 					if ((*it)->_player->_hp <= 0)
 					{
-						PacketHeader DeleteHeader;
-						SC_DELETE_CHARACTER DeletePacket;
-
-						DeleteHeader.byCode = 0x89;
-						DeleteHeader.bySize = sizeof(DeletePacket);
-						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
-						
-
-						DeletePacket.ID = (*it)->_player->_ID;
 
 						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
@@ -399,35 +263,12 @@ bool Attack1(Session* _session)
 								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
 								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
 
-
 								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
 								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
 
-
-
-									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
-									{
-										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-
-
+									SendDeleteMessage((char*)(*it), (char*)(*FuncIt));
 
 								}
 							}
@@ -473,17 +314,8 @@ bool Attack1(Session* _session)
 
 					//데미지 메세지 보내기
 
-					PacketHeader DamageHeader;
-					SC_DAMAGE DamagePacket;
 					std::list<Session*>::iterator FuncIt;
 
-					DamageHeader.byCode = 0x89;
-					DamageHeader.bySize = sizeof(DamagePacket);
-					DamageHeader.byType = dfPACKET_SC_DAMAGE;
-
-					DamagePacket.AttackID = _session->_player->_ID;
-					DamagePacket.DamageID = (*it)->_player->_ID;
-					DamagePacket.DamageHP = (*it)->_player->_hp;
 
 					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
@@ -498,26 +330,7 @@ bool Attack1(Session* _session)
 							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
 
-
-
-								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
-								{
-									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
+								SendDamageMessage((char*)_session, (char*)(*it), (char*)(*FuncIt));
 
 							}
 						}
@@ -527,15 +340,6 @@ bool Attack1(Session* _session)
 
 					if ((*it)->_player->_hp <= 0)
 					{
-						PacketHeader DeleteHeader;
-						SC_DELETE_CHARACTER DeletePacket;
-
-						DeleteHeader.byCode = 0x89;
-						DeleteHeader.bySize = sizeof(DeletePacket);
-						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
-						
-
-						DeletePacket.ID = (*it)->_player->_ID;
 
 						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
@@ -544,36 +348,11 @@ bool Attack1(Session* _session)
 								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
 								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
 
-
 								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
 								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
-
-
-
-									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
-									{
-										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-
-
-
+									SendDeleteMessage((char*)(*it), (char*)(*FuncIt));
 								}
 							}
 						}
@@ -628,18 +407,6 @@ bool Attack2(Session* _session)
 	_session->_player->_direction = AttackPacket.Direction;
 
 
-	PacketHeader AttackHeader;
-	SC_ATTACK2 SCAttackPacket;
-
-	AttackHeader.byCode = 0x89;
-	AttackHeader.bySize = sizeof(SCAttackPacket);
-	AttackHeader.byType = dfPACKET_SC_ATTACK2;
-
-	SCAttackPacket.Direction = AttackPacket.Direction;
-	SCAttackPacket.X = AttackPacket.X;
-	SCAttackPacket.Y = AttackPacket.Y;
-	SCAttackPacket.ID = _session->_player->_ID;
-
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
 	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
@@ -663,30 +430,11 @@ bool Attack2(Session* _session)
 
 				if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-				if ((*it)->_sendQ.GetSizeFree() < sizeof(AttackHeader) + AttackHeader.bySize)
-				{
-					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
+				SendAttack2Message((char*)_session, (char*)(*it), (char*)&AttackPacket);
 
 			}
 		}
 	}
-
-
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
@@ -716,17 +464,7 @@ bool Attack2(Session* _session)
 
 					//데미지 메세지 보내기
 
-					PacketHeader DamageHeader;
-					SC_DAMAGE DamagePacket;
 					std::list<Session*>::iterator FuncIt;
-
-					DamageHeader.byCode = 0x89;
-					DamageHeader.bySize = sizeof(DamagePacket);
-					DamageHeader.byType = dfPACKET_SC_DAMAGE;
-
-					DamagePacket.AttackID = _session->_player->_ID;
-					DamagePacket.DamageID = (*it)->_player->_ID;
-					DamagePacket.DamageHP = (*it)->_player->_hp;
 
 					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
@@ -740,28 +478,7 @@ bool Attack2(Session* _session)
 
 							for (; FuncIt != Sector[sectorX+ damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
-
-
-
-								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
-								{
-									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
+								SendDamageMessage((char*)_session, (char*)(*it), (char*)(*FuncIt));
 							}
 						}
 					}
@@ -770,15 +487,6 @@ bool Attack2(Session* _session)
 
 					if ((*it)->_player->_hp <= 0)
 					{
-						PacketHeader DeleteHeader;
-						SC_DELETE_CHARACTER DeletePacket;
-
-						DeleteHeader.byCode = 0x89;
-						DeleteHeader.bySize = sizeof(DeletePacket);
-						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
-						
-
-						DeletePacket.ID = (*it)->_player->_ID;
 
 						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
@@ -792,31 +500,7 @@ bool Attack2(Session* _session)
 
 								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
-
-
-
-									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
-									{
-										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-
-
-
+									SendDeleteMessage((char*)(*it), (char*)(*FuncIt));
 								}
 							}
 						}
@@ -861,17 +545,7 @@ bool Attack2(Session* _session)
 
 					//데미지 메세지 보내기
 
-					PacketHeader DamageHeader;
-					SC_DAMAGE DamagePacket;
 					std::list<Session*>::iterator FuncIt;
-
-					DamageHeader.byCode = 0x89;
-					DamageHeader.bySize = sizeof(DamagePacket);
-					DamageHeader.byType = dfPACKET_SC_DAMAGE;
-
-					DamagePacket.AttackID = _session->_player->_ID;
-					DamagePacket.DamageID = (*it)->_player->_ID;
-					DamagePacket.DamageHP = (*it)->_player->_hp;
 
 					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
 					{
@@ -886,27 +560,7 @@ bool Attack2(Session* _session)
 							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
 							{
 
-
-
-								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
-								{
-									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
+								SendDamageMessage((char*)_session, (char*)(*it), (char*)(*FuncIt));
 							}
 						}
 					}
@@ -915,15 +569,6 @@ bool Attack2(Session* _session)
 
 					if ((*it)->_player->_hp <= 0)
 					{
-						PacketHeader DeleteHeader;
-						SC_DELETE_CHARACTER DeletePacket;
-
-						DeleteHeader.byCode = 0x89;
-						DeleteHeader.bySize = sizeof(DeletePacket);
-						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
-						
-
-						DeletePacket.ID = (*it)->_player->_ID;
 
 						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
 						{
@@ -938,30 +583,7 @@ bool Attack2(Session* _session)
 								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
 								{
 
-
-
-									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
-									{
-										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-
-
-
+									SendDeleteMessage((char*)(*it), (char*)(*FuncIt));
 								}
 							}
 						}

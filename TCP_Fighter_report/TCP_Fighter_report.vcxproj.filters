@@ -31,6 +31,9 @@
     <Filter Include="Sector">
       <UniqueIdentifier>{08a52780-41f2-432e-b57d-8bceb7c29a29}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Message">
+      <UniqueIdentifier>{c76e6497-3a80-4783-bfad-51409fe56dd8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -57,6 +60,9 @@
     <ClCompile Include="Sector.cpp">
       <Filter>Sector</Filter>
     </ClCompile>
+    <ClCompile Include="Message.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -79,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="Sector.h">
       <Filter>Sector</Filter>
+    </ClInclude>
+    <ClInclude Include="Message.h">
+      <Filter>Message</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

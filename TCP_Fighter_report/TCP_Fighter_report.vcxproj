@@ -187,6 +187,7 @@
   <ItemGroup>
     <ClCompile Include="GameProc.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Message.cpp" />
     <ClCompile Include="NetworkInit.cpp" />
     <ClCompile Include="NetworkInit.h" />
     <ClCompile Include="RingBuffer.cpp" />
@@ -196,6 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameProc.h" />
+    <ClInclude Include="Message.h" />
     <ClInclude Include="PacketDefine.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RingBuffer.h" />
