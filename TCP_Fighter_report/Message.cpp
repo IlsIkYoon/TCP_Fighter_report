@@ -1,7 +1,8 @@
 #include "Message.h"
 
-
-
+extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
+extern int sectorXRange;
+extern int sectorYRange;
 
 void SendMoveStartMessage(char* src, char* dest)
 {
@@ -11,6 +12,7 @@ void SendMoveStartMessage(char* src, char* dest)
 	Session* _dest = (Session*)dest;
 	PacketHeader pHeader;
 	SC_MOVE_START MovePacket;
+	printf("Dest ID : %d ||Send MoveStart Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(MovePacket);
@@ -43,6 +45,7 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 
 	PacketHeader pHeader;
 	SC_CREATE_OTHER_CHARACTER CreatePacket;
+	printf("Dest ID : %d || Send CreateOtherCharactrer Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(CreatePacket);
@@ -78,6 +81,8 @@ void SendDeleteMessage(char* src, char* dest)
 	PacketHeader pHeader;
 	SC_DELETE_CHARACTER DeletePacket;
 
+	printf("Dest ID : %d ||Send Delete Message\n", _dest->_player->_ID);
+
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(DeletePacket);
 	pHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
@@ -106,6 +111,8 @@ void SendMoveStopMessage(char* src, char* dest)
 
 	PacketHeader pHeader;
 	SC_MOVE_STOP MoveStopPacket;
+
+	printf("Dest ID : %d ||Send MoveStop Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(MoveStopPacket);
@@ -145,6 +152,8 @@ void SendAttack1Message(char* src, char* dest, char* _srcAttackPacket)
 	PacketHeader AttackHeader;
 	SC_ATTACK1 SCAttackPacket;
 
+	printf("Dest ID : %d ||Send Attack1 Message\n", _dest->_player->_ID);
+
 	AttackHeader.byCode = 0x89;
 	AttackHeader.bySize = sizeof(SCAttackPacket);
 	AttackHeader.byType = dfPACKET_SC_ATTACK1;
@@ -178,6 +187,8 @@ void SendAttack2Message(char* src, char* dest, char* _srcAttackPacket)
 
 	PacketHeader AttackHeader;
 	SC_ATTACK2 SCAttackPacket;
+
+	printf("Dest ID : %d ||Send Attack2 Message\n", _dest->_player->_ID);
 
 	AttackHeader.byCode = 0x89;
 	AttackHeader.bySize = sizeof(SCAttackPacket);
@@ -213,6 +224,8 @@ void SendAttack3Message(char* src, char* dest, char* _srcAttackPacket)
 	PacketHeader AttackHeader;
 	SC_ATTACK3 SCAttackPacket;
 
+	printf("Dest ID : %d ||Send Attack3 Message\n", _dest->_player->_ID);
+
 	AttackHeader.byCode = 0x89;
 	AttackHeader.bySize = sizeof(SCAttackPacket);
 	AttackHeader.byType = dfPACKET_SC_ATTACK3;
@@ -234,7 +247,7 @@ void SendAttack3Message(char* src, char* dest, char* _srcAttackPacket)
 
 
 }
-void SendDamageMessage(char* Attack, char* Damage, char* dest)
+void SendDamageMessage(char* Attack, char* dest, char* Damage)
 {
 	unsigned int enqueResult;
 
@@ -246,6 +259,8 @@ void SendDamageMessage(char* Attack, char* Damage, char* dest)
 
 	PacketHeader pHeader;
 	SC_DAMAGE DamagePacket;
+
+	printf("Dest ID : %d ||Send Dammage Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(DamagePacket);
@@ -267,3 +282,262 @@ void SendDamageMessage(char* Attack, char* Damage, char* dest)
 	return;
 
 }
+
+
+
+void SendSyncMessage(char* src, char* dest)
+{
+	unsigned int enqueResult;
+
+	Session* _src = (Session*)src;
+	Session* _dest = (Session*)dest;
+
+
+	PacketHeader pHeader;
+	SC_SYNC SC_Sync;
+
+	printf("Dest ID : %d ||Send Sync Message\n", _dest->_player->_ID);
+
+	pHeader.byCode = 0x89;
+	pHeader.bySize = sizeof(SC_Sync);
+	pHeader.byType = dfPACKET_SC_SYNC;
+
+	SC_Sync.ID = _src->_player->_ID;
+	SC_Sync.X = _src->_player->_x;
+	SC_Sync.Y = _src->_player->_y;
+
+
+	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
+	{
+		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+	}
+	if (_dest->_sendQ.Enqueue((char*)&SC_Sync, pHeader.bySize, &enqueResult) == false)
+	{
+		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+	}
+	return;
+}
+
+
+void MsgSectorBroadCasting(void (*Func)(char* src, char* dest), char* _src, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		for (int j = -1; j < 2; j++)
+		{
+			if (SectorX + i < 0 || SectorX + i >= sectorXRange) continue;
+			if (SectorY + j < 0 || SectorY + j >= sectorYRange) continue;
+
+			for (it = Sector[SectorX + i][SectorY + j].begin();
+				it != Sector[SectorX + i][SectorY + j].end(); it++)
+			{
+				//여기에 나를 제외한 곳에 뿌린다는 옵션이 들어가야 하나 ?
+				if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+				{
+					continue;
+				}
+				Func(_src, (char*)(*it));
+			}
+		}
+	}
+}
+
+
+
+void MsgSectorRSend(void (*Func)(char* src, char* dest), char* _src, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		if (SectorX + 1 < 0 || SectorX + 1 >= sectorXRange) break;
+		if (SectorY + i < 0 || SectorY + i >= sectorYRange) continue;
+
+		for (it = Sector[SectorX + 1][SectorY + i].begin();
+			it != Sector[SectorX + 1][SectorY + i].end(); it++)
+			{
+				if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+				{
+					continue;
+				}
+				Func(_src, (char*)(*it));
+			}
+	}
+}
+void MsgSectorLSend(void (*Func)(char* src, char* dest), char* _src, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		if (SectorX - 1 < 0 || SectorX - 1 >= sectorXRange) break;
+		if (SectorY + i < 0 || SectorY + i >= sectorYRange) continue;
+
+		for (it = Sector[SectorX - 1][SectorY + i].begin();
+			it != Sector[SectorX - 1][SectorY + i].end(); it++)
+		{
+			if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+			{
+				continue;
+			}
+			Func(_src, (char*)(*it));
+		}
+	}
+
+}
+void MsgSectorUSend(void (*Func)(char* src, char* dest), char* _src, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		if (SectorX + i < 0 || SectorX + i >= sectorXRange) continue;
+		if (SectorY - 1 < 0 || SectorY - 1 >= sectorYRange) break;
+
+		for (it = Sector[SectorX + i][SectorY - 1].begin();
+			it != Sector[SectorX + i][SectorY - 1].end(); it++)
+		{
+			if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+			{
+				continue;
+			}
+			Func(_src, (char*)(*it));
+		}
+	}
+}
+void MsgSectorDSend(void (*Func)(char* src, char* dest), char* _src, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		if (SectorX + i < 0 || SectorX + i >= sectorXRange) break;
+		if (SectorY + 1 < 0 || SectorY + 1 >= sectorYRange) continue;
+
+		for (it = Sector[SectorX + i][SectorY + 1].begin();
+			it != Sector[SectorX + i][SectorY + 1].end(); it++)
+		{
+			if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+			{
+				continue;
+			}
+			Func(_src, (char*)(*it));
+		}
+	}
+}
+
+
+void MsgSectorBroadCasting(void (*Func)(char* src, char* dest, char* AttackPacket), char* _src, char* AttackPacket, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		for (int j = -1; j < 2; j++)
+		{
+			if (SectorX + i < 0 || SectorX + i >= sectorXRange) continue;
+			if (SectorY + j < 0 || SectorY + j >= sectorYRange) continue;
+
+			for (it = Sector[SectorX + i][SectorY + j].begin();
+				it != Sector[SectorX + i][SectorY + j].end(); it++)
+			{
+				if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+				{
+					continue;
+				}
+				Func(_src, (char*)(*it), AttackPacket);
+			}
+		}
+	}
+
+}
+void MsgSectorRSend(void (*Func)(char* src, char* dest, char* AttackPacket), char* _src, char* AttackPacket, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		if (SectorX + 1 < 0 || SectorX + 1 >= sectorXRange) break;
+		if (SectorY + i < 0 || SectorY + i >= sectorYRange) continue;
+
+		for (it = Sector[SectorX + 1][SectorY + i].begin();
+			it != Sector[SectorX + 1][SectorY + i].end(); it++)
+		{
+			if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+			{
+				continue;
+			}
+			Func(_src, (char*)(*it), AttackPacket);
+		}
+	}
+
+}
+void MsgSectorLSend(void (*Func)(char* src, char* dest, char* AttackPacket), char* _src, char* AttackPacket, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		if (SectorX - 1 < 0 || SectorX - 1 >= sectorXRange) break;
+		if (SectorY + i < 0 || SectorY + i >= sectorYRange) continue;
+
+		for (it = Sector[SectorX - 1][SectorY + i].begin();
+			it != Sector[SectorX - 1][SectorY + i].end(); it++)
+		{
+			if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+			{
+				continue;
+			}
+			Func(_src, (char*)(*it), AttackPacket);
+		}
+	}
+
+}
+void MsgSectorUSend(void (*Func)(char* src, char* dest, char* AttackPacket), char* _src, char* AttackPacket, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		if (SectorX + i < 0 || SectorX + i >= sectorXRange) continue;
+		if (SectorY - 1 < 0 || SectorY - 1 >= sectorYRange) break;
+
+		for (it = Sector[SectorX + i][SectorY - 1].begin();
+			it != Sector[SectorX + i][SectorY - 1].end(); it++)
+		{
+			if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+			{
+				continue;
+			}
+			Func(_src, (char*)(*it), AttackPacket);
+		}
+	}
+
+}
+void MsgSectorDSend(void (*Func)(char* src, char* dest, char* AttackPacket), char* _src, char* AttackPacket, int SectorX, int SectorY, bool SendMe)
+{
+	std::list<Session*>::iterator it;
+	Session* pSrc = (Session*)_src;
+	for (int i = -1; i < 2; i++)
+	{
+		if (SectorX + i < 0 || SectorX + i >= sectorXRange) break;
+		if (SectorY + 1 < 0 || SectorY + 1 >= sectorYRange) continue;
+
+		for (it = Sector[SectorX + i][SectorY + 1].begin();
+			it != Sector[SectorX + i][SectorY + 1].end(); it++)
+		{
+			if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
+			{
+				continue;
+			}
+			Func(_src, (char*)(*it), AttackPacket);
+		}
+	}
+
+
+}
+
+
+

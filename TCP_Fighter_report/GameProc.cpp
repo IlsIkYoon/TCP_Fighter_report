@@ -9,6 +9,8 @@ extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOV
 extern Session* pSector;
 std::list<Session*>::iterator it;
 
+extern int sectorXRange;
+extern int sectorYRange;
 
 
 bool MoveStart(Session* _session)
@@ -49,27 +51,9 @@ bool MoveStart(Session* _session)
 
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
-	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
-	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
 
-	for (int i = -1; i < 2; i++)
-	{
-		for (int j = -1; j < 2; j++)
-		{
-			if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
+	MsgSectorBroadCasting(SendMoveStartMessage, (char*)_session, sectorX, sectorY, false);
 
-			it = Sector[sectorX+ i][sectorY + j].begin();
-
-			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-			{
-
-				if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-				SendMoveStartMessage((char*)_session, (char*)(*it));
-			}
-		}
-	}
 
 	return true;
 }
@@ -110,30 +94,9 @@ bool MoveStop(Session* _session)
 
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
-	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
-	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
 
 
-	for (int i = -1; i < 2; i++)
-	{
-		for (int j = -1; j < 2; j++)
-		{
-			if (sectorX+ i < 0 || sectorX + i >= sectorXRange) continue;
-			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-
-			it = Sector[sectorX + i][sectorY + j].begin();
-
-			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-			{
-
-				if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-				SendMoveStopMessage((char*)_session, (char*)(*it));
-
-			}
-		}
-	}
+	MsgSectorBroadCasting(SendMoveStopMessage, (char*)_session, sectorX, sectorY, false);
 
 	return true;
 }
@@ -176,31 +139,8 @@ bool Attack1(Session* _session)
 
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
-	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
-	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
 
-
-
-	for (int i = -1; i < 2; i++)
-	{
-		for (int j = -1; j < 2; j++)
-		{
-			if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-
-			it = Sector[sectorX + i][sectorY + j].begin();
-
-			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-			{
-
-				if ((*it)->_player->_ID == _session->_player->_ID) continue;
-				SendAttack1Message((char*)_session,(char*)(*it), (char*)&AttackPacket);
-
-			}
-		}
-	}
-
+	MsgSectorBroadCasting(SendAttack1Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, false);
 
 
 	if ((AttackPacket.Direction) == LL) //left
@@ -233,52 +173,19 @@ bool Attack1(Session* _session)
 
 					std::list<Session*>::iterator FuncIt;
 
-
-					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
-					{
-						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
-						{
-							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
-							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
-
-
-							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
-
-							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
-							{
-								SendDamageMessage((char*)_session, (char*)(*it), (char*)(*FuncIt));
-							}
-						}
-					}
+					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
 
 					//사망 판정 //
 
 					if ((*it)->_player->_hp <= 0)
 					{
 
-						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
-						{
-							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
-							{
-								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
-								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
+						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 
-								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
 
-								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
-								{
-
-									SendDeleteMessage((char*)(*it), (char*)(*FuncIt));
-
-								}
-							}
-						}
-
-						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
-
 					}
+						return true; //한명 타격 성공하면 바로 리턴 
 
 				}
 			}
@@ -316,53 +223,20 @@ bool Attack1(Session* _session)
 
 					std::list<Session*>::iterator FuncIt;
 
+					MsgSectorBroadCasting(SendDamageMessage, (char*)_session,(char*)(*it), sectorX, sectorY, true);
 
-					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
-					{
-						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
-						{
-							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
-							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
-
-
-							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
-
-							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
-							{
-
-								SendDamageMessage((char*)_session, (char*)(*it), (char*)(*FuncIt));
-
-							}
-						}
-					}
+					
 
 					//사망 판정 //
 
 					if ((*it)->_player->_hp <= 0)
 					{
+						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 
-						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
-						{
-							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
-							{
-								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
-								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
-
-								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
-
-								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
-								{
-									SendDeleteMessage((char*)(*it), (char*)(*FuncIt));
-								}
-							}
-						}
-
-						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
-
 					}
 
+					return true; //한명 타격 성공하면 바로 리턴 
 				}
 			}
 		}
@@ -409,32 +283,10 @@ bool Attack2(Session* _session)
 
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
-	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
-	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
 
 
 	//먼저 어택 메세지를 섹터에 뿌려줌
-
-	for (int i = -1; i < 2; i++)
-	{
-		for (int j = -1; j < 2; j++)
-		{
-			if (sectorX + i < 0 || sectorX+ i >= sectorXRange) continue;
-			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-
-			it = Sector[sectorX + i][sectorY + j].begin();
-
-			for (; it != Sector[sectorX + i][sectorY+ j].end(); it++)
-			{
-
-				if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-				SendAttack2Message((char*)_session, (char*)(*it), (char*)&AttackPacket);
-
-			}
-		}
-	}
+	MsgSectorBroadCasting(SendAttack2Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, false);
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
@@ -461,56 +313,16 @@ bool Attack2(Session* _session)
 					//타격 성공 
 					(*it)->_player->_hp -= dfAttack2Damage;
 
-
-					//데미지 메세지 보내기
-
-					std::list<Session*>::iterator FuncIt;
-
-					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
-					{
-						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
-						{
-							if (sectorX + damageIdex < 0 || sectorX+ damageIdex >= sectorXRange) continue;
-							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
-
-
-							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
-
-							for (; FuncIt != Sector[sectorX+ damageIdex][sectorY + damageJdex].end(); FuncIt++)
-							{
-								SendDamageMessage((char*)_session, (char*)(*it), (char*)(*FuncIt));
-							}
-						}
-					}
-
-					//사망 판정 //
+					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
 
 					if ((*it)->_player->_hp <= 0)
 					{
+						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 
-						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
-						{
-							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
-							{
-								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
-								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
-
-
-								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
-
-								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
-								{
-									SendDeleteMessage((char*)(*it), (char*)(*FuncIt));
-								}
-							}
-						}
-
-						return true; //한명 타격 성공하면 바로 리턴 
 						DeleteSession(*it);
-						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
-
 					}
 
+					return true; //한명 타격 성공하면 바로 리턴 
 				}
 			}
 		}
@@ -539,61 +351,17 @@ bool Attack2(Session* _session)
 						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y) == false)
 						continue;
 
-					//타격 성공 
+					//타격 성공
 					(*it)->_player->_hp -= dfAttack2Damage;
 
-
-					//데미지 메세지 보내기
-
-					std::list<Session*>::iterator FuncIt;
-
-					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
-					{
-						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
-						{
-							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
-							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
-
-
-							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
-
-							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
-							{
-
-								SendDamageMessage((char*)_session, (char*)(*it), (char*)(*FuncIt));
-							}
-						}
-					}
-
-					//사망 판정 //
+					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
 
 					if ((*it)->_player->_hp <= 0)
 					{
-
-						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
-						{
-							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
-							{
-								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
-								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
-
-
-								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
-
-								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
-								{
-
-									SendDeleteMessage((char*)(*it), (char*)(*FuncIt));
-								}
-							}
-						}
-
-						return true; //한명 타격 성공하면 바로 리턴 
+						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 						DeleteSession(*it);
-						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
-
 					}
-
+						return true; //한명 타격 성공하면 바로 리턴 
 				}
 			}
 		}
@@ -637,66 +405,12 @@ bool Attack3(Session* _session)
 
 	_session->_player->_direction = AttackPacket.Direction;
 
-
-	PacketHeader AttackHeader;
-	SC_ATTACK3 SCAttackPacket;
-
-	AttackHeader.byCode = 0x89;
-	AttackHeader.bySize = sizeof(SCAttackPacket);
-	AttackHeader.byType = dfPACKET_SC_ATTACK3;
-
-	SCAttackPacket.Direction = AttackPacket.Direction;
-	SCAttackPacket.X = AttackPacket.X;
-	SCAttackPacket.Y = AttackPacket.Y;
-	SCAttackPacket.ID = _session->_player->_ID;
-
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
-	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
-	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
 
 
 	//먼저 어택 메세지를 섹터에 뿌려줌
-
-	for (int i = -1; i < 2; i++)
-	{
-		for (int j = -1; j < 2; j++)
-		{
-			if (sectorX+ i < 0 || sectorX + i >= sectorXRange) continue;
-			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-
-			it = Sector[sectorX + i][sectorY + j].begin();
-
-			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-			{
-
-				if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-				if ((*it)->_sendQ.GetSizeFree() < sizeof(AttackHeader) + AttackHeader.bySize)
-				{
-					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
-			}
-		}
-	}
-
-
+	MsgSectorBroadCasting(SendAttack3Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, false);
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
@@ -725,118 +439,13 @@ bool Attack3(Session* _session)
 
 
 					//데미지 메세지 보내기
-
-					PacketHeader DamageHeader;
-					SC_DAMAGE DamagePacket;
-					std::list<Session*>::iterator FuncIt;
-
-					DamageHeader.byCode = 0x89;
-					DamageHeader.bySize = sizeof(DamagePacket);
-					DamageHeader.byType = dfPACKET_SC_DAMAGE;
-
-					DamagePacket.AttackID = _session->_player->_ID;
-					DamagePacket.DamageID = (*it)->_player->_ID;
-					DamagePacket.DamageHP = (*it)->_player->_hp;
-
-					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
-					{
-						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
-						{
-							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
-							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
-
-
-							FuncIt = Sector[sectorX + damageIdex][sectorY + damageJdex].begin();
-
-							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
-							{
-
-
-
-								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
-								{
-									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
-							}
-						}
-					}
-
-					//사망 판정 //
-
+					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
 					if ((*it)->_player->_hp <= 0)
 					{
-						PacketHeader DeleteHeader;
-						SC_DELETE_CHARACTER DeletePacket;
-
-						DeleteHeader.byCode = 0x89;
-						DeleteHeader.bySize = sizeof(DeletePacket);
-						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
-						
-
-						DeletePacket.ID = (*it)->_player->_ID;
-
-						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
-						{
-							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
-							{
-								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
-								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
-
-
-								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
-
-								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
-								{
-
-
-
-									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
-									{
-										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-
-
-
-								}
-							}
-						}
-
-						return true; //한명 타격 성공하면 바로 리턴 
+						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 						DeleteSession(*it);
-						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
-
 					}
-
+						return true; //한명 타격 성공하면 바로 리턴 
 				}
 			}
 		}
@@ -870,117 +479,13 @@ bool Attack3(Session* _session)
 
 
 					//데미지 메세지 보내기
-
-					PacketHeader DamageHeader;
-					SC_DAMAGE DamagePacket;
-					std::list<Session*>::iterator FuncIt;
-
-					DamageHeader.byCode = 0x89;
-					DamageHeader.bySize = sizeof(DamagePacket);
-					DamageHeader.byType = dfPACKET_SC_DAMAGE;
-
-					DamagePacket.AttackID = _session->_player->_ID;
-					DamagePacket.DamageID = (*it)->_player->_ID;
-					DamagePacket.DamageHP = (*it)->_player->_hp;
-
-					for (int damageIdex = -1; damageIdex < 2; damageIdex++)
-					{
-						for (int damageJdex = -1; damageJdex < 2; damageJdex++)
-						{
-							if (sectorX + damageIdex < 0 || sectorX + damageIdex >= sectorXRange) continue;
-							if (sectorY + damageJdex < 0 || sectorY + damageJdex >= sectorYRange) continue;
-
-
-							FuncIt = Sector[sectorX+ damageIdex][sectorY+ damageJdex].begin();
-
-							for (; FuncIt != Sector[sectorX + damageIdex][sectorY + damageJdex].end(); FuncIt++)
-							{
-
-
-
-								if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DamageHeader) + DamageHeader.bySize)
-								{
-									printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-									//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamageHeader, sizeof(DamageHeader), &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
-								if ((*FuncIt)->_sendQ.Enqueue((char*)&DamagePacket, DamageHeader.bySize, &enqueResult) == false)
-								{
-									printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-									return false;
-								}
-
-							}
-						}
-					}
-
-					//사망 판정 //
-
+					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
 					if ((*it)->_player->_hp <= 0)
 					{
-						PacketHeader DeleteHeader;
-						SC_DELETE_CHARACTER DeletePacket;
-
-						DeleteHeader.byCode = 0x89;
-						DeleteHeader.bySize = sizeof(DeletePacket);
-						DeleteHeader.byType = dfPACKET_SC_DELETE_CHARACTER;
-						
-
-						DeletePacket.ID = (*it)->_player->_ID;
-
-						for (int deleteIdex = -1; deleteIdex < 2; deleteIdex++)
-						{
-							for (int deleteJdex = -1; deleteJdex < 2; deleteJdex++)
-							{
-								if (sectorX + deleteIdex < 0 || sectorX + deleteIdex >= sectorXRange) continue;
-								if (sectorY + deleteJdex < 0 || sectorY + deleteJdex >= sectorYRange) continue;
-
-
-								FuncIt = Sector[sectorX + deleteIdex][sectorY + deleteJdex].begin();
-
-								for (; FuncIt != Sector[sectorX + deleteIdex][sectorY + deleteJdex].end(); FuncIt++)
-								{
-
-
-
-									if ((*FuncIt)->_sendQ.GetSizeFree() < sizeof(DeleteHeader) + DeleteHeader.bySize)
-									{
-										printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-										//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeleteHeader, sizeof(DeleteHeader), &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-									if ((*FuncIt)->_sendQ.Enqueue((char*)&DeletePacket, DeleteHeader.bySize, &enqueResult) == false)
-									{
-										printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-										return false;
-									}
-
-
-
-
-								}
-							}
-						}
-
-						return true; //한명 타격 성공하면 바로 리턴 
+						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 						DeleteSession(*it);
-						Sector[sectorX + i][sectorY + j].erase(it); //Sector 리스트에서 삭제
-
 					}
+						return true; //한명 타격 성공하면 바로 리턴 
 
 				}
 			}
@@ -1025,64 +530,13 @@ bool Sync(Session* _session)
 	_session->_player->_x = CS_Sync.X;
 	_session->_player->_y = CS_Sync.Y;
 
-
-	PacketHeader pHeader;
-	SC_SYNC SC_Sync;
-	pHeader.byCode = 0x89;
-	pHeader.bySize = sizeof(SC_Sync);
-	pHeader.byType = dfPACKET_SC_SYNC;
-
-	SC_Sync.ID = _session->_player->_ID;
-	SC_Sync.X = _session->_player->_x;
-	SC_Sync.Y = _session->_player->_y;
-
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
-	int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
-	int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
-
-	for (int i = -1; i < 2; i++)
-	{
-		for (int j = -1; j < 2; j++)
-		{
-			if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-			if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 
-			it = Sector[sectorX + i][sectorY + j].begin();
-
-			for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-			{
-
-				if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-				if ((*it)->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
-				{
-					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
-					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
-				if ((*it)->_sendQ.Enqueue((char*)&SC_Sync, pHeader.bySize, &enqueResult) == false)
-				{
-					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), enqueResult);
-					return false;
-				}
-
-			}
-		}
-	}
-
-
+	MsgSectorBroadCasting(SendSyncMessage, (char*)_session, sectorX, sectorY, false);
 
 	return true;
-
 }
 
 
@@ -1118,7 +572,6 @@ bool Echo(Session* _session)
 
 	_session->_recvQ.MoveFront(sizeof(CS_Echo));
 
-
 	//에코 메세지 다시 그 클라에 쏴주기
 
 	PacketHeader pHeader;
@@ -1130,18 +583,8 @@ bool Echo(Session* _session)
 
 	SC_Echo.Time = CS_Echo.Time;
 
-	/*
-	send(_session->_socket, (char*)&pHeader, sizeof(pHeader), NULL);
-	send(_session->_socket, (char*)&SC_Echo, pHeader.bySize, NULL);
-	*/
-	
-
-	
 	_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
 	_session->_sendQ.Enqueue((char*)&SC_Echo, pHeader.bySize, &enqueResult);
 	
-
-
-
 	return true;
 }

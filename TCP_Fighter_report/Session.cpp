@@ -280,7 +280,7 @@ bool DecodeMessages(Session* _session)
 bool DeleteSession(Session* _session)
 {
 
-
+	//DeleteMessage를 보내야 하는데 전체 세션에 보내줘야 하는지 ? 
 	_session->_delete = true;
 	DeleteArr.push_back(_session); // 지연 삭제를 위해 DeleteArr에 보관
 
@@ -380,20 +380,25 @@ defalut:
 		return true;
 
 
+	int oldSectorX = oldX / SECTOR_RATIO;
+	int oldSectorY = oldY / SECTOR_RATIO;
 
-	Sector[oldX / SECTOR_RATIO][oldY / SECTOR_RATIO].remove(pSession);
-	Sector[_x / SECTOR_RATIO][_y / SECTOR_RATIO].push_back(pSession);
+	int newSectorX = _x / SECTOR_RATIO;
+	int newSectorY = _y / SECTOR_RATIO;
+
+	Sector[oldSectorX][oldSectorY].remove(pSession);
+	Sector[newSectorX][newSectorY].push_back(pSession);
 
 	std::cout << "ID : " << _ID << std::endl;
-	std::cout << "!!!!!!!!!!!!!!!!!!! Remove : " << oldX / SECTOR_RATIO << " " << oldY / SECTOR_RATIO << std::endl;
-	std::cout << "!!!! CREATE : " << _x / SECTOR_RATIO << " " << _y / SECTOR_RATIO << std::endl;
+	std::cout << "!!!!!!!!!!!!!!!!!!! Remove : " << oldSectorX << " " << oldSectorY << std::endl;
+	std::cout << "!!!! CREATE : " << newSectorX << " " << newSectorY << std::endl;
 	
 	int paramX;
 	int paramY;
 
-	if (_x > oldX) //오른쪽으로 간 상황
+	if (newSectorX > oldSectorX) //오른쪽으로 간 상황
 	{
-		
+		printf("//////Move Sector R ////\n ");
 		paramX = oldX + dfSPEED_PLAYER_X;
 		paramY = oldY;
 		MoveSectorR(pSession, paramX, paramY, oldX, oldY);
@@ -401,8 +406,9 @@ defalut:
 		oldY = paramY;
 		
 	}
-	else if (oldX > _x) //왼쪽으로 간 상황
+	else if (oldSectorX > newSectorX) //왼쪽으로 간 상황
 	{
+		printf("//////Move Sector L ////\n ");
 		paramX = oldX - dfSPEED_PLAYER_X;
 		paramY = oldY;
 		MoveSectorL(pSession, paramX, paramY, oldX, oldY);
@@ -411,8 +417,9 @@ defalut:
 		
 		
 	}
-	if (_y > oldY) //아래로 간 상황
+	if (newSectorY > oldSectorY) //아래로 간 상황
 	{
+		printf("//////Move Sector D ////\n ");
 		paramX = oldX;
 		paramY = oldY + dfSPEED_PLAYER_Y;
 		MoveSectorD(pSession, paramX, paramY, oldX, oldY);
@@ -420,8 +427,9 @@ defalut:
 		oldY = paramY;
 		
 	}
-	else if (oldY > _y) //위로 간 상황
+	else if (oldSectorY > newSectorY) //위로 간 상황
 	{
+		printf("//////Move Sector U ////\n ");
 		paramX = oldX;
 		paramY = oldY - dfSPEED_PLAYER_Y;
 

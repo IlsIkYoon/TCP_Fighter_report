@@ -3,6 +3,9 @@
 
 
 std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
+int sectorXRange = dfRANGE_MOVE_RIGHT / SECTOR_RATIO;
+int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
+
 extern std::list<Session*> SessionArr;
 static std::list<Session*>::iterator stat_ArrIt;
 
@@ -93,6 +96,7 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 	int sectorBottomMax = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
 
 	// 이전 섹터에 내 세션 딜리트 메세지 보내주기//
+	
 	for (int i = -1; i < 2; i++)
 	{
 		oldSectorX = oldX / SECTOR_RATIO - 1;

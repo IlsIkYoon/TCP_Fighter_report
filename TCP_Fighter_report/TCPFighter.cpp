@@ -252,6 +252,7 @@ bool TCPFighter() {
 				Sector[DeleteArr[arrIdex]->_player->_x / SECTOR_RATIO][DeleteArr[arrIdex]->_player->_y / SECTOR_RATIO].
 					remove(DeleteArr[arrIdex]);
 				SessionArr.remove(DeleteArr[arrIdex]);
+				closesocket(DeleteArr[arrIdex]->_socket);
 				delete DeleteArr[arrIdex];
 			}
 			DeleteArr.clear();
