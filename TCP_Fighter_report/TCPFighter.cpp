@@ -1,8 +1,11 @@
 #include "TCPFighter.h"
-
+#include "Log.h"
 
 
 SOCKET listen_socket;
+
+DWORD frame = 0;
+DWORD sec;
 
 
 
@@ -62,14 +65,14 @@ bool TCPFighter() {
 	SessionArr.push_back(listen_session);
 	playerIdex++;
 
-	DWORD dwUpdateTick = timeGetTime() - 20;
-	
+	DWORD dwUpdateTick = timeGetTime() - 40;
+	sec = timeGetTime() / 1000;
 	
 	//메인 루프 //-----------------------------------------
 
 	while (1) 
 	{
-		dwUpdateTick += 20; // 50프레임 맞추기 위해 
+		dwUpdateTick += 40; // 25프레임 맞추기 위해 
 		//네트워크//----------------------------
 
 		for (int i = 0; i < SELECTCOUNT; i++)
@@ -131,12 +134,11 @@ bool TCPFighter() {
 					
 					if (GetLastError() == 10054)
 					{
-						printf("delete Session : %d\n", (*s_ArrIt)->_player->_ID);
 						DeleteSession(*s_ArrIt); 
 					}
-					
-					printf("recv error : %d , Line : %d\n", GetLastError(), __LINE__);
-
+					else {
+						printf("recv error : %d , Line : %d\n", GetLastError(), __LINE__);
+					}
 				}
 
 				else (*s_ArrIt)->_recvQ.MoveRear(recv_retval);
@@ -154,7 +156,9 @@ bool TCPFighter() {
 				//Todo// Send값이 적을 경우에 대한 예외처리 필요
 				if (send_retval == SOCKET_ERROR && GetLastError() != WSAEWOULDBLOCK)
 				{
+					if(GetLastError() != 10054)
 					printf("send Error : %d, Line : %d\n", GetLastError(), __LINE__);
+		
 				}
 
 				else (*s_ArrIt)->_sendQ.MoveFront(send_retval);
@@ -163,6 +167,7 @@ bool TCPFighter() {
 
 			iDex++;
 		}
+
 
 
 
@@ -197,8 +202,6 @@ bool TCPFighter() {
 
 					SessionArr.push_back(newSession);
 					playerIdex++;
-
-					printf("create new character ! %d \n", playerIdex);
 				}
 
 			}
@@ -239,33 +242,30 @@ bool TCPFighter() {
 			}
 		}
 
-		//*/
-
-
-		//DeleteArr을 돌면서 삭제해주는 로직이 필요
 		
-		if (DeleteArr.size() > 0)
-		{
-			int arrSize = DeleteArr.size();
-			for (int arrIdex = 0; arrIdex < arrSize; arrIdex++)
-			{
-				Sector[DeleteArr[arrIdex]->_player->_x / SECTOR_RATIO][DeleteArr[arrIdex]->_player->_y / SECTOR_RATIO].
-					remove(DeleteArr[arrIdex]);
-				SessionArr.remove(DeleteArr[arrIdex]);
-				closesocket(DeleteArr[arrIdex]->_socket);
-				delete DeleteArr[arrIdex];
-			}
-			DeleteArr.clear();
-			playerIdex -= arrSize;
-		}
-
 
 
 		DWORD dwTick2 = timeGetTime() - dwUpdateTick;
-		if (dwTick2 < 20)
+		if (dwTick2 < 40)
 		{
-			Sleep(20 - dwTick2);
+			Sleep(40 - dwTick2);
 		}
+
+
+		frame++;
+
+		if (sec != timeGetTime() / 1000)
+		{
+			//1초에 한번 할 일 
+			PrintLog();
+			sec = timeGetTime() / 1000;
+			frame = 0;
+
+		}
+
+			FlushDeleteArr();
+//			TimeOutCheck(); //timeOut로직이 문제를 일으키는 중
+
 
 
 	}

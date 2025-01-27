@@ -127,8 +127,8 @@ Y 축 - 2
 //-----------------------------------------------------------------
 // 캐릭터 이동 속도   // 25fps 기준 이동속도
 //-----------------------------------------------------------------
-#define dfSPEED_PLAYER_X	3//6	// 3   50fps
-#define dfSPEED_PLAYER_Y	2//4	// 2   50fps
+#define dfSPEED_PLAYER_X	6	// 3   50fps
+#define dfSPEED_PLAYER_Y	4	// 2   50fps
 
 
 

@@ -186,6 +186,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameProc.cpp" />
+    <ClCompile Include="Log.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="NetworkInit.cpp" />
@@ -197,6 +198,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameProc.h" />
+    <ClInclude Include="Log.h" />
     <ClInclude Include="Message.h" />
     <ClInclude Include="PacketDefine.h" />
     <ClInclude Include="resource.h" />

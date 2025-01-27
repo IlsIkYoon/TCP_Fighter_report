@@ -17,28 +17,12 @@ bool MoveStart(Session* _session)
 {
 	CS_MOVE_START MoveStartPacket;
 	unsigned int peekResult;
-	unsigned int dequeResult;
-	unsigned int enqueResult;
+
 	_session->_recvQ.Peek((char*)&MoveStartPacket, sizeof(MoveStartPacket), &peekResult);
 
 	if (peekResult < sizeof(MoveStartPacket)) {
 		
-		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-		__debugbreak();
-
-
-		//패킷 헤더 다시 넣는 과정
-		int ExtraBuf = _session->_recvQ.GetSizeUsed();
-		char* backUpBuf = (char*)malloc(ExtraBuf);
-		PacketHeader pHeader;
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(MoveStartPacket);
-		pHeader.byType = dfPACKET_CS_MOVE_START;
-
-		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
-		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
-		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
-
+		RestorePacket(_session, sizeof(MoveStartPacket), dfPACKET_CS_MOVE_START);
 		return false;
 	}
 	
@@ -64,25 +48,11 @@ bool MoveStop(Session* _session)
 
 	CS_MOVE_STOP MoveStopPacket;
 	unsigned int peekResult;
-	unsigned int dequeResult;
-	unsigned int enqueResult;
+
 	_session->_recvQ.Peek((char*)&MoveStopPacket, sizeof(MoveStopPacket), &peekResult);
+
 	if (peekResult < sizeof(MoveStopPacket)) {
-
-		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-		__debugbreak();
-		//패킷 헤더 다시 넣는 과정
-		int ExtraBuf = _session->_recvQ.GetSizeUsed();
-		char* backUpBuf = (char*)malloc(ExtraBuf);
-		PacketHeader pHeader;
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(MoveStopPacket);
-		pHeader.byType = dfPACKET_CS_MOVE_STOP;
-
-		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
-		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
-		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
-
+		RestorePacket(_session, sizeof(MoveStopPacket), dfPACKET_CS_MOVE_STOP);
 		return false;
 	}
 
@@ -106,28 +76,12 @@ bool Attack1(Session* _session)
 {
 	CS_ATTACK1 AttackPacket;
 	unsigned int peekResult;
-	unsigned int dequeResult;
-	unsigned int enqueResult;
 
 	_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket), &peekResult);
 
 	if (peekResult < sizeof(AttackPacket))
 	{
-
-		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-		__debugbreak();
-		//패킷 헤더 다시 넣는 과정
-		int ExtraBuf = _session->_recvQ.GetSizeUsed();
-		char* backUpBuf = (char*)malloc(ExtraBuf);
-		PacketHeader pHeader;
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(AttackPacket);
-		pHeader.byType = dfPACKET_CS_ATTACK1;
-
-		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
-		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
-		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
-
+		RestorePacket(_session, sizeof(AttackPacket), dfPACKET_CS_ATTACK1);
 		return false;
 	}
 
@@ -179,10 +133,6 @@ bool Attack1(Session* _session)
 
 					if ((*it)->_player->_hp <= 0)
 					{
-
-						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
-
-
 						DeleteSession(*it);
 					}
 						return true; //한명 타격 성공하면 바로 리턴 
@@ -225,14 +175,10 @@ bool Attack1(Session* _session)
 
 					MsgSectorBroadCasting(SendDamageMessage, (char*)_session,(char*)(*it), sectorX, sectorY, true);
 
-					
-
 					//사망 판정 //
 
 					if ((*it)->_player->_hp <= 0)
 					{
-						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
-
 						DeleteSession(*it);
 					}
 
@@ -251,28 +197,12 @@ bool Attack2(Session* _session)
 {
 	CS_ATTACK2 AttackPacket;
 	unsigned int peekResult;
-	unsigned int dequeResult;
-	unsigned int enqueResult;
 
 	_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket), &peekResult);
 
 	if (peekResult < sizeof(AttackPacket))
 	{
-
-		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-		__debugbreak();
-		//패킷 헤더 다시 넣는 과정
-		int ExtraBuf = _session->_recvQ.GetSizeUsed();
-		char* backUpBuf = (char*)malloc(ExtraBuf);
-		PacketHeader pHeader;
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(AttackPacket);
-		pHeader.byType = dfPACKET_CS_ATTACK2;
-
-		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
-		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
-		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
-
+		RestorePacket(_session, sizeof(AttackPacket), dfPACKET_CS_ATTACK2);
 		return false;
 	}
 
@@ -317,8 +247,6 @@ bool Attack2(Session* _session)
 
 					if ((*it)->_player->_hp <= 0)
 					{
-						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
-
 						DeleteSession(*it);
 					}
 
@@ -358,7 +286,6 @@ bool Attack2(Session* _session)
 
 					if ((*it)->_player->_hp <= 0)
 					{
-						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 						DeleteSession(*it);
 					}
 						return true; //한명 타격 성공하면 바로 리턴 
@@ -375,29 +302,13 @@ bool Attack3(Session* _session)
 {
 	CS_ATTACK3 AttackPacket;
 	unsigned int peekResult;
-	unsigned int dequeResult;
-	unsigned int enqueResult;
 
 	_session->_recvQ.Peek((char*)&AttackPacket, sizeof(AttackPacket), &peekResult);
 
 	if (peekResult < sizeof(AttackPacket))
 	{
 
-		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-
-		__debugbreak();
-		//패킷 헤더 다시 넣는 과정
-		int ExtraBuf = _session->_recvQ.GetSizeUsed();
-		char* backUpBuf = (char*)malloc(ExtraBuf);
-		PacketHeader pHeader;
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(AttackPacket);
-		pHeader.byType = dfPACKET_CS_ATTACK3;
-
-		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
-		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
-		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
-
+		RestorePacket(_session, sizeof(AttackPacket), dfPACKET_CS_ATTACK3);
 		return false;
 	}
 
@@ -442,7 +353,6 @@ bool Attack3(Session* _session)
 					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
 					if ((*it)->_player->_hp <= 0)
 					{
-						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 						DeleteSession(*it);
 					}
 						return true; //한명 타격 성공하면 바로 리턴 
@@ -482,7 +392,6 @@ bool Attack3(Session* _session)
 					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
 					if ((*it)->_player->_hp <= 0)
 					{
-						MsgSectorBroadCasting(SendDeleteMessage, (char*)(*it), sectorX, sectorY, true);
 						DeleteSession(*it);
 					}
 						return true; //한명 타격 성공하면 바로 리턴 
@@ -503,29 +412,15 @@ bool Sync(Session* _session)
 
 	CS_SYNC CS_Sync;
 	unsigned int peekResult;
-	unsigned int dequeResult;
-	unsigned int enqueResult;
 
 	_session->_recvQ.Peek((char*)&CS_Sync, sizeof(CS_Sync), &peekResult);
 	if (peekResult < sizeof(CS_Sync))
 	{
-		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-		__debugbreak();
-		//패킷 헤더 다시 넣는 과정
-		int ExtraBuf = _session->_recvQ.GetSizeUsed();
-		char* backUpBuf = (char*)malloc(ExtraBuf);
-		PacketHeader pHeader;
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(CS_Sync);
-		pHeader.byType = dfPACKET_CS_SYNC;
-
-		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
-		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
-		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
-
+		RestorePacket(_session, sizeof(CS_Sync), dfPACKET_CS_SYNC);
 		return false;
-
 	}
+
+	_session->_recvQ.MoveFront(sizeof(CS_Sync));
 
 	_session->_player->_x = CS_Sync.X;
 	_session->_player->_y = CS_Sync.Y;
@@ -552,22 +447,8 @@ bool Echo(Session* _session)
 	_session->_recvQ.Peek((char*)&CS_Echo, sizeof(CS_Echo), &peekResult);
 	if (peekResult < sizeof(CS_Echo))
 	{
-		printf("Peek error, Line : %d, front : %d, rear : %d\n", __LINE__, _session->_recvQ.GetFront(), _session->_recvQ.GetRear());
-		__debugbreak();
-		//패킷 헤더 다시 넣는 과정
-		int ExtraBuf = _session->_recvQ.GetSizeUsed();
-		char* backUpBuf = (char*)malloc(ExtraBuf);
-		PacketHeader pHeader;
-		pHeader.byCode = 0x89;
-		pHeader.bySize = sizeof(CS_Echo);
-		pHeader.byType = dfPACKET_CS_ECHO;
-
-		_session->_recvQ.Dequeue(backUpBuf, ExtraBuf, &dequeResult);
-		_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
-		_session->_recvQ.Enqueue(backUpBuf, ExtraBuf, &enqueResult);
-
+		RestorePacket(_session, sizeof(CS_Echo), dfPACKET_CS_ECHO);
 		return false;
-
 	}
 
 	_session->_recvQ.MoveFront(sizeof(CS_Echo));

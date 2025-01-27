@@ -12,7 +12,6 @@ void SendMoveStartMessage(char* src, char* dest)
 	Session* _dest = (Session*)dest;
 	PacketHeader pHeader;
 	SC_MOVE_START MovePacket;
-	printf("Dest ID : %d ||Send MoveStart Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(MovePacket);
@@ -45,7 +44,6 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 
 	PacketHeader pHeader;
 	SC_CREATE_OTHER_CHARACTER CreatePacket;
-	printf("Dest ID : %d || Send CreateOtherCharactrer Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(CreatePacket);
@@ -81,7 +79,6 @@ void SendDeleteMessage(char* src, char* dest)
 	PacketHeader pHeader;
 	SC_DELETE_CHARACTER DeletePacket;
 
-	printf("Dest ID : %d ||Send Delete Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(DeletePacket);
@@ -112,7 +109,6 @@ void SendMoveStopMessage(char* src, char* dest)
 	PacketHeader pHeader;
 	SC_MOVE_STOP MoveStopPacket;
 
-	printf("Dest ID : %d ||Send MoveStop Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(MoveStopPacket);
@@ -152,8 +148,6 @@ void SendAttack1Message(char* src, char* dest, char* _srcAttackPacket)
 	PacketHeader AttackHeader;
 	SC_ATTACK1 SCAttackPacket;
 
-	printf("Dest ID : %d ||Send Attack1 Message\n", _dest->_player->_ID);
-
 	AttackHeader.byCode = 0x89;
 	AttackHeader.bySize = sizeof(SCAttackPacket);
 	AttackHeader.byType = dfPACKET_SC_ATTACK1;
@@ -187,8 +181,6 @@ void SendAttack2Message(char* src, char* dest, char* _srcAttackPacket)
 
 	PacketHeader AttackHeader;
 	SC_ATTACK2 SCAttackPacket;
-
-	printf("Dest ID : %d ||Send Attack2 Message\n", _dest->_player->_ID);
 
 	AttackHeader.byCode = 0x89;
 	AttackHeader.bySize = sizeof(SCAttackPacket);
@@ -224,8 +216,6 @@ void SendAttack3Message(char* src, char* dest, char* _srcAttackPacket)
 	PacketHeader AttackHeader;
 	SC_ATTACK3 SCAttackPacket;
 
-	printf("Dest ID : %d ||Send Attack3 Message\n", _dest->_player->_ID);
-
 	AttackHeader.byCode = 0x89;
 	AttackHeader.bySize = sizeof(SCAttackPacket);
 	AttackHeader.byType = dfPACKET_SC_ATTACK3;
@@ -260,8 +250,6 @@ void SendDamageMessage(char* Attack, char* dest, char* Damage)
 	PacketHeader pHeader;
 	SC_DAMAGE DamagePacket;
 
-	printf("Dest ID : %d ||Send Dammage Message\n", _dest->_player->_ID);
-
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(DamagePacket);
 	pHeader.byType = dfPACKET_SC_DAMAGE;
@@ -295,8 +283,6 @@ void SendSyncMessage(char* src, char* dest)
 
 	PacketHeader pHeader;
 	SC_SYNC SC_Sync;
-
-	printf("Dest ID : %d ||Send Sync Message\n", _dest->_player->_ID);
 
 	pHeader.byCode = 0x89;
 	pHeader.bySize = sizeof(SC_Sync);
@@ -540,4 +526,20 @@ void MsgSectorDSend(void (*Func)(char* src, char* dest, char* AttackPacket), cha
 }
 
 
+void RestorePacket(Session* _session, int packetSize, int packetType)
+{
+	unsigned int dequeResult;
+	unsigned int enqueResult;
+	PacketHeader pHeader;
+	pHeader.byCode = 0x89;
+	pHeader.bySize = packetSize;
+	pHeader.byType = packetType;
+	int size = _session->_recvQ.GetSizeUsed();
+	char* localBuf = (char*)malloc(size);
 
+	_session->_recvQ.Dequeue(localBuf, size, &dequeResult);
+	_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
+	_session->_recvQ.Enqueue(localBuf, size, &enqueResult);
+
+	return;
+}

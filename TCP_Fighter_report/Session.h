@@ -22,8 +22,14 @@ public:
 	RingBuffer _sendQ;
 	Player* _player;
 
+	DWORD _timeout;
 	bool _delete;
 	//Session* _next; 배열로 가기 때문에 필요 없음
+	Session() {
+		_timeout = timeGetTime();
+		_delete = false;
+	}
+
 
 };
 
@@ -81,7 +87,8 @@ bool DecodeMessages(Session* _session);
 
 bool DeleteSession(Session* _session);
 
-
+void FlushDeleteArr();
+void TimeOutCheck();
 
 
 #endif

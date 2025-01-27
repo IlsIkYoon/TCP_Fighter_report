@@ -1,17 +1,20 @@
 #include "Session.h"
 #include "GameProc.h"
 #include "Sector.h"
-
+#include "Message.h"
 
 //전역변수
 std::list<Session*> SessionArr;
 std::list<Session*>::iterator s_ArrIt;
 
-
+DWORD timeOutCount = 0;
 DWORD playerIdex = 0; //63명까지 접속을 받는 상황으로 가정
 
 std::vector<Session*> DeleteArr; 
 
+
+
+extern DWORD SyncCount;
 
 extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
 extern Session* pSector;
@@ -172,7 +175,7 @@ bool CreateNewCharacter(Session* _session) {
 bool DecodeMessages(Session* _session) 
 {
 
-
+	_session->_timeout = timeGetTime();
 
 	unsigned int peekResult;
 	PacketHeader pHeader;
@@ -255,7 +258,7 @@ bool DecodeMessages(Session* _session)
 
 
 		case dfPACKET_CS_SYNC:
-			//Todo//CS SYnc메세지를 받으면 그 해당 캐릭터 좌표를 서버에서 입력하고 섹터에 캐릭터 좌표를 SC_SYNC로 뿌려야함
+			SyncCount++;
 			Sync(_session);
 			break;
 
@@ -279,8 +282,9 @@ bool DecodeMessages(Session* _session)
 
 bool DeleteSession(Session* _session)
 {
-
-	//DeleteMessage를 보내야 하는데 전체 세션에 보내줘야 하는지 ? 
+	int sectorX = _session->_player->_x / SECTOR_RATIO;
+	int sectorY = _session->_player->_y / SECTOR_RATIO;
+	MsgSectorBroadCasting(SendDeleteMessage, (char*)_session, sectorX, sectorY, true);
 	_session->_delete = true;
 	DeleteArr.push_back(_session); // 지연 삭제를 위해 DeleteArr에 보관
 
@@ -304,66 +308,66 @@ bool Player::Move() {
 	switch (_direction) {
 	case dfPACKET_MOVE_DIR_LL:
 	{
-		if (_x - 3 < dfRANGE_MOVE_LEFT) return false;
-		_x -= 3;;
+		if (_x - dfSPEED_PLAYER_X < dfRANGE_MOVE_LEFT) return false;
+		_x -= dfSPEED_PLAYER_X;;
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_LU:
 	{
-		if (_x - 3 < dfRANGE_MOVE_LEFT || _y - 2 < dfRANGE_MOVE_TOP) return false;
-		_x -= 3;
-		_y -= 2;
+		if (_x - dfSPEED_PLAYER_X < dfRANGE_MOVE_LEFT || _y - dfSPEED_PLAYER_Y < dfRANGE_MOVE_TOP) return false;
+		_x -= dfSPEED_PLAYER_X;
+		_y -= dfSPEED_PLAYER_Y;
 	}
 
 	break;
 
 	case dfPACKET_MOVE_DIR_UU:
 	{
-		if (_y - 2 < dfRANGE_MOVE_TOP) return false;
-		_y -= 2;
+		if (_y - dfSPEED_PLAYER_Y < dfRANGE_MOVE_TOP) return false;
+		_y -= dfSPEED_PLAYER_Y;
 	}
 
 	break;
 
 	case dfPACKET_MOVE_DIR_RU:
 	{
-		if (_x + 3 >= dfRANGE_MOVE_RIGHT || _y - 2 < dfRANGE_MOVE_TOP) return false;
-		_x += 3;
-		_y -= 2;
+		if (_x + dfSPEED_PLAYER_X >= dfRANGE_MOVE_RIGHT || _y - dfSPEED_PLAYER_Y < dfRANGE_MOVE_TOP) return false;
+		_x += dfSPEED_PLAYER_X;
+		_y -= dfSPEED_PLAYER_Y;
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_RR:
 	{
-		if (_x + 3 >= dfRANGE_MOVE_RIGHT) return false;
-		_x += 3;
+		if (_x + dfSPEED_PLAYER_X >= dfRANGE_MOVE_RIGHT) return false;
+		_x += dfSPEED_PLAYER_X;
 		
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_RD:
 	{
-		if (_x + 3 >= dfRANGE_MOVE_RIGHT || _y + 2 >= dfRANGE_MOVE_BOTTOM) return false;
-		_x += 3;
-		_y += 2;
+		if (_x + dfSPEED_PLAYER_X >= dfRANGE_MOVE_RIGHT || _y + dfSPEED_PLAYER_Y >= dfRANGE_MOVE_BOTTOM) return false;
+		_x += dfSPEED_PLAYER_X;
+		_y += dfSPEED_PLAYER_Y;
 	
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_DD:
 	{
-		if (_y + 2 >= dfRANGE_MOVE_BOTTOM) return false;
-		_y += 2;
+		if (_y + dfSPEED_PLAYER_Y >= dfRANGE_MOVE_BOTTOM) return false;
+		_y += dfSPEED_PLAYER_Y;
 	
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_LD:
 	{
-		if (_x - 3 < dfRANGE_MOVE_LEFT || _y + 2 >= dfRANGE_MOVE_BOTTOM) return false;
-		_x -= 3;
-		_y += 2;
+		if (_x - dfSPEED_PLAYER_X < dfRANGE_MOVE_LEFT || _y + dfSPEED_PLAYER_Y >= dfRANGE_MOVE_BOTTOM) return false;
+		_x -= dfSPEED_PLAYER_X;
+		_y += dfSPEED_PLAYER_Y;
 	
 	}
 	break;
@@ -388,17 +392,12 @@ defalut:
 
 	Sector[oldSectorX][oldSectorY].remove(pSession);
 	Sector[newSectorX][newSectorY].push_back(pSession);
-
-	std::cout << "ID : " << _ID << std::endl;
-	std::cout << "!!!!!!!!!!!!!!!!!!! Remove : " << oldSectorX << " " << oldSectorY << std::endl;
-	std::cout << "!!!! CREATE : " << newSectorX << " " << newSectorY << std::endl;
 	
 	int paramX;
 	int paramY;
 
 	if (newSectorX > oldSectorX) //오른쪽으로 간 상황
 	{
-		printf("//////Move Sector R ////\n ");
 		paramX = oldX + dfSPEED_PLAYER_X;
 		paramY = oldY;
 		MoveSectorR(pSession, paramX, paramY, oldX, oldY);
@@ -408,7 +407,6 @@ defalut:
 	}
 	else if (oldSectorX > newSectorX) //왼쪽으로 간 상황
 	{
-		printf("//////Move Sector L ////\n ");
 		paramX = oldX - dfSPEED_PLAYER_X;
 		paramY = oldY;
 		MoveSectorL(pSession, paramX, paramY, oldX, oldY);
@@ -419,7 +417,6 @@ defalut:
 	}
 	if (newSectorY > oldSectorY) //아래로 간 상황
 	{
-		printf("//////Move Sector D ////\n ");
 		paramX = oldX;
 		paramY = oldY + dfSPEED_PLAYER_Y;
 		MoveSectorD(pSession, paramX, paramY, oldX, oldY);
@@ -429,7 +426,6 @@ defalut:
 	}
 	else if (oldSectorY > newSectorY) //위로 간 상황
 	{
-		printf("//////Move Sector U ////\n ");
 		paramX = oldX;
 		paramY = oldY - dfSPEED_PLAYER_Y;
 
@@ -500,5 +496,44 @@ void Player::MoveStop(int Dir, int x, int y)
 	
 
 
+
+}
+
+void FlushDeleteArr()
+{
+	if (DeleteArr.size() > 0)
+	{
+		int arrSize = DeleteArr.size();
+		for (int arrIdex = 0; arrIdex < arrSize; arrIdex++)
+		{
+			Sector[DeleteArr[arrIdex]->_player->_x / SECTOR_RATIO][DeleteArr[arrIdex]->_player->_y / SECTOR_RATIO].
+				remove(DeleteArr[arrIdex]);
+			SessionArr.remove(DeleteArr[arrIdex]);
+
+			//SendDeleteMessage 해야함
+
+
+			closesocket(DeleteArr[arrIdex]->_socket);
+			delete DeleteArr[arrIdex];
+		}
+		DeleteArr.clear();
+		playerIdex -= arrSize;
+	}
+}
+
+void TimeOutCheck()
+{
+	int deadLine = timeGetTime() - dfNETWORK_PACKET_RECV_TIMEOUT;
+
+	s_ArrIt = SessionArr.begin();
+	s_ArrIt++;
+	for (; s_ArrIt != SessionArr.end(); s_ArrIt++)
+	{
+		if ((*s_ArrIt)->_timeout < deadLine)
+		{
+			DeleteSession(*s_ArrIt);
+			timeOutCount++;
+		}
+	}
 
 }
