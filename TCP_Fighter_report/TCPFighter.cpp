@@ -264,7 +264,7 @@ bool TCPFighter() {
 		}
 
 			FlushDeleteArr();
-//			TimeOutCheck(); //timeOut로직을 그대로 둬도 컨텐츠 오류가 나지 않는지 체크
+			//TimeOutCheck(); //timeOut로직을 그대로 둬도 컨텐츠 오류가 나지 않는지 체크
 
 
 

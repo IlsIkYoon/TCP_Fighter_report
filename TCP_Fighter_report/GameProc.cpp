@@ -225,7 +225,7 @@ bool Attack2(Session* _session)
 			for (int j = -1; j < 2; j++)
 			{
 				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-				if (sectorX + j < 0 || sectorY + j >= sectorYRange) continue;
+				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
 
 				it = Sector[sectorX + i][sectorY + j].begin();
 

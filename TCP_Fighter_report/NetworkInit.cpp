@@ -39,8 +39,9 @@ bool NetworkInit() {
 		return false;
 	}
 	printf("bind\n");
+	
 
-	sock_retval = listen(listen_socket, SOMAXCONN);
+	sock_retval = listen(listen_socket, SOMAXCONN_HINT(65536));
 	if (sock_retval != 0) {
 		printf("%d listen error : %d\n", __LINE__, GetLastError());
 		return false;
