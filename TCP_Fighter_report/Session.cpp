@@ -12,7 +12,7 @@ DWORD playerIdex = 0; //63명까지 접속을 받는 상황으로 가정
 
 std::vector<Session*> DeleteArr; 
 
-
+int playerID = 1;
 
 extern DWORD SyncCount;
 
@@ -42,7 +42,7 @@ bool CreateNewCharacter(Session* _session) {
 	CreatePacket.HP = _session->_player->_hp;
 	CreatePacket.X = _session->_player->_x;
 	CreatePacket.Y = _session->_player->_y;
-	CreatePacket.ID = playerIdex;
+	CreatePacket.ID = playerID++;
 
 	if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
 	{
@@ -175,7 +175,7 @@ bool CreateNewCharacter(Session* _session) {
 bool DecodeMessages(Session* _session) 
 {
 
-	_session->_timeout = timeGetTime();
+	//_session->_timeout = timeGetTime();
 
 	unsigned int peekResult;
 	PacketHeader pHeader;
@@ -232,6 +232,7 @@ bool DecodeMessages(Session* _session)
 			break;
 
 		case dfPACKET_CS_MOVE_STOP:
+
 			MoveStop(_session);
 
 			break;
@@ -459,7 +460,7 @@ bool Player::MoveStart(BYTE Direction, short X, short Y) {
 
 	//섹터 동기화 작업
 
-	SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
+	//SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
 
 
 	
@@ -471,31 +472,25 @@ bool Player::MoveStart(BYTE Direction, short X, short Y) {
 
 void Player::MoveStop(int Dir, int x, int y)
 {
-	int oldSectorX = _x / SECTOR_RATIO;
-	int oldSectorY = _y / SECTOR_RATIO;
-	int newSectorX = x / SECTOR_RATIO;
-	int newSectorY = y / SECTOR_RATIO;
+
 	
+	int sumX = x - _x;
+	int sumY = y - _y;
+
+	if (sumX < 0) sumX *= -1;
+	if (sumY < 0) sumY *= -1;
+
 	_direction = Dir;
-	_x = x;
-	_y = y;
+
 	_move = false;
 
 
-	if (oldSectorX == newSectorX && oldSectorY == newSectorY) return;
+	if (sumX < dfERROR_RANGE && sumY < dfERROR_RANGE) return;
 
 	//섹터 동기화 작업
-
-	SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
-
-
 	
-
-	//Todo//StopMessage보내기
-
 	
-
-
+	SyncPos(pSession, _x, _y, x, y);
 
 }
 

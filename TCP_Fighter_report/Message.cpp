@@ -1,8 +1,10 @@
 #include "Message.h"
+#include "Sector.h"
 
 extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
 extern int sectorXRange;
 extern int sectorYRange;
+extern DWORD SyncCount;
 
 void SendMoveStartMessage(char* src, char* dest)
 {
@@ -25,11 +27,11 @@ void SendMoveStartMessage(char* src, char* dest)
 	//EnqueÇÏ±â
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&MovePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 }
@@ -58,11 +60,11 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&CreatePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 
@@ -89,11 +91,11 @@ void SendDeleteMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&DeletePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 
@@ -122,11 +124,11 @@ void SendMoveStopMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&MoveStopPacket, pHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 
@@ -159,11 +161,11 @@ void SendAttack1Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 
@@ -193,11 +195,11 @@ void SendAttack2Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 
@@ -227,11 +229,11 @@ void SendAttack3Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 
@@ -261,11 +263,11 @@ void SendDamageMessage(char* Attack, char* dest, char* Damage)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&DamagePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 
@@ -295,11 +297,11 @@ void SendSyncMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SC_Sync, pHeader.bySize, &enqueResult) == false)
 	{
-		printf("Send Error ||Line : %d, enqueResult : %d\n", __LINE__, enqueResult);
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, _dest->_sendQ.GetSizeUsed());
 	}
 	return;
 }
@@ -542,4 +544,40 @@ void RestorePacket(Session* _session, int packetSize, int packetType)
 	_session->_recvQ.Enqueue(localBuf, size, &enqueResult);
 
 	return;
+}
+
+
+
+void SyncPos(Session* pSession, int sX, int sY, int cX, int cY)
+{
+	unsigned int enqueResult;
+	int SVSectorX = sX / SECTOR_RATIO;
+	int SVSectorY = sY / SECTOR_RATIO;
+	int CLSectorX = cX / SECTOR_RATIO;
+	int CLSectorY = cY / SECTOR_RATIO;
+
+	PacketHeader pHeader;
+	SC_SYNC SC_Sync;
+
+	pHeader.byCode = 0x89;
+	pHeader.bySize = sizeof(SC_Sync);
+	pHeader.byType = dfPACKET_SC_SYNC;
+
+	SC_Sync.ID = pSession->_player->_ID;
+	SC_Sync.X = pSession->_player->_x;
+	SC_Sync.Y = pSession->_player->_y;
+	
+	
+	if (pSession->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
+	{
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, pSession->_sendQ.GetSizeUsed());
+	}
+	if (pSession->_sendQ.Enqueue((char*)&SC_Sync, pHeader.bySize, &enqueResult) == false)
+	{
+		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, pSession->_sendQ.GetSizeUsed());
+	}
+
+	SyncCount++;
+	SyncSector(pSession, CLSectorX, CLSectorY, SVSectorX, SVSectorY);
+
 }

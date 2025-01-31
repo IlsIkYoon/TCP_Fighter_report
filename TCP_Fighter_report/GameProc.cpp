@@ -59,14 +59,22 @@ bool MoveStop(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(MoveStopPacket));
 	
 
+
+	//-------------------------------------------------------------------------------------//
+
 	_session->_player->MoveStop(MoveStopPacket.Direction, MoveStopPacket.X, MoveStopPacket.Y);
 	
 
-	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
-	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
+
+
+
+	int sectorX = MoveStopPacket.X / SECTOR_RATIO;
+	int sectorY = MoveStopPacket.Y / SECTOR_RATIO;
 
 
 	MsgSectorBroadCasting(SendMoveStopMessage, (char*)_session, sectorX, sectorY, false);
+
+	
 
 	return true;
 }

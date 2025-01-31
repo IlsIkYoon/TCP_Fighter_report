@@ -83,10 +83,49 @@ bool TCPFighter() {
 
 
 		//FD_SET(listen_socket, &readset[0]);
+	
+		Session* newacptSession;
 		
+		for (int acptIdex = 0; acptIdex < 100; acptIdex++)
+		{
+			newacptSession = nullptr;
+			newacptSession = new Session;
+			ZeroMemory(newacptSession, sizeof(newacptSession));
+			newacptSession->_socket = accept(listen_socket, (SOCKADDR*)&clientAddr, &addrSize);
+
+			if (newacptSession->_socket == INVALID_SOCKET)
+			{
+				delete newacptSession;
+				break;
+			}
+
+			if (newacptSession->_socket == SOCKET_ERROR && GetLastError() == WSAEWOULDBLOCK)
+			{
+				delete newacptSession;
+				break;
+			}
+
+			newacptSession->_ip = clientAddr.sin_addr.s_addr;
+			newacptSession->_port = clientAddr.sin_port;
+			newacptSession->_player = new Player(newacptSession);
+			newacptSession->_delete = false; //delete에 false;
+			Sector[newacptSession->_player->_x / SECTOR_RATIO][newacptSession->_player->_y / SECTOR_RATIO].push_back(newacptSession);
+
+			CreateNewCharacter(newacptSession);
+
+			SessionArr.push_back(newacptSession);
+			playerIdex++;
+
+		}
 
 
+		/*
+		for (auto session : SessionArr)
+		{
+			FD_SET(session->_socket, 
+		}
 		
+		*/
 		
 		iDex = 0;
 		for (s_ArrIt = SessionArr.begin(); s_ArrIt != SessionArr.end(); s_ArrIt++)
@@ -116,6 +155,8 @@ bool TCPFighter() {
 		{
 			if (FD_ISSET((*s_ArrIt)->_socket, &readset[iDex / 64]))
 			{
+				(*s_ArrIt)->_timeout = timeGetTime();
+
 				recv_retval = recv((*s_ArrIt)->_socket, (*s_ArrIt)->_recvQ.GetRear(),
 					(*s_ArrIt)->_recvQ.GetDirectEnqueSize(), NULL);
 
@@ -264,7 +305,7 @@ bool TCPFighter() {
 		}
 
 			FlushDeleteArr();
-			//TimeOutCheck(); //timeOut로직을 그대로 둬도 컨텐츠 오류가 나지 않는지 체크
+			//TimeOutCheck(); //timeOut로직을 그대로 둬도 컨텐츠 오류가 나지 않는지 체크 // 현재 TimeOut이랑 CloseSocket이랑 겹침
 
 
 

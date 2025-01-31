@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#define DefaultBufSize 4 * 1024
+#define DefaultBufSize 4 * 1024 * 10
 
 
 
@@ -16,6 +16,7 @@ class RingBuffer
 	int _rear;
 	int _front;
 	int _bufSize;
+
 
 public:
 

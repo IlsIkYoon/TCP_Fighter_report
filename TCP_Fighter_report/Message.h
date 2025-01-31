@@ -30,3 +30,7 @@ void SendDamageMessage(char* Attack, char* dest, char* Damaged);
 void SendSyncMessage(char* src, char* dest);
 
 void RestorePacket(Session* _session, int packetSize, int packetType);
+
+
+
+void SyncPos(Session* pSession, int sX, int sY, int cX, int cY);
