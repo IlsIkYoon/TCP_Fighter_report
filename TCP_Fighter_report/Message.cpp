@@ -557,7 +557,9 @@ void SyncPos(Session* pSession, int sX, int sY, int cX, int cY)
 
 	int SVSectorX = sX / SECTOR_RATIO;
 	int SVSectorY = sY / SECTOR_RATIO;
-	MsgSectorBroadCasting(SendSyncMessage, (char*)pSession, SVSectorX, SVSectorY, true);
+	SendSyncMessage((char*)pSession, (char*)pSession);
+
+	//MsgSectorBroadCasting(SendSyncMessage, (char*)pSession, SVSectorX, SVSectorY, true);
 
 
 	SyncMessageCount++;
