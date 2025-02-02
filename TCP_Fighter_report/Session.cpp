@@ -259,9 +259,11 @@ bool DecodeMessages(Session* _session)
 
 
 		case dfPACKET_CS_SYNC:
+		{
 			__debugbreak();
 			SyncMessageCount++;
 			Sync(_session);
+		}
 			break;
 
 		case dfPACKET_CS_ECHO:

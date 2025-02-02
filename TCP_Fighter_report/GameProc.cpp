@@ -99,7 +99,7 @@ bool Attack1(Session* _session)
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
 
-	MsgSectorBroadCasting(SendAttack1Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, false);
+	MsgSectorBroadCasting(SendAttack1Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
 
 
 	if ((AttackPacket.Direction) == LL) //left
@@ -221,7 +221,7 @@ bool Attack2(Session* _session)
 
 
 	//먼저 어택 메세지를 섹터에 뿌려줌
-	MsgSectorBroadCasting(SendAttack2Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, false);
+	MsgSectorBroadCasting(SendAttack2Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
 
 	if ((AttackPacket.Direction) == LL) //left
 	{
@@ -326,7 +326,7 @@ bool Attack3(Session* _session)
 
 
 	//먼저 어택 메세지를 섹터에 뿌려줌
-	MsgSectorBroadCasting(SendAttack3Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, false);
+	MsgSectorBroadCasting(SendAttack3Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
 
 	if ((AttackPacket.Direction) == LL) //left
 	{

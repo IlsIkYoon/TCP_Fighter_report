@@ -291,8 +291,20 @@ bool TCPFighter() {
 
 
 		DWORD dwTick2 = timeGetTime() - dwUpdateTick;
+
 		if (dwTick2 < 40)
 		{
+
+
+			//dwTick2 +=  timeGetTime() - (dwTick2 + dwUpdateTick); //렌더링 된 시간만큼 더해줌 
+			
+
+			if (40 - dwTick2 < 0) __debugbreak();
+
+
+			Sleep(40 - dwTick2); //??? 슬립이 길게 걸렸다는 의미 같은데 
+			
+		}
 
 			if (sec != timeGetTime() / 1000)
 			{
@@ -302,16 +314,6 @@ bool TCPFighter() {
 				frame = 0;
 
 			}
-
-			
-			dwTick2 +=  timeGetTime() - (dwTick2 + dwUpdateTick); //렌더링 된 시간만큼 더해줌 
-			
-
-			if (40 - dwTick2 < 0) __debugbreak();
-			Sleep(40 - dwTick2); //??? 슬립이 길게 걸렸다는 의미 같은데 
-			
-		}
-
 
 		frame++;
 
