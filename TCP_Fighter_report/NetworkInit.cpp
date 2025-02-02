@@ -3,7 +3,8 @@
 
 extern SOCKET listen_socket;
 
-bool NetworkInit() {
+bool NetworkInit() 
+{
 
 	WSADATA wsa;
 	int wsa_retval;

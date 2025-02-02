@@ -1,3 +1,4 @@
+#include "NetworkInit.h"
 #include "TCPFighter.h"
 #include "Log.h"
 
