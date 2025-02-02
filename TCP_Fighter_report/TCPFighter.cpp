@@ -166,15 +166,17 @@ bool TCPFighter() {
 				if (recv_retval == 0)
 				{
 					
-					printf("delete Session : %d\n", (*s_ArrIt)->_player->_ID);
+					//printf("delete Session : %d\n", (*s_ArrIt)->_player->_ID);
 					DeleteSession(*s_ArrIt);
 				}
 
 				else if (recv_retval == SOCKET_ERROR && GetLastError() != WSAEWOULDBLOCK)
 				{
 					
-					if (GetLastError() == 10054)
+					if (GetLastError() == 10054 || GetLastError() == 10053)
 					{
+
+						//printf("delete Session : %d\n", (*s_ArrIt)->_player->_ID);
 						DeleteSession(*s_ArrIt); 
 					}
 					else {
@@ -197,7 +199,7 @@ bool TCPFighter() {
 				//Todo// Send값이 적을 경우에 대한 예외처리 필요
 				if (send_retval == SOCKET_ERROR && GetLastError() != WSAEWOULDBLOCK)
 				{
-					if(GetLastError() != 10054)
+					if(GetLastError() != 10054 && GetLastError() != 10053)
 					printf("send Error : %d, Line : %d\n", GetLastError(), __LINE__);
 		
 				}
@@ -284,28 +286,35 @@ bool TCPFighter() {
 		}
 
 		
+		TimeOutCheck(); //timeOut로직을 그대로 둬도 컨텐츠 오류가 나지 않는지 체크 // 현재 TimeOut이랑 CloseSocket이랑 겹침
+		FlushDeleteArr();
 
 
 		DWORD dwTick2 = timeGetTime() - dwUpdateTick;
 		if (dwTick2 < 40)
 		{
-			Sleep(40 - dwTick2);
+
+			if (sec != timeGetTime() / 1000)
+			{
+				//1초에 한번 할 일 
+				PrintLog();
+				sec = timeGetTime() / 1000;
+				frame = 0;
+
+			}
+
+			
+			dwTick2 +=  timeGetTime() - (dwTick2 + dwUpdateTick); //렌더링 된 시간만큼 더해줌 
+			
+
+			if (40 - dwTick2 < 0) __debugbreak();
+			Sleep(40 - dwTick2); //??? 슬립이 길게 걸렸다는 의미 같은데 
+			
 		}
 
 
 		frame++;
 
-		if (sec != timeGetTime() / 1000)
-		{
-			//1초에 한번 할 일 
-			PrintLog();
-			sec = timeGetTime() / 1000;
-			frame = 0;
-
-		}
-
-			FlushDeleteArr();
-			//TimeOutCheck(); //timeOut로직을 그대로 둬도 컨텐츠 오류가 나지 않는지 체크 // 현재 TimeOut이랑 CloseSocket이랑 겹침
 
 
 

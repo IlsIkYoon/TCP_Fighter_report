@@ -364,10 +364,8 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 			}
 		}
 	}
-
-	//실제 섹터 이동
-	Sector[newSecX][newSecY].push_back(_session);
-	Sector[oldSecX][oldSecY].remove(_session);
+	
+	
 
 
 	return true;

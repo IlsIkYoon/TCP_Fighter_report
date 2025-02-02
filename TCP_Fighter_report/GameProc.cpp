@@ -63,9 +63,6 @@ bool MoveStop(Session* _session)
 	//-------------------------------------------------------------------------------------//
 
 	_session->_player->MoveStop(MoveStopPacket.Direction, MoveStopPacket.X, MoveStopPacket.Y);
-	
-
-
 
 
 	int sectorX = MoveStopPacket.X / SECTOR_RATIO;

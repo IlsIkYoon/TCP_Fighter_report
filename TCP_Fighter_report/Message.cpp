@@ -4,7 +4,7 @@
 extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
 extern int sectorXRange;
 extern int sectorYRange;
-extern DWORD SyncCount;
+extern DWORD SyncMessageCount;
 
 void SendMoveStartMessage(char* src, char* dest)
 {
@@ -44,6 +44,8 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 	Session* _src = (Session*)src;
 	Session* _dest = (Session*)dest;
 
+	//printf("Send CreateOtherMessage || src : %d, dest : %d\n", _src->_player->_ID, _dest->_player->_ID);
+
 	PacketHeader pHeader;
 	SC_CREATE_OTHER_CHARACTER CreatePacket;
 
@@ -78,6 +80,7 @@ void SendDeleteMessage(char* src, char* dest)
 	Session* _src = (Session*)src;
 	Session* _dest = (Session*)dest;
 
+	//printf("Send Delete Message || src : %d, dest : %d\n", _src->_player->_ID, _dest->_player->_ID);
 	PacketHeader pHeader;
 	SC_DELETE_CHARACTER DeletePacket;
 
@@ -550,34 +553,18 @@ void RestorePacket(Session* _session, int packetSize, int packetType)
 
 void SyncPos(Session* pSession, int sX, int sY, int cX, int cY)
 {
-	unsigned int enqueResult;
+
+
 	int SVSectorX = sX / SECTOR_RATIO;
 	int SVSectorY = sY / SECTOR_RATIO;
-	int CLSectorX = cX / SECTOR_RATIO;
-	int CLSectorY = cY / SECTOR_RATIO;
+	MsgSectorBroadCasting(SendSyncMessage, (char*)pSession, SVSectorX, SVSectorY, true);
 
-	PacketHeader pHeader;
-	SC_SYNC SC_Sync;
 
-	pHeader.byCode = 0x89;
-	pHeader.bySize = sizeof(SC_Sync);
-	pHeader.byType = dfPACKET_SC_SYNC;
+	SyncMessageCount++;
 
-	SC_Sync.ID = pSession->_player->_ID;
-	SC_Sync.X = pSession->_player->_x;
-	SC_Sync.Y = pSession->_player->_y;
+
+	//SyncSector(pSession, CLSectorX, CLSectorY, SVSectorX, SVSectorY);
+
 	
-	
-	if (pSession->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
-	{
-		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, pSession->_sendQ.GetSizeUsed());
-	}
-	if (pSession->_sendQ.Enqueue((char*)&SC_Sync, pHeader.bySize, &enqueResult) == false)
-	{
-		printf("Send Error ||Line : %d, enqueResult : %d RingBuffer Size : %d\n", __LINE__, enqueResult, pSession->_sendQ.GetSizeUsed());
-	}
-
-	SyncCount++;
-	SyncSector(pSession, CLSectorX, CLSectorY, SVSectorX, SVSectorY);
 
 }

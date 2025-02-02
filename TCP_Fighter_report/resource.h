@@ -19,7 +19,7 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-#define SECTOR_RATIO 200 //100분의 1 비율 6400에서 나눠서 떨어지는 수를 하는게 좋다
+#define SECTOR_RATIO 100 //100분의 1 비율 6400에서 나눠서 떨어지는 수를 하는게 좋다
 
 #define PLAYERMAXCOUNT 10000
 #define SELECTCOUNT 160

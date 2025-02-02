@@ -14,7 +14,7 @@ std::vector<Session*> DeleteArr;
 
 int playerID = 1;
 
-extern DWORD SyncCount;
+extern DWORD SyncMessageCount;
 
 extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
 extern Session* pSector;
@@ -259,7 +259,8 @@ bool DecodeMessages(Session* _session)
 
 
 		case dfPACKET_CS_SYNC:
-			SyncCount++;
+			__debugbreak();
+			SyncMessageCount++;
 			Sync(_session);
 			break;
 
@@ -444,24 +445,22 @@ defalut:
 
 bool Player::MoveStart(BYTE Direction, short X, short Y) {
 
-	int oldSectorX = _x / SECTOR_RATIO;
-	int oldSectorY = _y / SECTOR_RATIO;
-	int newSectorX = X / SECTOR_RATIO;
-	int newSectorY = Y / SECTOR_RATIO;
 
+	int sumX = X - _x;
+	int sumY = Y - _y;
 
+	if (sumX < 0) sumX *= -1;
+	if (sumY < 0) sumY *= -1;
 
 	_direction = Direction;
-	_x = X;
-	_y = Y;
+
 	_move = true;
 
-	if (oldSectorX == newSectorX && oldSectorY == newSectorY) return true;
+
+	if (sumX < dfERROR_RANGE && sumY < dfERROR_RANGE) return true;
 
 	//섹터 동기화 작업
-
-	//SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
-
+	SyncPos(pSession, _x, _y, X, Y);
 
 	
 
@@ -488,24 +487,32 @@ void Player::MoveStop(int Dir, int x, int y)
 	if (sumX < dfERROR_RANGE && sumY < dfERROR_RANGE) return;
 
 	//섹터 동기화 작업
-	
-	
 	SyncPos(pSession, _x, _y, x, y);
 
 }
 
 void FlushDeleteArr()
 {
+	int sectorX;
+	int sectorY;
 	if (DeleteArr.size() > 0)
 	{
 		int arrSize = DeleteArr.size();
 		for (int arrIdex = 0; arrIdex < arrSize; arrIdex++)
 		{
-			Sector[DeleteArr[arrIdex]->_player->_x / SECTOR_RATIO][DeleteArr[arrIdex]->_player->_y / SECTOR_RATIO].
-				remove(DeleteArr[arrIdex]);
-			SessionArr.remove(DeleteArr[arrIdex]);
+			sectorX = DeleteArr[arrIdex]->_player->_x / SECTOR_RATIO;
+			sectorY = DeleteArr[arrIdex]->_player->_y / SECTOR_RATIO;
+			int debugSize = Sector[sectorX][sectorY].size();
+			
+			Sector[sectorX][sectorY].remove(DeleteArr[arrIdex]);
 
-			//SendDeleteMessage 해야함
+			if (debugSize == Sector[sectorX][sectorY].size())
+			{
+				__debugbreak();
+			}
+
+
+			SessionArr.remove(DeleteArr[arrIdex]);
 
 
 			closesocket(DeleteArr[arrIdex]->_socket);
