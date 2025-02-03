@@ -3,7 +3,7 @@
 
 extern SOCKET listen_socket;
 
-bool NetworkInit() 
+bool NetworkInit()
 {
 
 	WSADATA wsa;
@@ -40,7 +40,7 @@ bool NetworkInit()
 		return false;
 	}
 	printf("bind\n");
-	
+
 
 	sock_retval = listen(listen_socket, SOMAXCONN_HINT(65536));
 	if (sock_retval != 0) {

@@ -447,25 +447,10 @@ defalut:
 
 bool Player::MoveStart(BYTE Direction, short X, short Y) {
 
-
-	int sumX = X - _x;
-	int sumY = Y - _y;
-
-	if (sumX < 0) sumX *= -1;
-	if (sumY < 0) sumY *= -1;
-
 	_direction = Direction;
 
 	_move = true;
-
-
-	if (sumX < dfERROR_RANGE && sumY < dfERROR_RANGE) return true;
-
-	//섹터 동기화 작업
-	SyncPos(pSession, _x, _y, X, Y);
-
 	
-
 	return true;
 }
 
@@ -474,22 +459,9 @@ bool Player::MoveStart(BYTE Direction, short X, short Y) {
 void Player::MoveStop(int Dir, int x, int y)
 {
 
-	
-	int sumX = x - _x;
-	int sumY = y - _y;
-
-	if (sumX < 0) sumX *= -1;
-	if (sumY < 0) sumY *= -1;
-
 	_direction = Dir;
 
 	_move = false;
-
-
-	if (sumX < dfERROR_RANGE && sumY < dfERROR_RANGE) return;
-
-	//섹터 동기화 작업
-	SyncPos(pSession, _x, _y, x, y);
 
 }
 

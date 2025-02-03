@@ -26,7 +26,23 @@ bool MoveStart(Session* _session)
 		return false;
 	}
 	
+
 	_session->_recvQ.MoveFront(sizeof(MoveStartPacket));
+
+
+
+
+	int sumX = MoveStartPacket.X - _session->_player->_x;
+	int sumY = MoveStartPacket.Y - _session->_player->_y;
+
+	if (sumX < 0) sumX *= -1;
+	if (sumY < 0) sumY *= -1;
+	
+	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
+	{
+		SyncPos(_session, _session->_player->_x, _session->_player->_y, MoveStartPacket.X, MoveStartPacket.Y);
+	}
+
 
 	_session->_player->MoveStart(MoveStartPacket.Direction, MoveStartPacket.X, MoveStartPacket.Y);
 
@@ -59,8 +75,17 @@ bool MoveStop(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(MoveStopPacket));
 	
 
+	int sumX = MoveStopPacket.X - _session->_player->_x;
+	int sumY = MoveStopPacket.Y - _session->_player->_y;
 
-	//-------------------------------------------------------------------------------------//
+	if (sumX < 0) sumX *= -1;
+	if (sumY < 0) sumY *= -1;
+
+	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
+	{
+		SyncPos(_session, _session->_player->_x, _session->_player->_y, MoveStopPacket.X, MoveStopPacket.Y);
+	}
+
 
 	_session->_player->MoveStop(MoveStopPacket.Direction, MoveStopPacket.X, MoveStopPacket.Y);
 
@@ -91,6 +116,22 @@ bool Attack1(Session* _session)
 	}
 
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
+
+	//教农 累诀 刚历 
+	int sumX = AttackPacket.X - _session->_player->_x;
+	int sumY = AttackPacket.Y - _session->_player->_y;
+
+	if (sumX < 0) sumX *= -1;
+	if (sumY < 0) sumY *= -1;
+
+	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
+	{
+		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
+	}
+
+
+
+
 
 	_session->_player->_direction = AttackPacket.Direction;
 
@@ -213,6 +254,19 @@ bool Attack2(Session* _session)
 
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
+	//教农 累诀 刚历 
+	int sumX = AttackPacket.X - _session->_player->_x;
+	int sumY = AttackPacket.Y - _session->_player->_y;
+
+	if (sumX < 0) sumX *= -1;
+	if (sumY < 0) sumY *= -1;
+
+	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
+	{
+		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
+	}
+
+
 	_session->_player->_direction = AttackPacket.Direction;
 
 
@@ -318,6 +372,21 @@ bool Attack3(Session* _session)
 	}
 
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
+
+
+	//教农 累诀 刚历 
+	int sumX = AttackPacket.X - _session->_player->_x;
+	int sumY = AttackPacket.Y - _session->_player->_y;
+
+	if (sumX < 0) sumX *= -1;
+	if (sumY < 0) sumY *= -1;
+
+	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
+	{
+		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
+	}
+
+
 
 	_session->_player->_direction = AttackPacket.Direction;
 

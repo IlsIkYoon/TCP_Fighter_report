@@ -191,7 +191,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="NetworkInit.cpp" />
-    <ClCompile Include="NetworkInit.h" />
     <ClCompile Include="RingBuffer.cpp" />
     <ClCompile Include="Sector.cpp" />
     <ClCompile Include="Session.cpp" />
@@ -201,6 +200,7 @@
     <ClInclude Include="GameProc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Message.h" />
+    <ClInclude Include="NetworkInit.h" />
     <ClInclude Include="PacketDefine.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RingBuffer.h" />
