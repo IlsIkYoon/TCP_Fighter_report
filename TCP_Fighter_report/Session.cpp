@@ -78,8 +78,8 @@ bool CreateNewCharacter(Session* _session) {
 	{
 		for (int j = -1; j < 2; j++)
 		{
-			if ((_session->_player->_x + i) < 0 || _session->_player->_x + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
-			if ((_session->_player->_y + j) < 0 || _session->_player->_y + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+			if ((_session->_player->_x/SECTOR_RATIO + i) < 0 || _session->_player->_x/SECTOR_RATIO + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if ((_session->_player->_y/SECTOR_RATIO + j) < 0 || _session->_player->_y/SECTOR_RATIO + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
 
 
 			it = Sector[_session->_player->_x + i][_session->_player->_y + j].begin();
