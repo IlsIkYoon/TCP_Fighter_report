@@ -20,6 +20,8 @@
 #define SCREEN_HEIGHT 480
 
 #define SECTOR_RATIO 128 //100분의 1 비율 6400에서 나눠서 떨어지는 수를 하는게 좋다
+#define FrameRate 25
+#define FrameSec (1000 / FrameRate)
 
 #define PLAYERMAXCOUNT 10000
 #define SELECTCOUNT 160
@@ -39,7 +41,7 @@
 //-----------------------------------------------------------------
 // 이동 오류체크 범위
 //-----------------------------------------------------------------
-#define dfERROR_RANGE		15 //나중에 수정
+#define dfERROR_RANGE		50 //나중에 수정
 
 
 //---------------------------------------------------------------

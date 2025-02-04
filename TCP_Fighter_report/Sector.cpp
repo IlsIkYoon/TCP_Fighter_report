@@ -106,14 +106,12 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 		if (oldSectorY< 0 || oldSectorY>= sectorBottomMax) continue;
 
 
-		for (stat_ArrIt = Sector[oldSectorX][oldSectorY].begin();
-			stat_ArrIt != Sector[oldSectorX][oldSectorY].end(); stat_ArrIt++)
+		for (auto dest : Sector[oldSectorX][oldSectorY])
 		{
-			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+			if (dest->_player->_ID == _session->_player->_ID) continue;
 
-			SendDeleteMessage((char*)_session, (char*)(*stat_ArrIt));
-			SendDeleteMessage((char*)(*stat_ArrIt), (char*)_session);
-
+			SendDeleteMessage((char*)_session, (char*)dest);
+			SendDeleteMessage((char*)dest, (char*)_session);
 		}
 	}
 
@@ -126,24 +124,23 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 		if (newSectorX< 0 || newSectorX>= sectorRightMax) break;
 		if (newSectorY< 0 || newSectorY>= sectorBottomMax) continue;
 
-		for (stat_ArrIt = Sector[newSectorX][newSectorY].begin();
-			stat_ArrIt != Sector[newSectorX][newSectorY].end(); stat_ArrIt++)
+		for (auto dest : Sector[newSectorX][newSectorY])
 		{
-			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+			if (dest->_player->_ID == _session->_player->_ID) continue;
 
-			SendCreateOtherCharMessage((char*)_session, (char*)(*stat_ArrIt));
-			SendCreateOtherCharMessage((char*)(*stat_ArrIt), (char*)_session);
+			SendCreateOtherCharMessage((char*)_session, (char*)dest);
+			SendCreateOtherCharMessage((char*)dest, (char*)_session);
 
 
 			//MoveMessage 보내야 함 
 			if (_session->_player->_move == true)
 			{
-				SendMoveStartMessage((char*)_session, (char*)(*stat_ArrIt));
+				SendMoveStartMessage((char*)_session, (char*)dest);
 
 			}
-			if ((*stat_ArrIt)->_player->_move == true)
+			if (dest->_player->_move == true)
 			{
-				SendMoveStartMessage((char*)(*stat_ArrIt), (char*)_session);
+				SendMoveStartMessage((char*)dest, (char*)_session);
 			}
 
 
@@ -180,18 +177,14 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 		if (oldSectorX< 0 || oldSectorX>= sectorRightMax) continue;
 
 
-		for (stat_ArrIt = Sector[oldSectorX][oldSectorY].begin();
-			stat_ArrIt != Sector[oldSectorX][oldSectorY].end(); stat_ArrIt++)
+		for (auto dest : Sector[oldSectorX][oldSectorY])
 		{
-			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+			if (dest->_player->_ID == _session->_player->_ID) continue;
 
-			SendDeleteMessage((char*)_session, (char*)(*stat_ArrIt));
-			SendDeleteMessage((char*)(*stat_ArrIt), (char*)_session);
+			SendDeleteMessage((char*)_session, (char*)dest);
+			SendDeleteMessage((char*)dest, (char*)_session);
 
 		}
-
-		//나에게도 보내야 함 
-
 	}
 	//새로운 섹터에 내 캐릭터 생성 메세지 + 새로운 섹터 캐릭터 생성 메세지를 나에게 보내기
 
@@ -203,24 +196,23 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 		if (newSectorY < 0|| newSectorY>= sectorBottomMax) break;
 		if (newSectorX< 0 || newSectorX>= sectorRightMax) continue;
 
-		for (stat_ArrIt = Sector[newSectorX][newSectorY].begin();
-			stat_ArrIt != Sector[newSectorX][newSectorY].end(); stat_ArrIt++)
+		for (auto dest : Sector[newSectorX][newSectorY])
 		{
-			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+			if (dest->_player->_ID == _session->_player->_ID) continue;
 
-			SendCreateOtherCharMessage((char*)_session, (char*)(*stat_ArrIt));
-			SendCreateOtherCharMessage((char*)(*stat_ArrIt), (char*)_session);
+			SendCreateOtherCharMessage((char*)_session, (char*)dest);
+			SendCreateOtherCharMessage((char*)dest, (char*)_session);
 
 
 			//MoveMessage 보내야 함 
 			if (_session->_player->_move == true)
 			{
-				SendMoveStartMessage((char*)_session, (char*)(*stat_ArrIt));
+				SendMoveStartMessage((char*)_session, (char*)dest);
 
 			}
-			if ((*stat_ArrIt)->_player->_move == true)
+			if (dest->_player->_move == true)
 			{
-				SendMoveStartMessage((char*)(*stat_ArrIt), (char*)_session);
+				SendMoveStartMessage((char*)dest, (char*)_session);
 			}
 
 

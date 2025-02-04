@@ -71,7 +71,7 @@ public:
 	
 	bool MoveStart(BYTE Direction, short X, short Y);
 
-	bool Move();
+	bool Move(DWORD deltaTime);
 	void MoveStop(int Dir, int x, int y);
 
 	

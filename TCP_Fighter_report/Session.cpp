@@ -299,29 +299,35 @@ bool DeleteSession(Session* _session)
 
 
 
-bool Player::Move() {
+bool Player::Move(DWORD fixedDeltaTime) {
 	if (_move == false) return false;
 
 	if (_x >= dfRANGE_MOVE_RIGHT || _x < dfRANGE_MOVE_LEFT || _y >= dfRANGE_MOVE_BOTTOM || _y < dfRANGE_MOVE_TOP) return false;
 
 
+	DWORD deltaX;
+	DWORD deltaY;
 	int oldX = _x;
 	int oldY = _y;
+
+	deltaX = fixedDeltaTime / FrameSec * dfSPEED_PLAYER_X;
+	deltaY = fixedDeltaTime / FrameSec * dfSPEED_PLAYER_Y;
+
 
 	
 	switch (_direction) {
 	case dfPACKET_MOVE_DIR_LL:
 	{
-		if (_x - dfSPEED_PLAYER_X < dfRANGE_MOVE_LEFT) return false;
-		_x -= dfSPEED_PLAYER_X;;
+		if (_x - deltaX < dfRANGE_MOVE_LEFT) return false;
+		_x -= deltaX;;
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_LU:
 	{
-		if (_x - dfSPEED_PLAYER_X < dfRANGE_MOVE_LEFT || _y - dfSPEED_PLAYER_Y < dfRANGE_MOVE_TOP) return false;
-		_x -= dfSPEED_PLAYER_X;
-		_y -= dfSPEED_PLAYER_Y;
+		if (_x - deltaX < dfRANGE_MOVE_LEFT || _y - deltaY < dfRANGE_MOVE_TOP) return false;
+		_x -= deltaX;
+		_y -= deltaY;
 	}
 
 	break;
@@ -329,49 +335,49 @@ bool Player::Move() {
 	case dfPACKET_MOVE_DIR_UU:
 	{
 		if (_y - dfSPEED_PLAYER_Y < dfRANGE_MOVE_TOP) return false;
-		_y -= dfSPEED_PLAYER_Y;
+		_y -= deltaY;
 	}
 
 	break;
 
 	case dfPACKET_MOVE_DIR_RU:
 	{
-		if (_x + dfSPEED_PLAYER_X >= dfRANGE_MOVE_RIGHT || _y - dfSPEED_PLAYER_Y < dfRANGE_MOVE_TOP) return false;
-		_x += dfSPEED_PLAYER_X;
-		_y -= dfSPEED_PLAYER_Y;
+		if (_x + deltaX >= dfRANGE_MOVE_RIGHT || _y - deltaY < dfRANGE_MOVE_TOP) return false;
+		_x += deltaX;
+		_y -= deltaY;
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_RR:
 	{
-		if (_x + dfSPEED_PLAYER_X >= dfRANGE_MOVE_RIGHT) return false;
-		_x += dfSPEED_PLAYER_X;
+		if (_x + deltaX >= dfRANGE_MOVE_RIGHT) return false;
+		_x += deltaX;
 		
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_RD:
 	{
-		if (_x + dfSPEED_PLAYER_X >= dfRANGE_MOVE_RIGHT || _y + dfSPEED_PLAYER_Y >= dfRANGE_MOVE_BOTTOM) return false;
-		_x += dfSPEED_PLAYER_X;
-		_y += dfSPEED_PLAYER_Y;
+		if (_x + deltaX >= dfRANGE_MOVE_RIGHT || _y + deltaY >= dfRANGE_MOVE_BOTTOM) return false;
+		_x += deltaX;
+		_y += deltaY;
 	
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_DD:
 	{
-		if (_y + dfSPEED_PLAYER_Y >= dfRANGE_MOVE_BOTTOM) return false;
-		_y += dfSPEED_PLAYER_Y;
+		if (_y + deltaY >= dfRANGE_MOVE_BOTTOM) return false;
+		_y += deltaY;
 	
 	}
 	break;
 
 	case dfPACKET_MOVE_DIR_LD:
 	{
-		if (_x - dfSPEED_PLAYER_X < dfRANGE_MOVE_LEFT || _y + dfSPEED_PLAYER_Y >= dfRANGE_MOVE_BOTTOM) return false;
-		_x -= dfSPEED_PLAYER_X;
-		_y += dfSPEED_PLAYER_Y;
+		if (_x - deltaX < dfRANGE_MOVE_LEFT || _y + deltaY >= dfRANGE_MOVE_BOTTOM) return false;
+		_x -= deltaX;
+		_y += deltaY;
 	
 	}
 	break;
@@ -402,7 +408,7 @@ defalut:
 
 	if (newSectorX > oldSectorX) //오른쪽으로 간 상황
 	{
-		paramX = oldX + dfSPEED_PLAYER_X;
+		paramX = oldX + deltaX;
 		paramY = oldY;
 		MoveSectorR(pSession, paramX, paramY, oldX, oldY);
 		oldX = paramX;
@@ -411,7 +417,7 @@ defalut:
 	}
 	else if (oldSectorX > newSectorX) //왼쪽으로 간 상황
 	{
-		paramX = oldX - dfSPEED_PLAYER_X;
+		paramX = oldX - deltaX;
 		paramY = oldY;
 		MoveSectorL(pSession, paramX, paramY, oldX, oldY);
 		oldX = paramX;
@@ -422,7 +428,7 @@ defalut:
 	if (newSectorY > oldSectorY) //아래로 간 상황
 	{
 		paramX = oldX;
-		paramY = oldY + dfSPEED_PLAYER_Y;
+		paramY = oldY + deltaY;
 		MoveSectorD(pSession, paramX, paramY, oldX, oldY);
 		oldX = paramX;
 		oldY = paramY;
@@ -431,7 +437,7 @@ defalut:
 	else if (oldSectorY > newSectorY) //위로 간 상황
 	{
 		paramX = oldX;
-		paramY = oldY - dfSPEED_PLAYER_Y;
+		paramY = oldY - deltaY;
 
 		MoveSectorU(pSession, paramX, paramY, oldX, oldY);
 		oldX = paramX;
@@ -501,15 +507,13 @@ void TimeOutCheck()
 {
 	int deadLine = timeGetTime() - dfNETWORK_PACKET_RECV_TIMEOUT;
 
-	s_ArrIt = SessionArr.begin();
-	s_ArrIt++;
-	for (; s_ArrIt != SessionArr.end(); s_ArrIt++)
+
+	for (auto session : SessionArr)
 	{
-		if ((*s_ArrIt)->_timeout < deadLine)
+		if (session->_timeout < deadLine)
 		{
-			DeleteSession(*s_ArrIt);
+			DeleteSession(session);
 			timeOutCount++;
 		}
 	}
-
 }

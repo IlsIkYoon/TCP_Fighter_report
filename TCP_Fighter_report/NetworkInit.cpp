@@ -3,6 +3,8 @@
 
 extern SOCKET listen_socket;
 
+
+
 bool NetworkInit()
 {
 
@@ -11,6 +13,9 @@ bool NetworkInit()
 	int sock_retval;
 	SOCKADDR_IN serverAddr;
 	u_long non_block = 1;
+
+	srand(50);
+	timeBeginPeriod(1);
 
 
 	ZeroMemory(&serverAddr, sizeof(serverAddr));

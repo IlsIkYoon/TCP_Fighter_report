@@ -186,6 +186,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameNetwork.cpp" />
     <ClCompile Include="GameProc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="main.cpp" />
@@ -197,6 +198,7 @@
     <ClCompile Include="TCPFighter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameNetwork.h" />
     <ClInclude Include="GameProc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Message.h" />

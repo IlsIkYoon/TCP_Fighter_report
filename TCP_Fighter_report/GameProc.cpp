@@ -1,7 +1,7 @@
 #include "GameProc.h"
 #include "Message.h"
 
-extern Session SessionArr[PLAYERMAXCOUNT];
+extern std::list<Session*> SessionArr;
 
 extern DWORD playerIdex;
 
@@ -11,6 +11,37 @@ std::list<Session*>::iterator it;
 
 extern int sectorXRange;
 extern int sectorYRange;
+
+
+void UpdateGameLogic(DWORD deltaTime)
+{
+
+	std::list<Session*>::iterator s_ArrIt;
+
+
+		for (auto session : SessionArr)
+		{
+			if (session->_recvQ.IsEmpty() == false) {
+
+				DecodeMessages(session);
+
+			}
+
+		}
+
+		for (auto session : SessionArr)
+		{
+
+			session->_player->Move(deltaTime);
+		}
+	TimeOutCheck(); //timeOut로직을 그대로 둬도 컨텐츠 오류가 나지 않는지 체크 // 현재 TimeOut이랑 CloseSocket이랑 겹침
+	FlushDeleteArr();
+
+}
+
+
+
+
 
 
 bool MoveStart(Session* _session)
