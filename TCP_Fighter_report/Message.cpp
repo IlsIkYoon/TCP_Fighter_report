@@ -158,8 +158,8 @@ void SendAttack1Message(char* src, char* dest, char* _srcAttackPacket)
 	AttackHeader.byType = dfPACKET_SC_ATTACK1;
 
 	SCAttackPacket.Direction = AttackPacket->Direction;
-	SCAttackPacket.X = AttackPacket->X;
-	SCAttackPacket.Y = AttackPacket->Y;
+	SCAttackPacket.X = _src->_player->_x;
+	SCAttackPacket.Y = _src->_player->_y;
 	SCAttackPacket.ID = _src->_player->_ID;
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
@@ -192,8 +192,8 @@ void SendAttack2Message(char* src, char* dest, char* _srcAttackPacket)
 	AttackHeader.byType = dfPACKET_SC_ATTACK2;
 
 	SCAttackPacket.Direction = AttackPacket->Direction;
-	SCAttackPacket.X = AttackPacket->X;
-	SCAttackPacket.Y = AttackPacket->Y;
+	SCAttackPacket.X = _src->_player->_x;
+	SCAttackPacket.Y = _src->_player->_y;
 	SCAttackPacket.ID = _src->_player->_ID;
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
@@ -226,8 +226,8 @@ void SendAttack3Message(char* src, char* dest, char* _srcAttackPacket)
 	AttackHeader.byType = dfPACKET_SC_ATTACK3;
 
 	SCAttackPacket.Direction = AttackPacket->Direction;
-	SCAttackPacket.X = AttackPacket->X;
-	SCAttackPacket.Y = AttackPacket->Y;
+	SCAttackPacket.X = _src->_player->_x;
+	SCAttackPacket.Y = _src->_player->_y;
 	SCAttackPacket.ID = _src->_player->_ID;
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)

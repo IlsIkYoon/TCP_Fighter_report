@@ -45,6 +45,7 @@ bool MoveStart(Session* _session)
 
 
 	_session->_player->MoveStart(MoveStartPacket.Direction, MoveStartPacket.X, MoveStartPacket.Y);
+	//명시적으로 인자를 direction만 받는게 나아보임, 안 받던가
 
 
 	//섹터 주변에 뿌려주기
