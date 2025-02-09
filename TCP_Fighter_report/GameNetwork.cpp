@@ -29,7 +29,7 @@ void GameNetwork()
 	AccpetSession();
 
 
-	if (playerIdex < 1) return;
+	if (playerCount < 1) return;
 
 	for (int i = 0; i < SELECTCOUNT; i++)
 	{
@@ -46,7 +46,7 @@ void GameNetwork()
 	}
 
 
-	for (int i = 0; i < playerIdex / 64 + 1; i++) // select가 0이 나오네
+	for (int i = 0; i < playerCount / 64 + 1; i++) // select가 0이 나오네
 	{
 		select_retval = select(NULL, &readset[i], &writeset[i], NULL, &timeout);
 		if (select_retval == SOCKET_ERROR)
@@ -163,7 +163,7 @@ void AccpetSession()
 		CreateNewCharacter(newacptSession);
 
 		SessionArr.push_back(newacptSession);
-		playerIdex++;
+		playerCount++;
 
 	}
 

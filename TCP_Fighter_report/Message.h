@@ -21,6 +21,10 @@ void MsgSectorDSend(void (*Func)(char* src, char* dest, char* AttackPacket), cha
 //Message패킷 만들어서 Sector에 Send하는 함수
 void SendMoveStartMessage(char* src, char* dest);
 void SendCreateOtherCharMessage(char* src, char* dest);
+void SendCreateMyCharMessage(char* src);
+void SendCreateSurroundCharMessage(char* src);
+
+
 void SendDeleteMessage(char* src, char* dest);
 void SendMoveStopMessage(char* src, char* dest);
 void SendAttack1Message(char* src, char* dest, char* AttackPacket);

@@ -6,8 +6,8 @@
 #include "PacketDefine.h"
 
 
-extern DWORD playerIdex;
-
+extern DWORD playerCount;
+extern int playerID;
 
 class Player;
 
@@ -55,7 +55,7 @@ public:
 		_y = rand() % 6400;
 		_direction = (rand() % 2) * 4; //LL == 0, RR == 4
 		_move = false;
-		_ID = playerIdex;
+		_ID = playerID++;
 	}
 
 	Player(Session* pSes) {
@@ -64,7 +64,7 @@ public:
 		_y = rand() % 6400;
 		_direction = (rand() % 2) * 4; //LL == 0, RR == 4
 		_move = false;
-		_ID = playerIdex;
+		_ID = playerID++;
 		pSession = pSes;
 	}
 

@@ -570,3 +570,111 @@ void SyncPos(Session* pSession, int sX, int sY, int cX, int cY)
 	
 
 }
+
+
+void SendCreateMyCharMessage(char* src)
+{
+	//내 캐릭터 생성
+	PacketHeader pHeader;
+	SC_CREATE_MY_CHARACTER CreatePacket;
+	unsigned int EnqueOut;
+	Session* _session = (Session*)src;
+
+	pHeader.byCode = 0x89;
+	pHeader.bySize = sizeof(SC_CREATE_MY_CHARACTER); //12
+	pHeader.byType = dfPACKET_SC_CREATE_MY_CHARACTER;
+
+	CreatePacket.Direction = _session->_player->_direction;
+	CreatePacket.HP = _session->_player->_hp;
+	CreatePacket.X = _session->_player->_x;
+	CreatePacket.Y = _session->_player->_y;
+	CreatePacket.ID = _session->_player->_ID;
+
+	if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
+	{
+		//Todo//enque 할 수 없는 상황임 (일어날 가능성이 없음)
+		printf("CreateMyCharacter buffer error : %d, LINE : %d\n", GetLastError(), __LINE__);
+		return;
+	}
+
+
+	if (_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &EnqueOut) == false)
+	{
+		printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), EnqueOut);
+		return;
+	}
+
+	if (_session->_sendQ.Enqueue((char*)&CreatePacket, pHeader.bySize, &EnqueOut) == false)
+	{
+		printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), EnqueOut);
+		return;
+	}
+
+
+
+}
+
+
+
+void SendCreateSurroundCharMessage(char* src)
+{
+	PacketHeader pHeader;
+	SC_CREATE_OTHER_CHARACTER otherCharacter;
+
+	Session* _session = (Session*)src;
+	pHeader.byCode = 0x89;
+	pHeader.bySize = sizeof(otherCharacter);
+	pHeader.byType = dfPACKET_SC_CREATE_OTHER_CHARACTER;
+
+	unsigned int EnqueOut;
+
+	int sectorX;
+	int sectorY; 
+	sectorX = _session->_player->_x / SECTOR_RATIO;
+	sectorY = _session->_player->_y / SECTOR_RATIO;
+
+	for (int i = -1; i < 2; i++)
+	{
+		for (int j = -1; j < 2; j++)
+		{
+			if ((sectorX + i) < 0 || sectorX + i >= dfRANGE_MOVE_RIGHT / SECTOR_RATIO) continue;
+			if ((sectorY + j) < 0 || sectorY + j >= dfRANGE_MOVE_BOTTOM / SECTOR_RATIO) continue;
+
+			for (auto it : Sector[sectorX + i][sectorY + j])
+			{
+				if (it->_player->_ID == _session->_player->_ID) continue; 
+
+				otherCharacter.ID = it->_player->_ID;
+				otherCharacter.HP = it->_player->_hp;
+				otherCharacter.Direction = it->_player->_direction;
+				otherCharacter.X = it->_player->_x;
+				otherCharacter.Y = it->_player->_y;
+
+				if (otherCharacter.ID == _session->_player->_ID) continue;
+
+				if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
+				{
+					printf("Send Error : RingBuffer SendQue Full, Line : %d\n", __LINE__);
+					//Todo//링버퍼 사이즈가 꽉차서 생성메세지를 보내지 못하는 경우에 대한 예외처리
+					return;
+				}
+
+				if (_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &EnqueOut) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), EnqueOut);
+					return;
+				}
+
+				if (_session->_sendQ.Enqueue((char*)&otherCharacter, pHeader.bySize, &EnqueOut) == false)
+				{
+					printf("Line : %d, ringbuffer sendQ enque error : %d, EnqueOut : %d\n", __LINE__, GetLastError(), EnqueOut);
+					return;
+				}
+
+			}
+		}
+	}
+
+
+
+}

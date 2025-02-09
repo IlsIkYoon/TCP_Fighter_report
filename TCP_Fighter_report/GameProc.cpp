@@ -3,7 +3,7 @@
 
 extern std::list<Session*> SessionArr;
 
-extern DWORD playerIdex;
+extern DWORD playerCount;
 
 extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
 extern Session* pSector;
@@ -190,13 +190,14 @@ bool Attack1(Session* _session)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-					if ((AttackPacket.X - (*it)->_player->_x) < 0 ||
-						(AttackPacket.X - (*it)->_player->_x) > dfATTACK1_RANGE_X) continue; //공격 범위 벗어남
-					
-					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK1_RANGE_Y) ||
-						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y) == false) 
-						continue;
 
+					int resultX = AttackPacket.X - (*it)->_player->_x;
+					int resultY = AttackPacket.Y - (*it)->_player->_y;
+
+					if (resultX < 0) continue;
+					if (resultY < 0) resultY *= -1;
+
+					if (resultX > dfATTACK1_RANGE_X || resultY > dfATTACK1_RANGE_Y) continue;
 					//타격 성공 
 					(*it)->_player->_hp -= dfAttack1Damage;
 
@@ -236,12 +237,15 @@ bool Attack1(Session* _session)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-					if (((*it)->_player->_x) - AttackPacket.X < 0 ||
-						((*it)->_player->_x) - AttackPacket.X > dfATTACK1_RANGE_X) continue; //공격 범위 벗어남
 
-					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK1_RANGE_Y) ||
-						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK1_RANGE_Y) == false)
-						continue;
+					int resultX = AttackPacket.X - (*it)->_player->_x;
+					int resultY = AttackPacket.Y - (*it)->_player->_y;
+
+					if (resultX > 0) continue;
+					if (resultY < 0) resultY *= -1;
+					resultX *= -1;
+
+					if (resultX > dfATTACK1_RANGE_X || resultY > dfATTACK1_RANGE_Y) continue;
 
 					//타격 성공 
 					(*it)->_player->_hp -= dfAttack1Damage;
@@ -324,12 +328,14 @@ bool Attack2(Session* _session)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-					if ((AttackPacket.X - (*it)->_player->_x) < 0 ||
-						(AttackPacket.X - (*it)->_player->_x) > dfATTACK2_RANGE_X) continue; //공격 범위 벗어남
 
-					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK2_RANGE_Y) ||
-						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y) == false)
-						continue;
+					int resultX = AttackPacket.X - (*it)->_player->_x;
+					int resultY = AttackPacket.Y - (*it)->_player->_y;
+
+					if (resultX < 0) continue;
+					if (resultY < 0) resultY *= -1;
+
+					if (resultX > dfATTACK2_RANGE_X || resultY > dfATTACK2_RANGE_Y) continue;
 
 					//타격 성공 
 					(*it)->_player->_hp -= dfAttack2Damage;
@@ -363,12 +369,15 @@ bool Attack2(Session* _session)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-					if (((*it)->_player->_x) - AttackPacket.X < 0 ||
-						((*it)->_player->_x) - AttackPacket.X > dfATTACK2_RANGE_X) continue; //공격 범위 벗어남
 
-					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK2_RANGE_Y) ||
-						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK2_RANGE_Y) == false)
-						continue;
+					int resultX = AttackPacket.X - (*it)->_player->_x;
+					int resultY = AttackPacket.Y - (*it)->_player->_y;
+
+					if (resultX > 0) continue;
+					if (resultY < 0) resultY *= -1;
+					resultX *= -1;
+
+					if (resultX > dfATTACK2_RANGE_X || resultY > dfATTACK2_RANGE_Y) continue;
 
 					//타격 성공
 					(*it)->_player->_hp -= dfAttack2Damage;
@@ -444,14 +453,16 @@ bool Attack3(Session* _session)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-					if ((AttackPacket.X - (*it)->_player->_x) < 0 ||
-						(AttackPacket.X - (*it)->_player->_x) > dfATTACK3_RANGE_X) continue; //공격 범위 벗어남
 
-					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK3_RANGE_Y) ||
-						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK3_RANGE_Y) == false)
-						continue;
+					int resultX = AttackPacket.X - (*it)->_player->_x;
+					int resultY = AttackPacket.Y - (*it)->_player->_y;
 
+					if (resultX < 0) continue;
+					if (resultY < 0) resultY *= -1;
+
+					if (resultX > dfATTACK3_RANGE_X || resultY > dfATTACK3_RANGE_Y) continue;
 					//타격 성공 
+
 					(*it)->_player->_hp -= dfAttack3Damage;
 
 
@@ -483,12 +494,17 @@ bool Attack3(Session* _session)
 				{
 					if ((*it)->_player->_ID == _session->_player->_ID) continue;
 
-					if (((*it)->_player->_x) - AttackPacket.X < 0 ||
-						((*it)->_player->_x) - AttackPacket.X > dfATTACK3_RANGE_X) continue; //공격 범위 벗어남
 
-					if ((AttackPacket.Y - (*it)->_player->_y >= 0 && AttackPacket.Y - (*it)->_player->_y < dfATTACK3_RANGE_Y) ||
-						((*it)->_player->_y - AttackPacket.Y >= 0 && (*it)->_player->_y - AttackPacket.Y < dfATTACK3_RANGE_Y) == false)
-						continue;
+					int resultX = AttackPacket.X - (*it)->_player->_x;
+					int resultY = AttackPacket.Y - (*it)->_player->_y;
+
+
+					if (resultX > 0) continue;
+					if (resultY < 0) resultY *= -1;
+					resultX *= -1;
+
+					if (resultX > dfATTACK3_RANGE_X || resultY > dfATTACK3_RANGE_Y) continue;
+
 
 					//타격 성공 
 					(*it)->_player->_hp -= dfAttack3Damage;
