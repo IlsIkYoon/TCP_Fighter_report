@@ -63,6 +63,9 @@
     <ClCompile Include="NetworkInit.cpp">
       <Filter>Networkinit</Filter>
     </ClCompile>
+    <ClCompile Include="GameNetwork.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -94,6 +97,9 @@
     </ClInclude>
     <ClInclude Include="NetworkInit.h">
       <Filter>Networkinit</Filter>
+    </ClInclude>
+    <ClInclude Include="GameNetwork.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

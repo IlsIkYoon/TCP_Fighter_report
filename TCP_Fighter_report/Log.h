@@ -5,3 +5,4 @@
 
 
 void PrintLog();
+unsigned int __stdcall LogThread(void*);

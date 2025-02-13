@@ -11,9 +11,7 @@ static std::list<Session*>::iterator stat_ArrIt;
 
 
 bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
-{
-	unsigned int enqueResult;
-	bool sendResult;
+{	
 	int oldSectorX;
 	int oldSectorY;
 
@@ -83,8 +81,6 @@ bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 }
 bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 {
-	unsigned int enqueResult;
-	bool sendResult;
 
 	int oldSectorX;
 	int oldSectorY;
@@ -154,8 +150,6 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 }
 bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 {
-	unsigned int enqueResult;
-	bool sendResult;
 
 	int oldSectorX;
 	int oldSectorY;
@@ -224,9 +218,6 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 }
 bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 {
-	unsigned int enqueResult;
-	bool sendResult;
-
 	int oldSectorX;
 	int oldSectorY;
 
@@ -295,9 +286,6 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 
 bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int newSecY)
 {
-	unsigned int enqueResult;
-	int sendResult;
-
 
 	//이전 섹터 주변에 내 세션 삭제 메세지 보내기
 	for (int i = -1; i < 2; i++)

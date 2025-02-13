@@ -52,6 +52,9 @@ unsigned int RingBuffer::GetSizeUsed()
 	if (_rear > _front) return _rear - _front;
 	if (_rear == _front) return 0;
 	if (_front > _rear) return _bufSize - _front + _rear;
+
+	__debugbreak();
+	return -1;
 }
 
 unsigned int RingBuffer::GetDirectEnqueSize()
@@ -80,7 +83,8 @@ unsigned int RingBuffer::GetDirectEnqueSize()
 
 	}
 
-
+	__debugbreak();
+	return -1;
 }
 unsigned int RingBuffer::GetDirectDequeSize()
 {
@@ -90,10 +94,12 @@ unsigned int RingBuffer::GetDirectDequeSize()
 	if (_rear > _front) return _rear - _front;
 	if (_front > _rear)
 	{
-		//if()
 
 		return _bufSize - _front;
 	}
+
+	__debugbreak();
+	return -1;
 
 }
 
@@ -127,7 +133,7 @@ bool RingBuffer::Enqueue(char* src, unsigned int dataSize, unsigned int* enqueRe
 	}
 
 
-	int Data;
+	unsigned int Data;
 	int out;
 
 	if (GetSizeFree() < dataSize) Data = GetSizeFree();
@@ -164,7 +170,7 @@ bool RingBuffer::Dequeue(char* dest, unsigned int dataSize, unsigned int* dequeR
 		return false;
 	}
 
-	int Data;
+	unsigned int Data;
 	int out;
 
 	if (GetSizeUsed() < dataSize) Data = GetSizeUsed();
@@ -214,7 +220,7 @@ bool RingBuffer::Peek(char* dest, unsigned int dataSize, unsigned int* dequeResu
 		return false;
 	}
 
-	int Data;
+	unsigned int Data;
 	int out;
 
 	if (GetSizeUsed() < dataSize) Data = GetSizeUsed();

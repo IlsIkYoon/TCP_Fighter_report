@@ -563,7 +563,6 @@ bool Echo(Session* _session)
 {
 	CS_ECHO CS_Echo;
 	unsigned int peekResult;
-	unsigned int dequeResult;
 	unsigned int enqueResult;
 
 	_session->_recvQ.Peek((char*)&CS_Echo, sizeof(CS_Echo), &peekResult);

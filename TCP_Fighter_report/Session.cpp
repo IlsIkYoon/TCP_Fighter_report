@@ -168,13 +168,13 @@ bool Player::Move(DWORD fixedDeltaTime) {
 	if (_x >= dfRANGE_MOVE_RIGHT || _x < dfRANGE_MOVE_LEFT || _y >= dfRANGE_MOVE_BOTTOM || _y < dfRANGE_MOVE_TOP) return false;
 
 
-	DWORD deltaX;
-	DWORD deltaY;
+	short deltaX;
+	short deltaY;
 	int oldX = _x;
 	int oldY = _y;
 
-	deltaX = fixedDeltaTime / FrameSec * dfSPEED_PLAYER_X;
-	deltaY = fixedDeltaTime / FrameSec * dfSPEED_PLAYER_Y;
+	deltaX = (short)fixedDeltaTime / FrameSec * dfSPEED_PLAYER_X;
+	deltaY = (short)fixedDeltaTime / FrameSec * dfSPEED_PLAYER_Y;
 
 
 	
@@ -244,9 +244,9 @@ bool Player::Move(DWORD fixedDeltaTime) {
 	
 	}
 	break;
-
-defalut:
-
+	default :
+	//여기서 closeSocket작업이 들어가야 함
+	__debugbreak();
 	break;
 	}
 
@@ -340,12 +340,12 @@ void FlushDeleteArr()
 	int sectorY;
 	if (DeleteArr.size() > 0)
 	{
-		int arrSize = DeleteArr.size();
+		int arrSize = (int)DeleteArr.size();
 		for (int arrIdex = 0; arrIdex < arrSize; arrIdex++)
 		{
 			sectorX = DeleteArr[arrIdex]->_player->_x / SECTOR_RATIO;
 			sectorY = DeleteArr[arrIdex]->_player->_y / SECTOR_RATIO;
-			int debugSize = Sector[sectorX][sectorY].size();
+			int debugSize = (int)Sector[sectorX][sectorY].size();
 			
 			Sector[sectorX][sectorY].remove(DeleteArr[arrIdex]);
 
@@ -368,7 +368,7 @@ void FlushDeleteArr()
 
 void TimeOutCheck()
 {
-	int deadLine = timeGetTime() - dfNETWORK_PACKET_RECV_TIMEOUT;
+	DWORD deadLine = timeGetTime() - dfNETWORK_PACKET_RECV_TIMEOUT;
 
 
 	for (auto session : SessionArr)
