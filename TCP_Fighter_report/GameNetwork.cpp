@@ -48,12 +48,22 @@ void GameNetwork()
 
 	for (DWORD i = 0; i < playerCount / 64 + 1; i++) 
 	{
+		
+		
+		
+		
 		select_retval = select(NULL, &readset[i], &writeset[i], NULL, &timeout);
-		if (select_retval == SOCKET_ERROR)
+		if (select_retval == SOCKET_ERROR && GetLastError() != 10022)
 		{
-			//printf("Idex : %d, %d select error : %d\n", i, __LINE__, GetLastError());
+			printf("Idex : %d, %d select error : %d\n", i, __LINE__, GetLastError());
+			//__debugbreak();
+
 			continue;
 		}
+
+		
+		
+
 	}
 
 
