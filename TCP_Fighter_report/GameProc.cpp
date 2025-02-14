@@ -34,7 +34,7 @@ void UpdateGameLogic(DWORD deltaTime)
 
 			session->_player->Move(deltaTime);
 		}
-	TimeOutCheck(); //timeOut로직을 그대로 둬도 컨텐츠 오류가 나지 않는지 체크 // 현재 TimeOut이랑 CloseSocket이랑 겹침
+	TimeOutCheck(); 
 	FlushDeleteArr();
 
 }

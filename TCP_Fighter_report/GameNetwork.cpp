@@ -1,6 +1,7 @@
 #include "GameNetwork.h"
 #include "Session.h"
 #include "Sector.h"
+#include "Log.h"
 
 
 SOCKET listen_socket;
@@ -8,12 +9,14 @@ SOCKET listen_socket;
 extern std::list<Session*> SessionArr;
 extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
 
+extern std::list<std::string> LogQ;
 
 fd_set readset[SELECTCOUNT];
 fd_set writeset[SELECTCOUNT];
 
 SOCKADDR_IN clientAddr;
 
+extern CRITICAL_SECTION g_lock;
 
 void GameNetwork()
 {
@@ -55,8 +58,12 @@ void GameNetwork()
 		select_retval = select(NULL, &readset[i], &writeset[i], NULL, &timeout);
 		if (select_retval == SOCKET_ERROR && GetLastError() != 10022)
 		{
-			printf("Idex : %d, %d select error : %d\n", i, __LINE__, GetLastError());
-			//__debugbreak();
+			std::string logEntry = std::format("Select Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+				getFileName(__FILE__), __func__, __LINE__, GetLastError());
+			EnterCriticalSection(&g_lock);
+			LogQ.push_back(logEntry);
+			LeaveCriticalSection(&g_lock);
+			
 
 			continue;
 		}
@@ -83,7 +90,7 @@ void GameNetwork()
 			if (recv_retval == 0)
 			{
 
-				//printf("delete Session : %d\n", (*s_ArrIt)->_player->_ID);
+				
 				DeleteSession(session);
 			}
 
@@ -93,11 +100,16 @@ void GameNetwork()
 				if (GetLastError() == 10054 || GetLastError() == 10053)
 				{
 
-					//printf("delete Session : %d\n", (*s_ArrIt)->_player->_ID);
+					
 					DeleteSession(session);
 				}
 				else {
-					printf("recv error : %d , Line : %d\n", GetLastError(), __LINE__);
+					std::string logEntry = std::format("Recv Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+						getFileName(__FILE__), __func__, __LINE__, GetLastError());
+					EnterCriticalSection(&g_lock);
+					LogQ.push_back(logEntry);
+					LeaveCriticalSection(&g_lock);
+
 				}
 			}
 
@@ -108,7 +120,11 @@ void GameNetwork()
 			else {
 				if (GetLastError() != WSAEWOULDBLOCK)
 				{
-					printf("recv error : %d , Line : %d\n", GetLastError(), __LINE__);
+					std::string logEntry = std::format("Recv Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+						getFileName(__FILE__), __func__, __LINE__, GetLastError());
+					EnterCriticalSection(&g_lock);
+					LogQ.push_back(logEntry);
+					LeaveCriticalSection(&g_lock);
 				}
 			}
 		}
@@ -121,12 +137,16 @@ void GameNetwork()
 
 
 
-			//Todo// Send값이 적을 경우에 대한 예외처리 필요
+			
 			if (send_retval == SOCKET_ERROR && GetLastError() != WSAEWOULDBLOCK)
 			{
-				if (GetLastError() != 10054 && GetLastError() != 10053)
-					printf("send Error : %d, Line : %d\n", GetLastError(), __LINE__);
-
+				if (GetLastError() != 10054 && GetLastError() != 10053){
+					std::string logEntry = std::format("Send Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+						getFileName(__FILE__), __func__, __LINE__, GetLastError());
+					EnterCriticalSection(&g_lock);
+					LogQ.push_back(logEntry);
+					LeaveCriticalSection(&g_lock);
+				}
 			}
 
 			else session->_sendQ.MoveFront(send_retval);
@@ -155,12 +175,22 @@ void AccpetSession()
 
 		if (newacptSession->_socket == INVALID_SOCKET)
 		{
+			std::string logEntry = std::format("Accept Error - INVALID SOCKET || FILE : %s, Func : %s , Line : %d error : %d\n",
+				getFileName(__FILE__), __func__, __LINE__, GetLastError());
+			EnterCriticalSection(&g_lock);
+			LogQ.push_back(logEntry);
+			LeaveCriticalSection(&g_lock);
 			delete newacptSession;
 			break;
 		}
 
 		if (newacptSession->_socket == SOCKET_ERROR && GetLastError() == WSAEWOULDBLOCK)
 		{
+			std::string logEntry = std::format("Accept Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+				getFileName(__FILE__), __func__, __LINE__, GetLastError());
+			EnterCriticalSection(&g_lock);
+			LogQ.push_back(logEntry);
+			LeaveCriticalSection(&g_lock);
 			delete newacptSession;
 			break;
 		}

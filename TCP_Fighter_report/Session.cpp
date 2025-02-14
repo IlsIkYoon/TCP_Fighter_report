@@ -2,6 +2,8 @@
 #include "GameProc.h"
 #include "Sector.h"
 #include "Message.h"
+#include "Log.h"
+#include <format>
 
 //전역변수
 std::list<Session*> SessionArr;
@@ -11,6 +13,7 @@ DWORD timeOutCount = 0;
 DWORD playerCount = 0; //63명까지 접속을 받는 상황으로 가정
 
 std::vector<Session*> DeleteArr; 
+extern CRITICAL_SECTION g_lock;
 
 int playerID = 1;
 
@@ -18,6 +21,8 @@ extern DWORD SyncMessageCount;
 
 extern std::list<Session*> Sector[dfRANGE_MOVE_RIGHT / SECTOR_RATIO][dfRANGE_MOVE_BOTTOM / SECTOR_RATIO];
 extern Session* pSector;
+
+extern std::list<std::string> LogQ;
 
 
 bool CreateNewCharacter(Session* _session) {
@@ -53,14 +58,22 @@ bool DecodeMessages(Session* _session)
 
 		if (peekResult < sizeof(pHeader))
 		{
-			printf("Line : %d, header error\n", __LINE__); //헤더도 안 온 경우엔 바로 리턴
+			std::string logEntry = std::format("Header Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+				getFileName(__FILE__), __func__, __LINE__, GetLastError());
+			EnterCriticalSection(&g_lock);
+			LogQ.push_back(logEntry);
+			LeaveCriticalSection(&g_lock);
 			return false;
 		}
 
 
 		if (pHeader.byCode != 0x89)
 		{
-			printf("protocol code error : %d\n", pHeader.byCode);
+			std::string logEntry = std::format("Protocol code Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+				getFileName(__FILE__), __func__, __LINE__, GetLastError());
+			EnterCriticalSection(&g_lock);
+			LogQ.push_back(logEntry);
+			LeaveCriticalSection(&g_lock);
 			DeleteSession(_session); //맞는 코드가 아니라면 소켓 연결 종료
 			return false;
 		}
@@ -123,9 +136,11 @@ bool DecodeMessages(Session* _session)
 
 		case dfPACKET_CS_SYNC:
 		{
-			__debugbreak();
-			SyncMessageCount++;
-			Sync(_session);
+			std::string logEntry = std::format("Sync Message Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+				getFileName(__FILE__), __func__, __LINE__, GetLastError());
+			EnterCriticalSection(&g_lock);
+			LogQ.push_back(logEntry);
+			LeaveCriticalSection(&g_lock);
 		}
 			break;
 
@@ -245,13 +260,16 @@ bool Player::Move(DWORD fixedDeltaTime) {
 	}
 	break;
 	default :
-	//여기서 closeSocket작업이 들어가야 함
-	__debugbreak();
+	
+		std::string logEntry = std::format("Move dir Error || dir :FILE : %s, Func : %s , Line : %d error : %d\n", _direction,
+			getFileName(__FILE__), __func__, __LINE__, GetLastError());
+		EnterCriticalSection(&g_lock);
+		LogQ.push_back(logEntry);
+		LeaveCriticalSection(&g_lock);
 	break;
 	}
 
-	
-	//Todo//이동된 섹터에 따른 캐릭터 생성과 삭제 작업 필요
+
 	
 	if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO) 
 		return true;
@@ -351,7 +369,12 @@ void FlushDeleteArr()
 
 			if (debugSize == Sector[sectorX][sectorY].size())
 			{
-				__debugbreak();
+
+				std::string logEntry = std::format("Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+					getFileName(__FILE__), __func__, __LINE__, GetLastError());
+				EnterCriticalSection(&g_lock);
+				LogQ.push_back(logEntry);
+				LeaveCriticalSection(&g_lock);
 			}
 
 

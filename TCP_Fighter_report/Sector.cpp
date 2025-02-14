@@ -9,6 +9,8 @@ int sectorYRange = dfRANGE_MOVE_BOTTOM / SECTOR_RATIO;
 extern std::list<Session*> SessionArr;
 static std::list<Session*>::iterator stat_ArrIt;
 
+extern CRITICAL_SECTION g_lock;
+
 
 bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 {	

@@ -1,5 +1,10 @@
 #include "RingBuffer.h"
+#include "resource.h"
+#include "Log.h"
 
+extern CRITICAL_SECTION g_lock;
+
+extern std::list<std::string> LogQ; 
 
 RingBuffer::RingBuffer()
 {
@@ -53,7 +58,13 @@ unsigned int RingBuffer::GetSizeUsed()
 	if (_rear == _front) return 0;
 	if (_front > _rear) return _bufSize - _front + _rear;
 
-	__debugbreak();
+
+	std::string logEntry = std::format("RingBuffer Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		getFileName(__FILE__), __func__, __LINE__, GetLastError());
+	EnterCriticalSection(&g_lock);
+	LogQ.push_back(logEntry);
+	LeaveCriticalSection(&g_lock);
+
 	return -1;
 }
 
@@ -83,7 +94,12 @@ unsigned int RingBuffer::GetDirectEnqueSize()
 
 	}
 
-	__debugbreak();
+
+	std::string logEntry = std::format("RingBuffer Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		getFileName(__FILE__), __func__, __LINE__, GetLastError());
+	EnterCriticalSection(&g_lock);
+	LogQ.push_back(logEntry);
+	LeaveCriticalSection(&g_lock);
 	return -1;
 }
 unsigned int RingBuffer::GetDirectDequeSize()
@@ -98,7 +114,11 @@ unsigned int RingBuffer::GetDirectDequeSize()
 		return _bufSize - _front;
 	}
 
-	__debugbreak();
+	std::string logEntry = std::format("RingBuffer Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		getFileName(__FILE__), __func__, __LINE__, GetLastError());
+	EnterCriticalSection(&g_lock);
+	LogQ.push_back(logEntry);
+	LeaveCriticalSection(&g_lock);
 	return -1;
 
 }

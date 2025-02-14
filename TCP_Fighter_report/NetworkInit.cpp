@@ -2,7 +2,7 @@
 
 
 extern SOCKET listen_socket;
-
+extern CRITICAL_SECTION g_lock;
 
 
 bool NetworkInit()
@@ -17,6 +17,7 @@ bool NetworkInit()
 	srand(50);
 	timeBeginPeriod(1);
 
+	InitializeCriticalSection(&g_lock);
 
 	ZeroMemory(&serverAddr, sizeof(serverAddr));
 

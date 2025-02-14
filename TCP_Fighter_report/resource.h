@@ -13,8 +13,9 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <format>
 
-#define PORTNUM 5000
+#define PORTNUM 12201
 #define GAMEFPS 50
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -22,6 +23,8 @@
 #define SECTOR_RATIO 128 //100분의 1 비율 6400에서 나눠서 떨어지는 수를 하는게 좋다
 #define FrameRate 25
 #define FrameSec (1000 / FrameRate)
+#define FrameError 20
+
 
 #define PLAYERMAXCOUNT 10000
 #define SELECTCOUNT 160

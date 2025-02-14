@@ -9,6 +9,10 @@ extern DWORD timeOutCount;
 DWORD SyncMessageCount = 0;
 extern HANDLE g_ExitEvent;
 
+std::list<std::string> LogQ;
+CRITICAL_SECTION g_lock;
+
+
 void PrintLog()
 {
 	printf("\n--------------------------------\n");
@@ -21,6 +25,8 @@ void PrintLog()
 
 unsigned int __stdcall LogThread(void*)
 {
+	
+
 	DWORD eventRet;
 	while (1)
 	{
@@ -29,6 +35,18 @@ unsigned int __stdcall LogThread(void*)
 			//1초에 한번 할 일 
 			PrintLog();
 			sec = timeGetTime() / 1000;
+
+			if (frame < FrameError)
+			{
+				WriteLog();
+
+			}
+
+			if (LogQ.size() > 0)
+			{
+				WriteLogQToFile();
+			}
+
 			frame = 0;
 
 		}
@@ -40,4 +58,76 @@ unsigned int __stdcall LogThread(void*)
 	}
 
 	return 0;
+}
+
+
+void WriteLog()
+{
+	FILE* fpWrite;
+	char fileName[40] = { 0, };
+	strcpy_s(fileName, __DATE__);
+	strcat_s(fileName, "Log");
+
+	fopen_s(&fpWrite, fileName, "a");
+
+	if (fpWrite == 0)
+	{
+		std::string logEntry = std::format("Log File Open Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+			getFileName(__FILE__), __func__, __LINE__, GetLastError());
+		
+		EnterCriticalSection(&g_lock);
+		LogQ.push_back(logEntry);
+		LeaveCriticalSection(&g_lock);
+
+		return;
+	}
+
+
+
+	fprintf(fpWrite, "\n--------------------------------\n");
+	fprintf(fpWrite, "PlayerCount : %d\n", playerCount);
+	fprintf(fpWrite, "frame : %d\n", frame);
+	fprintf(fpWrite, "Sync Message Count : %d\n", SyncMessageCount);
+	fprintf(fpWrite, "TimeOut Count : %d\n", timeOutCount);
+	fprintf(fpWrite, "--------------------------------\n");
+
+	fclose(fpWrite);
+
+}
+
+void WriteLogQToFile()
+{
+	FILE* fpWrite;
+	char fileName[40] = { 0, };
+	strcpy_s(fileName, __DATE__);
+	strcat_s(fileName, "Log");
+
+	fopen_s(&fpWrite, fileName, "a");
+	if (fpWrite == 0)
+	{
+		std::string logEntry = std::format("Log File Open Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+			getFileName(__FILE__), __func__, __LINE__, GetLastError());
+		EnterCriticalSection(&g_lock);
+		LogQ.push_back(logEntry);
+		LeaveCriticalSection(&g_lock);
+		return;
+	}
+
+	while (1)
+	{
+		if (LogQ.size() == 0) break;
+		EnterCriticalSection(&g_lock);
+		std::string logEntry = LogQ.front();
+		LogQ.pop_front();
+		LeaveCriticalSection(&g_lock);
+		fwrite(logEntry.c_str(), 1, logEntry.size(), fpWrite);
+	}
+
+	fclose(fpWrite);
+}
+
+
+
+std::string getFileName(const std::string& path) {
+	return path.substr(path.find_last_of("/\\") + 1);
 }
