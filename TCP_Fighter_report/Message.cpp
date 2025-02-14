@@ -34,7 +34,7 @@ void SendMoveStartMessage(char* src, char* dest)
 	//EnqueÇÏ±â
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -43,7 +43,7 @@ void SendMoveStartMessage(char* src, char* dest)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&MovePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -79,7 +79,7 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -88,7 +88,7 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&CreatePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -121,7 +121,7 @@ void SendDeleteMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -130,7 +130,7 @@ void SendDeleteMessage(char* src, char* dest)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&DeletePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -164,7 +164,7 @@ void SendMoveStopMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -173,7 +173,7 @@ void SendMoveStopMessage(char* src, char* dest)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&MoveStopPacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -211,7 +211,7 @@ void SendAttack1Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -220,7 +220,7 @@ void SendAttack1Message(char* src, char* dest, char* _srcAttackPacket)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -255,7 +255,7 @@ void SendAttack2Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -264,7 +264,7 @@ void SendAttack2Message(char* src, char* dest, char* _srcAttackPacket)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -299,7 +299,7 @@ void SendAttack3Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -308,7 +308,7 @@ void SendAttack3Message(char* src, char* dest, char* _srcAttackPacket)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -343,7 +343,7 @@ void SendDamageMessage(char* Attack, char* dest, char* Damage)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -352,7 +352,7 @@ void SendDamageMessage(char* Attack, char* dest, char* Damage)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&DamagePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -387,7 +387,7 @@ void SendSyncMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -396,7 +396,7 @@ void SendSyncMessage(char* src, char* dest)
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SC_Sync, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -683,7 +683,7 @@ void SendCreateMyCharMessage(char* src)
 	if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
 	{
 		
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -696,7 +696,7 @@ void SendCreateMyCharMessage(char* src)
 	if (_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &EnqueOut) == false)
 	{
 		
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -710,7 +710,7 @@ void SendCreateMyCharMessage(char* src)
 	if (_session->_sendQ.Enqueue((char*)&CreatePacket, pHeader.bySize, &EnqueOut) == false)
 	{
 		
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -764,7 +764,7 @@ void SendCreateSurroundCharMessage(char* src)
 
 				if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
 				{
-					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 						getFileName(__FILE__), __func__, __LINE__, GetLastError());
 					EnterCriticalSection(&g_lock);
 					LogQ.push_back(logEntry);
@@ -775,7 +775,7 @@ void SendCreateSurroundCharMessage(char* src)
 
 				if (_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &EnqueOut) == false)
 				{
-					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 						getFileName(__FILE__), __func__, __LINE__, GetLastError());
 					EnterCriticalSection(&g_lock);
 					LogQ.push_back(logEntry);
@@ -786,7 +786,7 @@ void SendCreateSurroundCharMessage(char* src)
 
 				if (_session->_sendQ.Enqueue((char*)&otherCharacter, pHeader.bySize, &EnqueOut) == false)
 				{
-					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 						getFileName(__FILE__), __func__, __LINE__, GetLastError());
 					EnterCriticalSection(&g_lock);
 					LogQ.push_back(logEntry);

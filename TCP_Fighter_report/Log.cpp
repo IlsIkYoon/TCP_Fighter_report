@@ -66,13 +66,13 @@ void WriteLog()
 	FILE* fpWrite;
 	char fileName[40] = { 0, };
 	strcpy_s(fileName, __DATE__);
-	strcat_s(fileName, "Log");
+	strcat_s(fileName, "Log.txt");
 
 	fopen_s(&fpWrite, fileName, "a");
 
 	if (fpWrite == 0)
 	{
-		std::string logEntry = std::format("Log File Open Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Log File Open Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		
 		EnterCriticalSection(&g_lock);
@@ -100,12 +100,12 @@ void WriteLogQToFile()
 	FILE* fpWrite;
 	char fileName[40] = { 0, };
 	strcpy_s(fileName, __DATE__);
-	strcat_s(fileName, "Log");
+	strcat_s(fileName, "Log.txt");
 
 	fopen_s(&fpWrite, fileName, "a");
 	if (fpWrite == 0)
 	{
-		std::string logEntry = std::format("Log File Open Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+		std::string logEntry = std::format("Log File Open Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);

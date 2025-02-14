@@ -58,7 +58,7 @@ void GameNetwork()
 		select_retval = select(NULL, &readset[i], &writeset[i], NULL, &timeout);
 		if (select_retval == SOCKET_ERROR && GetLastError() != 10022)
 		{
-			std::string logEntry = std::format("Select Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+			std::string logEntry = std::format("Select Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 				getFileName(__FILE__), __func__, __LINE__, GetLastError());
 			EnterCriticalSection(&g_lock);
 			LogQ.push_back(logEntry);
@@ -104,7 +104,7 @@ void GameNetwork()
 					DeleteSession(session);
 				}
 				else {
-					std::string logEntry = std::format("Recv Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+					std::string logEntry = std::format("Recv Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 						getFileName(__FILE__), __func__, __LINE__, GetLastError());
 					EnterCriticalSection(&g_lock);
 					LogQ.push_back(logEntry);
@@ -120,7 +120,7 @@ void GameNetwork()
 			else {
 				if (GetLastError() != WSAEWOULDBLOCK)
 				{
-					std::string logEntry = std::format("Recv Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+					std::string logEntry = std::format("Recv Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 						getFileName(__FILE__), __func__, __LINE__, GetLastError());
 					EnterCriticalSection(&g_lock);
 					LogQ.push_back(logEntry);
@@ -141,7 +141,7 @@ void GameNetwork()
 			if (send_retval == SOCKET_ERROR && GetLastError() != WSAEWOULDBLOCK)
 			{
 				if (GetLastError() != 10054 && GetLastError() != 10053){
-					std::string logEntry = std::format("Send Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+					std::string logEntry = std::format("Send Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 						getFileName(__FILE__), __func__, __LINE__, GetLastError());
 					EnterCriticalSection(&g_lock);
 					LogQ.push_back(logEntry);
@@ -175,22 +175,14 @@ void AccpetSession()
 
 		if (newacptSession->_socket == INVALID_SOCKET)
 		{
-			std::string logEntry = std::format("Accept Error - INVALID SOCKET || FILE : %s, Func : %s , Line : %d error : %d\n",
-				getFileName(__FILE__), __func__, __LINE__, GetLastError());
-			EnterCriticalSection(&g_lock);
-			LogQ.push_back(logEntry);
-			LeaveCriticalSection(&g_lock);
+
 			delete newacptSession;
 			break;
 		}
 
 		if (newacptSession->_socket == SOCKET_ERROR && GetLastError() == WSAEWOULDBLOCK)
 		{
-			std::string logEntry = std::format("Accept Error || FILE : %s, Func : %s , Line : %d error : %d\n",
-				getFileName(__FILE__), __func__, __LINE__, GetLastError());
-			EnterCriticalSection(&g_lock);
-			LogQ.push_back(logEntry);
-			LeaveCriticalSection(&g_lock);
+
 			delete newacptSession;
 			break;
 		}

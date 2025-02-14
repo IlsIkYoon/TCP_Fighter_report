@@ -59,7 +59,7 @@ unsigned int RingBuffer::GetSizeUsed()
 	if (_front > _rear) return _bufSize - _front + _rear;
 
 
-	std::string logEntry = std::format("RingBuffer Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+	std::string logEntry = std::format("RingBuffer Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 		getFileName(__FILE__), __func__, __LINE__, GetLastError());
 	EnterCriticalSection(&g_lock);
 	LogQ.push_back(logEntry);
@@ -95,7 +95,7 @@ unsigned int RingBuffer::GetDirectEnqueSize()
 	}
 
 
-	std::string logEntry = std::format("RingBuffer Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+	std::string logEntry = std::format("RingBuffer Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 		getFileName(__FILE__), __func__, __LINE__, GetLastError());
 	EnterCriticalSection(&g_lock);
 	LogQ.push_back(logEntry);
@@ -114,7 +114,7 @@ unsigned int RingBuffer::GetDirectDequeSize()
 		return _bufSize - _front;
 	}
 
-	std::string logEntry = std::format("RingBuffer Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+	std::string logEntry = std::format("RingBuffer Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 		getFileName(__FILE__), __func__, __LINE__, GetLastError());
 	EnterCriticalSection(&g_lock);
 	LogQ.push_back(logEntry);

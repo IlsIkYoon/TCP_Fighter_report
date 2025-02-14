@@ -58,7 +58,7 @@ bool DecodeMessages(Session* _session)
 
 		if (peekResult < sizeof(pHeader))
 		{
-			std::string logEntry = std::format("Header Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+			std::string logEntry = std::format("Header Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 				getFileName(__FILE__), __func__, __LINE__, GetLastError());
 			EnterCriticalSection(&g_lock);
 			LogQ.push_back(logEntry);
@@ -69,7 +69,7 @@ bool DecodeMessages(Session* _session)
 
 		if (pHeader.byCode != 0x89)
 		{
-			std::string logEntry = std::format("Protocol code Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+			std::string logEntry = std::format("Protocol code Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 				getFileName(__FILE__), __func__, __LINE__, GetLastError());
 			EnterCriticalSection(&g_lock);
 			LogQ.push_back(logEntry);
@@ -136,7 +136,7 @@ bool DecodeMessages(Session* _session)
 
 		case dfPACKET_CS_SYNC:
 		{
-			std::string logEntry = std::format("Sync Message Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+			std::string logEntry = std::format("Sync Message Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 				getFileName(__FILE__), __func__, __LINE__, GetLastError());
 			EnterCriticalSection(&g_lock);
 			LogQ.push_back(logEntry);
@@ -261,7 +261,7 @@ bool Player::Move(DWORD fixedDeltaTime) {
 	break;
 	default :
 	
-		std::string logEntry = std::format("Move dir Error || dir :FILE : %s, Func : %s , Line : %d error : %d\n", _direction,
+		std::string logEntry = std::format("Move dir Error || dir : {} FILE : {}, Func : {} , Line : {} error : {}\n", _direction,
 			getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
@@ -370,7 +370,7 @@ void FlushDeleteArr()
 			if (debugSize == Sector[sectorX][sectorY].size())
 			{
 
-				std::string logEntry = std::format("Error || FILE : %s, Func : %s , Line : %d error : %d\n",
+				std::string logEntry = std::format("Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 					getFileName(__FILE__), __func__, __LINE__, GetLastError());
 				EnterCriticalSection(&g_lock);
 				LogQ.push_back(logEntry);
