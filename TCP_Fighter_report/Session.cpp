@@ -198,6 +198,8 @@ bool Player::Move(DWORD fixedDeltaTime) {
 	{
 		if (_x - deltaX < dfRANGE_MOVE_LEFT) return false;
 		_x -= deltaX;;
+		if (_x < 0 || _y < 0) __debugbreak();
+
 	}
 	break;
 
@@ -206,14 +208,19 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		if (_x - deltaX < dfRANGE_MOVE_LEFT || _y - deltaY < dfRANGE_MOVE_TOP) return false;
 		_x -= deltaX;
 		_y -= deltaY;
+
+		if (_x < 0 || _y < 0) __debugbreak();
+
 	}
 
 	break;
 
 	case dfPACKET_MOVE_DIR_UU:
 	{
-		if (_y - dfSPEED_PLAYER_Y < dfRANGE_MOVE_TOP) return false;
+		if (_y - deltaY < dfRANGE_MOVE_TOP) return false;
 		_y -= deltaY;
+
+		if (_x < 0 || _y < 0) __debugbreak();
 	}
 
 	break;
@@ -223,6 +230,8 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		if (_x + deltaX >= dfRANGE_MOVE_RIGHT || _y - deltaY < dfRANGE_MOVE_TOP) return false;
 		_x += deltaX;
 		_y -= deltaY;
+
+		if (_x < 0 || _y < 0) __debugbreak();
 	}
 	break;
 
@@ -231,6 +240,7 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		if (_x + deltaX >= dfRANGE_MOVE_RIGHT) return false;
 		_x += deltaX;
 		
+		if (_x < 0 || _y < 0) __debugbreak();
 	}
 	break;
 
@@ -240,6 +250,7 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		_x += deltaX;
 		_y += deltaY;
 	
+		if (_x < 0 || _y < 0) __debugbreak();
 	}
 	break;
 
@@ -248,6 +259,7 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		if (_y + deltaY >= dfRANGE_MOVE_BOTTOM) return false;
 		_y += deltaY;
 	
+		if (_x < 0 || _y < 0) __debugbreak();
 	}
 	break;
 
@@ -257,6 +269,7 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		_x -= deltaX;
 		_y += deltaY;
 	
+		if (_x < 0 || _y < 0) __debugbreak();
 	}
 	break;
 	default :
