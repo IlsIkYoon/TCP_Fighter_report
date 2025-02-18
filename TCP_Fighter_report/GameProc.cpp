@@ -83,37 +83,7 @@ bool MoveStart(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, MoveStartPacket.X, MoveStartPacket.Y);
 	}
-	/*
-	else {
-		int oldX = _session->_player->_x;
-		int oldY = _session->_player->_y;
 
-		int _x = MoveStartPacket.X;
-		int _y = MoveStartPacket.Y;
-
-
-		_session->_player->_x = MoveStartPacket.X;
-		_session->_player->_y = MoveStartPacket.Y;
-
-
-
-		if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO)
-			return true;
-
-
-
-		int oldSectorX = oldX / SECTOR_RATIO;
-		int oldSectorY = oldY / SECTOR_RATIO;
-
-		int newSectorX = _x / SECTOR_RATIO;
-		int newSectorY = _y / SECTOR_RATIO;
-
-		Sector[oldSectorX][oldSectorY].remove(_session);
-		Sector[newSectorX][newSectorY].push_back(_session);
-
-
-	}
-	*/
 
 	_session->_player->MoveStart(MoveStartPacket.Direction, MoveStartPacket.X, MoveStartPacket.Y);
 	//명시적으로 인자를 direction만 받는게 나아보임, 안 받던가
@@ -163,37 +133,7 @@ bool MoveStop(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, MoveStopPacket.X, MoveStopPacket.Y);
 	}
-	/*
-	else {
-		int oldX = _session->_player->_x;
-		int oldY = _session->_player->_y;
 
-		int _x = MoveStopPacket.X;
-		int _y = MoveStopPacket.Y;
-
-
-		_session->_player->_x = MoveStopPacket.X;
-		_session->_player->_y = MoveStopPacket.Y;
-
-
-
-		if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO)
-			return true;
-
-
-
-		int oldSectorX = oldX / SECTOR_RATIO;
-		int oldSectorY = oldY / SECTOR_RATIO;
-
-		int newSectorX = _x / SECTOR_RATIO;
-		int newSectorY = _y / SECTOR_RATIO;
-
-		Sector[oldSectorX][oldSectorY].remove(_session);
-		Sector[newSectorX][newSectorY].push_back(_session);
-
-
-	}
-	*/
 	_session->_player->MoveStop(MoveStopPacket.Direction, MoveStopPacket.X, MoveStopPacket.Y);
 
 
@@ -242,39 +182,7 @@ bool Attack1(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
 	}
-	/*
-	else {
-		int oldX = _session->_player->_x;
-		int oldY = _session->_player->_y;
 
-		int _x = AttackPacket.X;
-		int _y = AttackPacket.Y;
-
-
-		_session->_player->_x = AttackPacket.X;
-		_session->_player->_y = AttackPacket.Y;
-
-
-
-		if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO)
-			return true;
-
-
-
-		int oldSectorX = oldX / SECTOR_RATIO;
-		int oldSectorY = oldY / SECTOR_RATIO;
-
-		int newSectorX = _x / SECTOR_RATIO;
-		int newSectorY = _y / SECTOR_RATIO;
-
-		Sector[oldSectorX][oldSectorY].remove(_session);
-		Sector[newSectorX][newSectorY].push_back(_session);
-
-
-	}
-
-
-	*/
 
 	_session->_player->_direction = AttackPacket.Direction;
 
@@ -418,38 +326,7 @@ bool Attack2(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
 	}
-	/*
-	else {
-		int oldX = _session->_player->_x;
-		int oldY = _session->_player->_y;
 
-		int _x = AttackPacket.X;
-		int _y = AttackPacket.Y;
-
-
-		_session->_player->_x = AttackPacket.X;
-		_session->_player->_y = AttackPacket.Y;
-
-
-
-		if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO)
-			return true;
-
-
-
-		int oldSectorX = oldX / SECTOR_RATIO;
-		int oldSectorY = oldY / SECTOR_RATIO;
-
-		int newSectorX = _x / SECTOR_RATIO;
-		int newSectorY = _y / SECTOR_RATIO;
-
-		Sector[oldSectorX][oldSectorY].remove(_session);
-		Sector[newSectorX][newSectorY].push_back(_session);
-
-
-	}
-
-	*/
 
 	_session->_player->_direction = AttackPacket.Direction;
 
@@ -583,38 +460,7 @@ bool Attack3(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
 	}
-	/*
-	else {
-		int oldX = _session->_player->_x;
-		int oldY = _session->_player->_y;
 
-		int _x = AttackPacket.X;
-		int _y = AttackPacket.Y;
-
-
-		_session->_player->_x = AttackPacket.X;
-		_session->_player->_y = AttackPacket.Y;
-
-
-
-		if (_x / SECTOR_RATIO == oldX / SECTOR_RATIO && _y / SECTOR_RATIO == oldY / SECTOR_RATIO)
-			return true;
-
-
-
-		int oldSectorX = oldX / SECTOR_RATIO;
-		int oldSectorY = oldY / SECTOR_RATIO;
-
-		int newSectorX = _x / SECTOR_RATIO;
-		int newSectorY = _y / SECTOR_RATIO;
-
-		Sector[oldSectorX][oldSectorY].remove(_session);
-		Sector[newSectorX][newSectorY].push_back(_session);
-
-
-	}
-
-	*/
 
 	_session->_player->_direction = AttackPacket.Direction;
 

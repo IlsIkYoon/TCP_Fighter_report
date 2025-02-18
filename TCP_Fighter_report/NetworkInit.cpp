@@ -56,6 +56,11 @@ bool NetworkInit()
 	printf("listen \n");
 	ioctlsocket(listen_socket, FIONBIO, &non_block);
 
+	struct linger ling;
+	ling.l_onoff = 1;  // linger 옵션 활성화
+	ling.l_linger = 0;  // linger 시간을 10초로 설정
+
+	setsockopt(listen_socket, SOL_SOCKET, SO_LINGER, (char*)&ling, sizeof(ling)
 
 
 	return true;
