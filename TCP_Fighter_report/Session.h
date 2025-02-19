@@ -51,8 +51,8 @@ public:
 
 	Player() {
 		_hp = dfHP;
-		_x = rand() % 6400;
-		_y = rand() % 6400;
+		_x = 500;// rand() % 6400;
+		_y = 500;// rand() % 6400;
 		_direction = (rand() % 2) * 4; //LL == 0, RR == 4
 		_move = false;
 		_ID = playerID++;
@@ -60,8 +60,8 @@ public:
 
 	Player(Session* pSes) {
 		_hp = dfHP;
-		_x = rand() % 6400;
-		_y = rand() % 6400;
+		_x = 500;// rand() % 6400;
+		_y = 500;// rand() % 6400;
 		_direction = (rand() % 2) * 4; //LL == 0, RR == 4
 		_move = false;
 		_ID = playerID++;
