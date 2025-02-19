@@ -2,6 +2,7 @@
 #include "Message.h"
 #include <format>
 #include "Log.h"
+#include "Sector.h"
 
 extern std::list<Session*> SessionArr;
 
@@ -84,6 +85,32 @@ bool MoveStart(Session* _session)
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, MoveStartPacket.X, MoveStartPacket.Y);
 	}
 
+	/*
+	else 
+	{
+		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
+		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
+
+		int newSectorX = MoveStartPacket.X / SECTOR_RATIO;
+		int newSectorY = MoveStartPacket.Y / SECTOR_RATIO;;
+
+		_session->_player->_x = MoveStartPacket.X;
+		_session->_player->_y = MoveStartPacket.Y;
+		_session->_player->_direction = MoveStartPacket.Direction;
+
+		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
+		{
+
+			Sector[oldSectorX][oldSectorY].remove(_session);
+			Sector[newSectorX][newSectorY].push_back(_session);
+			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
+		}
+
+	}
+
+	//*/
+
+
 
 	_session->_player->MoveStart(MoveStartPacket.Direction, MoveStartPacket.X, MoveStartPacket.Y);
 	//명시적으로 인자를 direction만 받는게 나아보임, 안 받던가
@@ -133,6 +160,29 @@ bool MoveStop(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, MoveStopPacket.X, MoveStopPacket.Y);
 	}
+	/*
+	else
+	{
+		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
+		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
+
+		int newSectorX = MoveStopPacket.X / SECTOR_RATIO;
+		int newSectorY = MoveStopPacket.Y / SECTOR_RATIO;;
+
+		_session->_player->_x = MoveStopPacket.X;
+		_session->_player->_y = MoveStopPacket.Y;
+		_session->_player->_direction = MoveStopPacket.Direction;
+
+		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
+		{
+
+			Sector[oldSectorX][oldSectorY].remove(_session);
+			Sector[newSectorX][newSectorY].push_back(_session);
+			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
+		}
+	}
+
+	//*/
 
 	_session->_player->MoveStop(MoveStopPacket.Direction, MoveStopPacket.X, MoveStopPacket.Y);
 
@@ -182,7 +232,30 @@ bool Attack1(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
 	}
+	/*
+	else
+	{
+		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
+		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
 
+		int newSectorX = AttackPacket.X / SECTOR_RATIO;
+		int newSectorY = AttackPacket.Y / SECTOR_RATIO;;
+
+		_session->_player->_x = AttackPacket.X;
+		_session->_player->_y = AttackPacket.Y;
+		_session->_player->_direction = AttackPacket.Direction;
+
+		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
+		{
+
+			Sector[oldSectorX][oldSectorY].remove(_session);
+			Sector[newSectorX][newSectorY].push_back(_session);
+			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
+		}
+
+	}
+
+	//*/
 
 	_session->_player->_direction = AttackPacket.Direction;
 
@@ -326,7 +399,29 @@ bool Attack2(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
 	}
+	/*
+	else
+	{
+		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
+		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
 
+		int newSectorX = AttackPacket.X / SECTOR_RATIO;
+		int newSectorY = AttackPacket.Y / SECTOR_RATIO;;
+
+		_session->_player->_x = AttackPacket.X;
+		_session->_player->_y = AttackPacket.Y;
+		_session->_player->_direction = AttackPacket.Direction;
+
+		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
+		{
+
+			Sector[oldSectorX][oldSectorY].remove(_session);
+			Sector[newSectorX][newSectorY].push_back(_session);
+			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
+		}
+
+	}
+	//*/
 
 	_session->_player->_direction = AttackPacket.Direction;
 
@@ -460,7 +555,29 @@ bool Attack3(Session* _session)
 
 		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
 	}
+	/*
+	else
+	{
+		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
+		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
 
+		int newSectorX = AttackPacket.X / SECTOR_RATIO;
+		int newSectorY = AttackPacket.Y / SECTOR_RATIO;;
+
+		_session->_player->_x = AttackPacket.X;
+		_session->_player->_y = AttackPacket.Y;
+		_session->_player->_direction = AttackPacket.Direction;
+
+		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
+		{
+
+			Sector[oldSectorX][oldSectorY].remove(_session);
+			Sector[newSectorX][newSectorY].push_back(_session);
+			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
+		}
+
+	}
+	//*/
 
 	_session->_player->_direction = AttackPacket.Direction;
 

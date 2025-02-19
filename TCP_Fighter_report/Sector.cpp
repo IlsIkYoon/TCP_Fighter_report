@@ -329,6 +329,7 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 
 				SendCreateOtherCharMessage((char*)_session, (char*)(*stat_ArrIt));
 				SendCreateOtherCharMessage((char*)(*stat_ArrIt), (char*)_session);
+				/*
 
 				//MoveMessage
 				if (_session->_player->_move == true)
@@ -341,6 +342,7 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 					SendMoveStartMessage((char*)(*stat_ArrIt), (char*)_session);
 				}
 
+				//*/
 
 
 			}

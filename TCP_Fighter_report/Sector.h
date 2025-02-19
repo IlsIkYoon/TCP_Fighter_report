@@ -12,4 +12,4 @@ bool MoveSectorRD(Session* _session, int x, int y, int oldX, int oldY);
 bool MoveSectorRU(Session* _session, int x, int y, int oldX, int oldY);
 bool MoveSectorLU(Session* _session, int x, int y, int oldX, int oldY);
 bool MoveSectorLD(Session* _session, int x, int y, int oldX, int oldY);
-bool SyncSector(Session* _session, int x, int y, int oldX, int oldY);
+bool SyncSector(Session* _session, int oldX, int oldY, int newX, int newY);
