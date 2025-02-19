@@ -61,7 +61,9 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 	Session* _src = (Session*)src;
 	Session* _dest = (Session*)dest;
 
-	//printf("Send CreateOtherMessage || src : %d, dest : %d\n", _src->_player->_ID, _dest->_player->_ID);
+	//Debug
+	_dest->CreateCount++;
+
 
 	PacketHeader pHeader;
 	SC_CREATE_OTHER_CHARACTER CreatePacket;
@@ -106,8 +108,12 @@ void SendDeleteMessage(char* src, char* dest)
 
 	Session* _src = (Session*)src;
 	Session* _dest = (Session*)dest;
-
 	
+	//Debug
+	_dest->DeleteCount++;
+	
+	
+
 	PacketHeader pHeader;
 	SC_DELETE_CHARACTER DeletePacket;
 

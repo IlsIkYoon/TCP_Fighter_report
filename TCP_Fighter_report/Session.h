@@ -28,7 +28,17 @@ public:
 	Session() {
 		_timeout = timeGetTime();
 		_delete = false;
+		CreateCount = 0;
+		DeleteCount = 0;
 	}
+
+	//*
+	//Debug
+
+	long long CreateCount;
+	long long DeleteCount;
+	
+	//*/
 
 
 };
