@@ -4,7 +4,7 @@
 #include "resource.h"
 #include "RingBuffer.h"
 #include "PacketDefine.h"
-
+#include <map>
 
 extern DWORD playerCount;
 extern int playerID;
@@ -28,16 +28,11 @@ public:
 	Session() {
 		_timeout = timeGetTime();
 		_delete = false;
-		CreateCount = 0;
-		DeleteCount = 0;
 	}
 
 	//*
 	//Debug
-
-	long long CreateCount;
-	long long DeleteCount;
-	
+	std::map<int, int> messageCount;
 	//*/
 
 

@@ -61,8 +61,19 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 	Session* _src = (Session*)src;
 	Session* _dest = (Session*)dest;
 
+	
 	//Debug
-	_dest->CreateCount++;
+	if (_dest->messageCount.count(_src->_player->_ID) == 0)
+	{
+		_dest->messageCount[_src->_player->_ID] = 1;
+	}
+	else if(_dest->messageCount.count(_src->_player->_ID == 1))
+	{
+		_dest->messageCount[_src->_player->_ID] += 1;
+
+		if (_dest->messageCount[_src->_player->_ID] > 1) __debugbreak();
+	}
+
 
 
 	PacketHeader pHeader;
@@ -110,8 +121,15 @@ void SendDeleteMessage(char* src, char* dest)
 	Session* _dest = (Session*)dest;
 	
 	//Debug
-	_dest->DeleteCount++;
+	if (_dest->messageCount.count(_src->_player->_ID) == 0) __debugbreak();
 	
+	if (_dest->messageCount.count(_src->_player->_ID) == 1)
+	{
+		_dest->messageCount[_src->_player->_ID] -= 1;
+
+		if (_dest->messageCount[_src->_player->_ID] < 0) __debugbreak();
+
+	}
 	
 
 	PacketHeader pHeader;

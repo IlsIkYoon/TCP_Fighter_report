@@ -32,7 +32,7 @@ bool TCPFighter() {
 	while (1) 
 	{
 		DWORD currentTime = timeGetTime();
-		DWORD deltaTime = currentTime - g_prevFrameTime; // 여기서 델타타임을 딱 맞게 올려줘야겠네 
+		DWORD deltaTime = currentTime - g_prevFrameTime; 
 		DWORD deltaCount = deltaTime / FrameSec;
 		g_fixedDeltaTime = deltaCount * FrameSec;
 
