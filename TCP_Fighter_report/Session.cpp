@@ -176,8 +176,8 @@ bool Player::Move(DWORD fixedDeltaTime) {
 	int oldX = _x;
 	int oldY = _y;
 
-	deltaX = (short)fixedDeltaTime / FrameSec * dfSPEED_PLAYER_X;
-	deltaY = (short)fixedDeltaTime / FrameSec * dfSPEED_PLAYER_Y;
+	deltaX = ((short)fixedDeltaTime / FrameSec) * dfSPEED_PLAYER_X;
+	deltaY = ((short)fixedDeltaTime / FrameSec) * dfSPEED_PLAYER_Y;
 
 
 	
