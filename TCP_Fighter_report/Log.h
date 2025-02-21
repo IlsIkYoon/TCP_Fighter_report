@@ -29,3 +29,9 @@ void WriteLogQToFile();
 //파일 이름을 xxx.cpp로 남겨줌
 //-------------------------------------------//
 std::string getFileName(const std::string& path);
+
+
+//-------------------------------------------//
+//로그 형태 문자열로 로그 큐에 Enque
+//-------------------------------------------//
+void EnqueLog(const char* name, const char* FileName, const char* FuncName, int Line, int errorCode);

@@ -34,6 +34,12 @@
     <Filter Include="Message">
       <UniqueIdentifier>{c76e6497-3a80-4783-bfad-51409fe56dd8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Log">
+      <UniqueIdentifier>{b70ed5c8-3d5c-44bd-b2c3-3be98cd28eba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameNetwork">
+      <UniqueIdentifier>{88a0dab3-5a76-4257-9231-1c4b20321bde}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -57,14 +63,14 @@
     <ClCompile Include="Message.cpp">
       <Filter>Message</Filter>
     </ClCompile>
-    <ClCompile Include="Log.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="NetworkInit.cpp">
       <Filter>Networkinit</Filter>
     </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Log</Filter>
+    </ClCompile>
     <ClCompile Include="GameNetwork.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>GameNetwork</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -92,14 +98,14 @@
     <ClInclude Include="Message.h">
       <Filter>Message</Filter>
     </ClInclude>
-    <ClInclude Include="Log.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="NetworkInit.h">
       <Filter>Networkinit</Filter>
     </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Log</Filter>
+    </ClInclude>
     <ClInclude Include="GameNetwork.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>GameNetwork</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

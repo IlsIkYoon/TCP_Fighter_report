@@ -58,22 +58,14 @@ bool DecodeMessages(Session* _session)
 
 		if (peekResult < sizeof(pHeader))
 		{
-			std::string logEntry = std::format("Header Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-				getFileName(__FILE__), __func__, __LINE__, GetLastError());
-			EnterCriticalSection(&g_lock);
-			LogQ.push_back(logEntry);
-			LeaveCriticalSection(&g_lock);
+			EnqueLog("Header ", __FILE__, __func__, __LINE__, GetLastError());
 			return false;
 		}
 
 
 		if (pHeader.byCode != 0x89)
 		{
-			std::string logEntry = std::format("Protocol code Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-				getFileName(__FILE__), __func__, __LINE__, GetLastError());
-			EnterCriticalSection(&g_lock);
-			LogQ.push_back(logEntry);
-			LeaveCriticalSection(&g_lock);
+			EnqueLog("Protocol Code ", __FILE__, __func__, __LINE__, GetLastError());
 			DeleteSession(_session); //맞는 코드가 아니라면 소켓 연결 종료
 			return false;
 		}
@@ -136,11 +128,7 @@ bool DecodeMessages(Session* _session)
 
 		case dfPACKET_CS_SYNC:
 		{
-			std::string logEntry = std::format("Sync Message Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-				getFileName(__FILE__), __func__, __LINE__, GetLastError());
-			EnterCriticalSection(&g_lock);
-			LogQ.push_back(logEntry);
-			LeaveCriticalSection(&g_lock);
+			EnqueLog("SyncMessage ", __FILE__, __func__, __LINE__, GetLastError());
 		}
 			break;
 
@@ -383,11 +371,7 @@ void FlushDeleteArr()
 			if (debugSize == Sector[sectorX][sectorY].size())
 			{
 
-				std::string logEntry = std::format("Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-					getFileName(__FILE__), __func__, __LINE__, GetLastError());
-				EnterCriticalSection(&g_lock);
-				LogQ.push_back(logEntry);
-				LeaveCriticalSection(&g_lock);
+				EnqueLog("Sector ", __FILE__, __func__, __LINE__, GetLastError());
 			}
 
 

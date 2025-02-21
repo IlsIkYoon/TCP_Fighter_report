@@ -58,13 +58,7 @@ void GameNetwork()
 		select_retval = select(NULL, &readset[i], &writeset[i], NULL, &timeout);
 		if (select_retval == SOCKET_ERROR && GetLastError() != 10022)
 		{
-			std::string logEntry = std::format("Select Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-				getFileName(__FILE__), __func__, __LINE__, GetLastError());
-			EnterCriticalSection(&g_lock);
-			LogQ.push_back(logEntry);
-			LeaveCriticalSection(&g_lock);
-			
-
+			EnqueLog("Select", __FILE__, __func__, __LINE__, GetLastError());
 			continue;
 		}
 
@@ -104,11 +98,7 @@ void GameNetwork()
 					DeleteSession(session);
 				}
 				else {
-					std::string logEntry = std::format("Recv Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-						getFileName(__FILE__), __func__, __LINE__, GetLastError());
-					EnterCriticalSection(&g_lock);
-					LogQ.push_back(logEntry);
-					LeaveCriticalSection(&g_lock);
+					EnqueLog("Recv", __FILE__, __func__, __LINE__, GetLastError());
 
 				}
 			}
@@ -120,11 +110,7 @@ void GameNetwork()
 			else {
 				if (GetLastError() != WSAEWOULDBLOCK)
 				{
-					std::string logEntry = std::format("Recv Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-						getFileName(__FILE__), __func__, __LINE__, GetLastError());
-					EnterCriticalSection(&g_lock);
-					LogQ.push_back(logEntry);
-					LeaveCriticalSection(&g_lock);
+					EnqueLog("Recv", __FILE__, __func__, __LINE__, GetLastError());
 				}
 			}
 		}
@@ -141,11 +127,7 @@ void GameNetwork()
 			if (send_retval == SOCKET_ERROR && GetLastError() != WSAEWOULDBLOCK)
 			{
 				if (GetLastError() != 10054 && GetLastError() != 10053){
-					std::string logEntry = std::format("Send Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-						getFileName(__FILE__), __func__, __LINE__, GetLastError());
-					EnterCriticalSection(&g_lock);
-					LogQ.push_back(logEntry);
-					LeaveCriticalSection(&g_lock);
+					EnqueLog("Send", __FILE__, __func__, __LINE__, GetLastError());
 				}
 			}
 

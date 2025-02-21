@@ -72,12 +72,7 @@ void WriteLog()
 
 	if (fpWrite == 0)
 	{
-		std::string logEntry = std::format("Log File Open Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("Log File Open", __FILE__, __func__, __LINE__, GetLastError());
 
 		return;
 	}
@@ -105,11 +100,8 @@ void WriteLogQToFile()
 	fopen_s(&fpWrite, fileName, "a");
 	if (fpWrite == 0)
 	{
-		std::string logEntry = std::format("Log File Open Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("Log File Open", __FILE__, __func__, __LINE__, GetLastError());
+
 		return;
 	}
 
@@ -130,4 +122,16 @@ void WriteLogQToFile()
 
 std::string getFileName(const std::string& path) {
 	return path.substr(path.find_last_of("/\\") + 1);
+}
+
+void EnqueLog(const char* name, const char* FileName, const char* FuncName, int Line, int errorCode)
+{
+
+	std::string logEntry = std::format("{} Error || FILE : {}, Func : {} , Line : {} error : {}\n",
+		name, getFileName(__FILE__), __func__, __LINE__, GetLastError());
+	EnterCriticalSection(&g_lock);
+	LogQ.push_back(logEntry);
+	LeaveCriticalSection(&g_lock);
+
+
 }

@@ -34,20 +34,12 @@ void SendMoveStartMessage(char* src, char* dest)
 	//EnqueÇÏ±â
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&MovePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -67,7 +59,7 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 	{
 		_dest->messageCount[_src->_player->_ID] = 1;
 	}
-	else if(_dest->messageCount.count(_src->_player->_ID == 1))
+	else if(_dest->messageCount.count(_src->_player->_ID) == 1)
 	{
 		_dest->messageCount[_src->_player->_ID] += 1;
 
@@ -92,20 +84,12 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&CreatePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -121,8 +105,11 @@ void SendDeleteMessage(char* src, char* dest)
 	Session* _dest = (Session*)dest;
 	
 	//Debug
-	if (_dest->messageCount.count(_src->_player->_ID) == 0) __debugbreak();
-	
+	if (_dest->messageCount.count(_src->_player->_ID) == 0)
+	{
+		if(_dest->_player->_ID != _src->_player->_ID)
+		__debugbreak();
+	}
 	if (_dest->messageCount.count(_src->_player->_ID) == 1)
 	{
 		_dest->messageCount[_src->_player->_ID] -= 1;
@@ -145,20 +132,12 @@ void SendDeleteMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&DeletePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -188,20 +167,12 @@ void SendMoveStopMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&MoveStopPacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -235,20 +206,12 @@ void SendAttack1Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -279,20 +242,12 @@ void SendAttack2Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -323,20 +278,12 @@ void SendAttack3Message(char* src, char* dest, char* _srcAttackPacket)
 
 	if (_dest->_sendQ.Enqueue((char*)&AttackHeader, sizeof(AttackHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SCAttackPacket, AttackHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -367,20 +314,12 @@ void SendDamageMessage(char* Attack, char* dest, char* Damage)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&DamagePacket, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -411,20 +350,12 @@ void SendSyncMessage(char* src, char* dest)
 
 	if (_dest->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	if (_dest->_sendQ.Enqueue((char*)&SC_Sync, pHeader.bySize, &enqueResult) == false)
 	{
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_dest);
 	}
 	return;
@@ -710,11 +641,7 @@ void SendCreateMyCharMessage(char* src)
 	if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
 	{
 		
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ Size", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_session);
 		return;
 	}
@@ -722,12 +649,7 @@ void SendCreateMyCharMessage(char* src)
 
 	if (_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &EnqueOut) == false)
 	{
-		
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_session);
 		
 
@@ -737,11 +659,7 @@ void SendCreateMyCharMessage(char* src)
 	if (_session->_sendQ.Enqueue((char*)&CreatePacket, pHeader.bySize, &EnqueOut) == false)
 	{
 		
-		std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-			getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
+		EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 		DeleteSession(_session);
 
 		return;
@@ -787,37 +705,40 @@ void SendCreateSurroundCharMessage(char* src)
 				otherCharacter.X = it->_player->_x;
 				otherCharacter.Y = it->_player->_y;
 
+				//Debug
+				if (_session->messageCount.count(it->_player->_ID) == 0)
+				{
+					_session->messageCount[it->_player->_ID] = 1;
+				}
+				else if (_session->messageCount.count(it->_player->_ID) == 1)
+				{
+					_session->messageCount[it->_player->_ID] += 1;
+
+					if (_session->messageCount[it->_player->_ID] > 1) __debugbreak();
+				}
+
+
+
+
 				if (otherCharacter.ID == _session->_player->_ID) continue;
 
 				if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
 				{
-					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-						getFileName(__FILE__), __func__, __LINE__, GetLastError());
-					EnterCriticalSection(&g_lock);
-					LogQ.push_back(logEntry);
-					LeaveCriticalSection(&g_lock);
+					EnqueLog("RingBuffer SendQ Size", __FILE__, __func__, __LINE__, GetLastError());
 					DeleteSession(_session);
 					return;
 				}
 
 				if (_session->_sendQ.Enqueue((char*)&pHeader, sizeof(pHeader), &EnqueOut) == false)
 				{
-					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-						getFileName(__FILE__), __func__, __LINE__, GetLastError());
-					EnterCriticalSection(&g_lock);
-					LogQ.push_back(logEntry);
-					LeaveCriticalSection(&g_lock);
+					EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 					DeleteSession(_session);
 					return;
 				}
 
 				if (_session->_sendQ.Enqueue((char*)&otherCharacter, pHeader.bySize, &EnqueOut) == false)
 				{
-					std::string logEntry = std::format("Ringbuffer SenddQ Enqueue Error || FILE : {}, Func : {} , Line : {} error : {}\n",
-						getFileName(__FILE__), __func__, __LINE__, GetLastError());
-					EnterCriticalSection(&g_lock);
-					LogQ.push_back(logEntry);
-					LeaveCriticalSection(&g_lock);
+					EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
 					DeleteSession(_session);
 					return;
 				}

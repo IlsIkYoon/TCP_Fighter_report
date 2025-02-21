@@ -18,7 +18,7 @@ bool TCPFighter() {
 
 	DWORD startTime = timeGetTime();
 
-	DWORD dwUpdateTick = startTime - 40;
+	DWORD dwUpdateTick = startTime - FrameSec;
 	sec = startTime / 1000;
 	
 	g_prevFrameTime = startTime - FrameSec;// 초기 값 설정

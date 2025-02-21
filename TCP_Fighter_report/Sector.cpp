@@ -329,6 +329,8 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 
 				SendCreateOtherCharMessage((char*)_session, (char*)(*stat_ArrIt));
 				SendCreateOtherCharMessage((char*)(*stat_ArrIt), (char*)_session);
+				
+				
 				/*
 
 				//MoveMessage

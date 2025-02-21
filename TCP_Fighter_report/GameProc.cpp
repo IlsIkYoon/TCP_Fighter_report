@@ -76,6 +76,7 @@ bool MoveStart(Session* _session)
 	
 	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
 	{
+		
 		std::string logEntry = std::format("Send Sync Message ||old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
 			_session->_player->_x, _session->_player->_y, MoveStartPacket.X, MoveStartPacket.Y, getFileName(__FILE__), __func__, __LINE__, GetLastError());
 		EnterCriticalSection(&g_lock);
