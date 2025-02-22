@@ -12,6 +12,7 @@ extern int sectorYRange;
 extern DWORD SyncMessageCount;
 
 extern CRITICAL_SECTION g_lock;
+extern DWORD messageErrorCount;
 
 void SendMoveStartMessage(char* src, char* dest)
 {
@@ -63,7 +64,11 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 	{
 		_dest->messageCount[_src->_player->_ID] += 1;
 
-		if (_dest->messageCount[_src->_player->_ID] > 1) __debugbreak();
+		if (_dest->messageCount[_src->_player->_ID] > 1)
+		{
+			messageErrorCount++;
+			EnqueLog("Message Error", __FILE__, __func__, __LINE__, GetLastError());
+		}
 	}
 
 
@@ -107,14 +112,22 @@ void SendDeleteMessage(char* src, char* dest)
 	//Debug
 	if (_dest->messageCount.count(_src->_player->_ID) == 0)
 	{
-		if(_dest->_player->_ID != _src->_player->_ID)
-		__debugbreak();
+		if (_dest->_player->_ID != _src->_player->_ID)
+		{
+			messageErrorCount++;
+			EnqueLog("Message Error", __FILE__, __func__, __LINE__, GetLastError());
+		}
+			
 	}
 	if (_dest->messageCount.count(_src->_player->_ID) == 1)
 	{
 		_dest->messageCount[_src->_player->_ID] -= 1;
 
-		if (_dest->messageCount[_src->_player->_ID] < 0) __debugbreak();
+		if (_dest->messageCount[_src->_player->_ID] < 0)
+		{
+			messageErrorCount++;
+			EnqueLog("Message Error", __FILE__, __func__, __LINE__, GetLastError());
+		}
 
 	}
 	
@@ -330,7 +343,7 @@ void SendDamageMessage(char* Attack, char* dest, char* Damage)
 
 void SendSyncMessage(char* src, char* dest)
 {
-	__debugbreak();
+	
 	unsigned int enqueResult;
 
 	Session* _src = (Session*)src;
@@ -378,6 +391,8 @@ void MsgSectorBroadCasting(void (*Func)(char* src, char* dest), char* _src, int 
 				if ((target->_player->_ID == _session->_player->_ID) && SendMe == false)
 					continue;
 
+				if (target->_delete == true) continue;
+
 				Func(_src, (char*)target);
 
 			}
@@ -403,6 +418,10 @@ void MsgSectorRSend(void (*Func)(char* src, char* dest), char* _src, int SectorX
 				{
 					continue;
 				}
+
+				if ((*it)->_delete == true) continue;
+	
+
 				Func(_src, (char*)(*it));
 			}
 	}
@@ -423,6 +442,9 @@ void MsgSectorLSend(void (*Func)(char* src, char* dest), char* _src, int SectorX
 			{
 				continue;
 			}
+
+			if ((*it)->_delete == true) continue;
+
 			Func(_src, (char*)(*it));
 		}
 	}
@@ -444,6 +466,9 @@ void MsgSectorUSend(void (*Func)(char* src, char* dest), char* _src, int SectorX
 			{
 				continue;
 			}
+
+			if ((*it)->_delete == true) continue;
+
 			Func(_src, (char*)(*it));
 		}
 	}
@@ -464,6 +489,9 @@ void MsgSectorDSend(void (*Func)(char* src, char* dest), char* _src, int SectorX
 			{
 				continue;
 			}
+
+			if ((*it)->_delete == true) continue;
+
 			Func(_src, (char*)(*it));
 		}
 	}
@@ -488,6 +516,9 @@ void MsgSectorBroadCasting(void (*Func)(char* src, char* dest, char* AttackPacke
 				{
 					continue;
 				}
+
+				if ((*it)->_delete == true) continue;
+
 				Func(_src, (char*)(*it), AttackPacket);
 			}
 		}
@@ -510,6 +541,9 @@ void MsgSectorRSend(void (*Func)(char* src, char* dest, char* AttackPacket), cha
 			{
 				continue;
 			}
+
+			if ((*it)->_delete == true) continue;
+
 			Func(_src, (char*)(*it), AttackPacket);
 		}
 	}
@@ -531,6 +565,9 @@ void MsgSectorLSend(void (*Func)(char* src, char* dest, char* AttackPacket), cha
 			{
 				continue;
 			}
+
+			if ((*it)->_delete == true) continue;
+
 			Func(_src, (char*)(*it), AttackPacket);
 		}
 	}
@@ -552,6 +589,9 @@ void MsgSectorUSend(void (*Func)(char* src, char* dest, char* AttackPacket), cha
 			{
 				continue;
 			}
+
+			if ((*it)->_delete == true) continue;
+
 			Func(_src, (char*)(*it), AttackPacket);
 		}
 	}
@@ -573,6 +613,9 @@ void MsgSectorDSend(void (*Func)(char* src, char* dest, char* AttackPacket), cha
 			{
 				continue;
 			}
+
+			if ((*it)->_delete == true) continue;
+
 			Func(_src, (char*)(*it), AttackPacket);
 		}
 	}
@@ -689,6 +732,8 @@ void SendCreateSurroundCharMessage(char* src)
 			{
 				if (it->_player->_ID == _session->_player->_ID) continue; 
 
+				if (it->_delete == true) continue;
+
 				otherCharacter.ID = it->_player->_ID;
 				otherCharacter.HP = it->_player->_hp;
 				otherCharacter.Direction = it->_player->_direction;
@@ -697,6 +742,8 @@ void SendCreateSurroundCharMessage(char* src)
 
 				//Debug
 				//-----------------------------------------------
+
+
 				if (_session->messageCount.count(it->_player->_ID) == 0)
 				{
 					_session->messageCount[it->_player->_ID] = 1;
@@ -705,8 +752,16 @@ void SendCreateSurroundCharMessage(char* src)
 				{
 					_session->messageCount[it->_player->_ID] += 1;
 
-					if (_session->messageCount[it->_player->_ID] > 1) __debugbreak();
+					if (_session->messageCount[it->_player->_ID] > 1)
+					{
+						messageErrorCount++;
+						EnqueLog("Message Error", __FILE__, __func__, __LINE__, GetLastError());
+					}
 				}
+
+
+
+
 				//----------------------------------------------
 				if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
 				{

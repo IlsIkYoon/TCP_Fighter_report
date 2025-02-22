@@ -279,60 +279,75 @@ bool Player::Move(DWORD fixedDeltaTime) {
 	int newSectorY = _y / SECTOR_RATIO;
 	
 
-	//섹터에 이미 존재하지 않았음
-	int debugSize = Sector[oldSectorX][oldSectorY].size();
+	//섹터에 이미 존재하지 않았음 //debug
+	size_t debugSize = Sector[oldSectorX][oldSectorY].size();
 	
 	Sector[oldSectorX][oldSectorY].remove(pSession);
 
-	if (debugSize == Sector[oldSectorX][oldSectorY].size()) __debugbreak();
+	if (debugSize == Sector[oldSectorX][oldSectorY].size())
+	{
+		EnqueLog("Sector Error", __FILE__, __func__, __LINE__, GetLastError());
+	}
 
 
 	Sector[newSectorX][newSectorY].push_back(pSession);
-	
+
+	int sectorGapX = newSectorX - oldSectorX;
+	int sectorGapY = newSectorY - oldSectorY;
+
+	if (sectorGapX < 0) sectorGapX *= -1;
+	if (sectorGapY < 0) sectorGapY *= -1;
 
 
-	int paramX;
-	int paramY;
-
-	if (newSectorX > oldSectorX) //오른쪽으로 간 상황
+	if (sectorGapX > 1 || sectorGapY > 1)
 	{
-		paramX = oldX + deltaX;
-		paramY = oldY;
-		MoveSectorR(pSession, paramX, paramY, oldX, oldY);
-		oldX = paramX;
-		oldY = paramY;
-		
-	}
-	else if (oldSectorX > newSectorX) //왼쪽으로 간 상황
-	{
-		paramX = oldX - deltaX;
-		paramY = oldY;
-		MoveSectorL(pSession, paramX, paramY, oldX, oldY);
-		oldX = paramX;
-		oldY = paramY;
-		
-		
-	}
-	if (newSectorY > oldSectorY) //아래로 간 상황
-	{
-		paramX = oldX;
-		paramY = oldY + deltaY;
-		MoveSectorD(pSession, paramX, paramY, oldX, oldY);
-		oldX = paramX;
-		oldY = paramY;
-		
-	}
-	else if (oldSectorY > newSectorY) //위로 간 상황
-	{
-		paramX = oldX;
-		paramY = oldY - deltaY;
-
-		MoveSectorU(pSession, paramX, paramY, oldX, oldY);
-		oldX = paramX;
-		oldY = paramY;
-
+		SyncSector(pSession, oldSectorX, oldSectorY, newSectorX, newSectorY);
 	}
 
+
+	else {
+		int paramX;
+		int paramY;
+
+		if (newSectorX > oldSectorX) //오른쪽으로 간 상황
+		{
+			paramX = oldX + deltaX;
+			paramY = oldY;
+			MoveSectorR(pSession, paramX, paramY, oldX, oldY);
+			oldX = paramX;
+			oldY = paramY;
+
+		}
+		else if (oldSectorX > newSectorX) //왼쪽으로 간 상황
+		{
+			paramX = oldX - deltaX;
+			paramY = oldY;
+			MoveSectorL(pSession, paramX, paramY, oldX, oldY);
+			oldX = paramX;
+			oldY = paramY;
+
+
+		}
+		if (newSectorY > oldSectorY) //아래로 간 상황
+		{
+			paramX = oldX;
+			paramY = oldY + deltaY;
+			MoveSectorD(pSession, paramX, paramY, oldX, oldY);
+			oldX = paramX;
+			oldY = paramY;
+
+		}
+		else if (oldSectorY > newSectorY) //위로 간 상황
+		{
+			paramX = oldX;
+			paramY = oldY - deltaY;
+
+			MoveSectorU(pSession, paramX, paramY, oldX, oldY);
+			oldX = paramX;
+			oldY = paramY;
+
+		}
+	}
 	
 	return true;
 }
@@ -427,18 +442,17 @@ void SyncCheck(Session* _session, int newX, int newY)
 
 		SyncPos(_session);
 	}
-	/*
+	//*
 	else
 	{
 		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
 		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
 
-		int newSectorX = AttackPacket.X / SECTOR_RATIO;
-		int newSectorY = AttackPacket.Y / SECTOR_RATIO;;
+		int newSectorX = newX / SECTOR_RATIO;
+		int newSectorY = newY / SECTOR_RATIO;;
 
-		_session->_player->_x = AttackPacket.X;
-		_session->_player->_y = AttackPacket.Y;
-		_session->_player->_direction = AttackPacket.Direction;
+		_session->_player->_x = newX;
+		_session->_player->_y = newY;
 
 		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
 		{

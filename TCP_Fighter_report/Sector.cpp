@@ -37,6 +37,7 @@ bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 			stat_ArrIt != Sector[oldSectorX][oldSectorY].end(); stat_ArrIt++)
 		{
 			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+			if ((*stat_ArrIt)->_delete == true) continue;
 
 			SendDeleteMessage((char*)_session, (char*)(*stat_ArrIt));
 			SendDeleteMessage((char*)(*stat_ArrIt), (char*)_session);
@@ -60,6 +61,7 @@ bool MoveSectorL(Session* _session, int x, int y, int oldX, int oldY)
 		{
 
 			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+			if ((*stat_ArrIt)->_delete == true) continue;
 
 			SendCreateOtherCharMessage((char*)_session, (char*)(*stat_ArrIt));
 			SendCreateOtherCharMessage((char*)(*stat_ArrIt), (char*)_session);
@@ -107,6 +109,7 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 		for (auto dest : Sector[oldSectorX][oldSectorY])
 		{
 			if (dest->_player->_ID == _session->_player->_ID) continue;
+			if (dest->_delete == true) continue;
 
 			SendDeleteMessage((char*)_session, (char*)dest);
 			SendDeleteMessage((char*)dest, (char*)_session);
@@ -125,6 +128,7 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 		for (auto dest : Sector[newSectorX][newSectorY])
 		{
 			if (dest->_player->_ID == _session->_player->_ID) continue;
+			if (dest->_delete == true) continue;
 
 			SendCreateOtherCharMessage((char*)_session, (char*)dest);
 			SendCreateOtherCharMessage((char*)dest, (char*)_session);
@@ -176,6 +180,7 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 		for (auto dest : Sector[oldSectorX][oldSectorY])
 		{
 			if (dest->_player->_ID == _session->_player->_ID) continue;
+			if (dest->_delete == true) continue;
 
 			SendDeleteMessage((char*)_session, (char*)dest);
 			SendDeleteMessage((char*)dest, (char*)_session);
@@ -195,6 +200,7 @@ bool MoveSectorU(Session* _session, int x, int y, int oldX, int oldY)
 		for (auto dest : Sector[newSectorX][newSectorY])
 		{
 			if (dest->_player->_ID == _session->_player->_ID) continue;
+			if (dest->_delete == true) continue;
 
 			SendCreateOtherCharMessage((char*)_session, (char*)dest);
 			SendCreateOtherCharMessage((char*)dest, (char*)_session);
@@ -243,6 +249,8 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 			stat_ArrIt != Sector[oldSectorX][oldSectorY].end(); stat_ArrIt++)
 		{
 			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+			if ((*stat_ArrIt)->_delete == true) continue;
+
 			SendDeleteMessage((char*)_session, (char*)(*stat_ArrIt));
 			SendDeleteMessage((char*)(*stat_ArrIt), (char*)_session);
 
@@ -263,6 +271,7 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY)
 			stat_ArrIt != Sector[newSectorX][newSectorY].end(); stat_ArrIt++)
 		{
 			if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+			if ((*stat_ArrIt)->_delete == true) continue;
 
 			SendCreateOtherCharMessage((char*)_session, (char*)(*stat_ArrIt));
 			SendCreateOtherCharMessage((char*)(*stat_ArrIt), (char*)_session);
@@ -302,6 +311,7 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 				stat_ArrIt != Sector[oldSecX + i][oldSecY + j].end(); stat_ArrIt++)
 			{
 				if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+				if ((*stat_ArrIt)->_delete == true) continue;
 				
 				SendDeleteMessage((char*)_session, (char*)(*stat_ArrIt));
 				SendDeleteMessage((char*)(*stat_ArrIt), (char*)_session);
@@ -326,6 +336,7 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 			{
 				//섹터 생성 메세지 
 				if ((*stat_ArrIt)->_player->_ID == _session->_player->_ID) continue;
+				if ((*stat_ArrIt)->_delete == true) continue;
 
 				SendCreateOtherCharMessage((char*)_session, (char*)(*stat_ArrIt));
 				SendCreateOtherCharMessage((char*)(*stat_ArrIt), (char*)_session);
@@ -376,6 +387,7 @@ Session* CheckHit(Session* _session, int rangeX, int rangeY)
 				for (auto target : Sector[sectorX + i][sectorY + j])
 				{
 					if (target->_player->_ID == _session->_player->_ID) continue;
+					if (target->_delete == true) continue;
 
 					int resultX = _session->_player->_x - target->_player->_x;
 					int resultY = _session->_player->_y - target->_player->_y;
@@ -403,6 +415,7 @@ Session* CheckHit(Session* _session, int rangeX, int rangeY)
 				for (auto target : Sector[sectorX + i][sectorY + j])
 				{
 					if (target->_player->_ID == _session->_player->_ID) continue;
+					if (target->_delete == true) continue;
 
 					int resultX = _session->_player->_x - target->_player->_x;
 					int resultY = _session->_player->_y - target->_player->_y;

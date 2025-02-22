@@ -12,14 +12,19 @@ extern HANDLE g_ExitEvent;
 std::list<std::string> LogQ;
 CRITICAL_SECTION g_lock;
 
+DWORD messageErrorCount = 0;
+DWORD errorCount = 0;
+
 
 void PrintLog()
 {
 	printf("\n--------------------------------\n");
+	printf("Error Count : %d\n", errorCount);
 	printf("PlayerCount : %d\n", playerCount);
 	printf("frame : %d\n", frame);
 	printf("Sync Message Count : %d\n", SyncMessageCount);
 	printf("TimeOut Count : %d\n", timeOutCount);
+	printf("Message Error Count : %d\n", messageErrorCount);
 	printf("--------------------------------\n");
 }
 
@@ -80,10 +85,12 @@ void WriteLog()
 
 
 	fprintf(fpWrite, "\n--------------------------------\n");
+	fprintf(fpWrite, "Error Count : %d\n", errorCount);
 	fprintf(fpWrite, "PlayerCount : %d\n", playerCount);
 	fprintf(fpWrite, "frame : %d\n", frame);
 	fprintf(fpWrite, "Sync Message Count : %d\n", SyncMessageCount);
 	fprintf(fpWrite, "TimeOut Count : %d\n", timeOutCount);
+	fprintf(fpWrite, "Message Error Count : %d\n", messageErrorCount);
 	fprintf(fpWrite, "--------------------------------\n");
 
 	fclose(fpWrite);
@@ -126,6 +133,7 @@ std::string getFileName(const std::string& path) {
 
 void EnqueLog(const char* name, const char* FileName, const char* FuncName, int Line, int errorCode)
 {
+	errorCount++;
 
 	std::string logEntry = std::format("{} Error || FILE : {}, Func : {} , Line : {} error : {}\n",
 		name, getFileName(__FILE__), __func__, __LINE__, GetLastError());

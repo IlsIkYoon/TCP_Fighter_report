@@ -15,7 +15,7 @@ bool MoveSectorD(Session* _session, int x, int y, int oldX, int oldY);
 // newSector주변에 양방향으로 _session Create메세지 전송
 // newSector 기준으로 moveFlag가 켜져 있다면 MoveStart메세지도 바로 전송
 //-----------------------------------------------------------
-bool SyncSector(Session* _session, int oldX, int oldY, int newX, int newY);
+bool SyncSector(Session* _session, int oldSectorX, int oldSectorY, int newSectorX, int newSectorY);
 
 
 //-----------------------------------------------------------

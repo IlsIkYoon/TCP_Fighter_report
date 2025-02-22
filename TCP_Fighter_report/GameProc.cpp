@@ -23,6 +23,8 @@ void UpdateGameLogic(DWORD deltaTime)
 
 		for (auto session : SessionArr)
 		{
+			if (session->_delete == true) continue;
+
 			if (session->_recvQ.IsEmpty() == false) {
 
 				DecodeMessages(session);
@@ -33,6 +35,8 @@ void UpdateGameLogic(DWORD deltaTime)
 
 		for (auto session : SessionArr)
 		{
+
+			if (session->_delete == true) continue;
 
 			session->_player->Move(deltaTime);
 		}
