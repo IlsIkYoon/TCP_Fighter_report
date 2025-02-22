@@ -21,9 +21,6 @@ extern CRITICAL_SECTION g_lock;
 void UpdateGameLogic(DWORD deltaTime)
 {
 
-	std::list<Session*>::iterator s_ArrIt;
-
-
 		for (auto session : SessionArr)
 		{
 			if (session->_recvQ.IsEmpty() == false) {
@@ -65,57 +62,12 @@ bool MoveStart(Session* _session)
 
 	_session->_recvQ.MoveFront(sizeof(MoveStartPacket));
 
+	//헤더 추출 완료
+
+	SyncCheck(_session, MoveStartPacket.X, MoveStartPacket.Y);
 
 
-
-	int sumX = MoveStartPacket.X - _session->_player->_x;
-	int sumY = MoveStartPacket.Y - _session->_player->_y;
-
-	if (sumX < 0) sumX *= -1;
-	if (sumY < 0) sumY *= -1;
-	
-	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
-	{
-		
-		std::string logEntry = std::format("Send Sync Message ||old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
-			_session->_player->_x, _session->_player->_y, MoveStartPacket.X, MoveStartPacket.Y, getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
-
-		SyncPos(_session, _session->_player->_x, _session->_player->_y, MoveStartPacket.X, MoveStartPacket.Y);
-	}
-
-	/*
-	else 
-	{
-		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
-		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
-
-		int newSectorX = MoveStartPacket.X / SECTOR_RATIO;
-		int newSectorY = MoveStartPacket.Y / SECTOR_RATIO;;
-
-		_session->_player->_x = MoveStartPacket.X;
-		_session->_player->_y = MoveStartPacket.Y;
-		_session->_player->_direction = MoveStartPacket.Direction;
-
-		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
-		{
-
-			Sector[oldSectorX][oldSectorY].remove(_session);
-			Sector[newSectorX][newSectorY].push_back(_session);
-			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
-		}
-
-	}
-
-	//*/
-
-
-
-	_session->_player->MoveStart(MoveStartPacket.Direction, MoveStartPacket.X, MoveStartPacket.Y);
-	//명시적으로 인자를 direction만 받는게 나아보임, 안 받던가
-
+	_session->_player->MoveStart(MoveStartPacket.Direction);
 
 	//섹터 주변에 뿌려주기
 
@@ -145,47 +97,9 @@ bool MoveStop(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(MoveStopPacket));
 	
 
-	int sumX = MoveStopPacket.X - _session->_player->_x;
-	int sumY = MoveStopPacket.Y - _session->_player->_y;
+	SyncCheck(_session, MoveStopPacket.X, MoveStopPacket.Y);
 
-	if (sumX < 0) sumX *= -1;
-	if (sumY < 0) sumY *= -1;
-
-	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
-	{
-		std::string logEntry = std::format("Send Sync Message ||old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
-			_session->_player->_x, _session->_player->_y, MoveStopPacket.X, MoveStopPacket.Y, getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
-
-		SyncPos(_session, _session->_player->_x, _session->_player->_y, MoveStopPacket.X, MoveStopPacket.Y);
-	}
-	/*
-	else
-	{
-		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
-		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
-
-		int newSectorX = MoveStopPacket.X / SECTOR_RATIO;
-		int newSectorY = MoveStopPacket.Y / SECTOR_RATIO;;
-
-		_session->_player->_x = MoveStopPacket.X;
-		_session->_player->_y = MoveStopPacket.Y;
-		_session->_player->_direction = MoveStopPacket.Direction;
-
-		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
-		{
-
-			Sector[oldSectorX][oldSectorY].remove(_session);
-			Sector[newSectorX][newSectorY].push_back(_session);
-			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
-		}
-	}
-
-	//*/
-
-	_session->_player->MoveStop(MoveStopPacket.Direction, MoveStopPacket.X, MoveStopPacket.Y);
+	_session->_player->MoveStop(MoveStopPacket.Direction);
 
 
 	int sectorX = MoveStopPacket.X / SECTOR_RATIO;
@@ -216,47 +130,8 @@ bool Attack1(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
 	//싱크 작업 먼저 
-	int sumX = AttackPacket.X - _session->_player->_x;
-	int sumY = AttackPacket.Y - _session->_player->_y;
+	SyncCheck(_session, AttackPacket.X, AttackPacket.Y);
 
-	if (sumX < 0) sumX *= -1;
-	if (sumY < 0) sumY *= -1;
-
-	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
-	{
-		std::string logEntry = std::format("Send Sync Message ||old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
-			_session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y, getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
-
-
-		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
-	}
-	/*
-	else
-	{
-		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
-		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
-
-		int newSectorX = AttackPacket.X / SECTOR_RATIO;
-		int newSectorY = AttackPacket.Y / SECTOR_RATIO;;
-
-		_session->_player->_x = AttackPacket.X;
-		_session->_player->_y = AttackPacket.Y;
-		_session->_player->_direction = AttackPacket.Direction;
-
-		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
-		{
-
-			Sector[oldSectorX][oldSectorY].remove(_session);
-			Sector[newSectorX][newSectorY].push_back(_session);
-			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
-		}
-
-	}
-
-	//*/
 
 	_session->_player->_direction = AttackPacket.Direction;
 
@@ -265,107 +140,23 @@ bool Attack1(Session* _session)
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
 
-	MsgSectorBroadCasting(SendAttack1Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
+	//타격 및 데미지 로직//
 
+	MsgSectorBroadCasting(SendAttack2Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
 
-	if ((AttackPacket.Direction) == LL) //left
+	Session* hitTarget = CheckHit(_session, dfATTACK1_RANGE_X, dfATTACK1_RANGE_Y);
+	if (hitTarget == HIT_FAILED) return false;
+
+	hitTarget->_player->_hp -= dfAttack1Damage;
+
+	MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)hitTarget, sectorX, sectorY, true);
+
+	if (hitTarget->_player->_hp <= 0)
 	{
-		for (int i = -1; i < 2; i++)
-		{
-			for (int j = -1; j < 2; j++)
-			{
-				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-				it = Sector[sectorX + i][sectorY + j].begin();
-
-				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-				{
-					if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-
-					int resultX = AttackPacket.X - (*it)->_player->_x;
-					int resultY = AttackPacket.Y - (*it)->_player->_y;
-
-					if (resultX < 0) continue;
-					if (resultY < 0) resultY *= -1;
-
-					if (resultX > dfATTACK1_RANGE_X || resultY > dfATTACK1_RANGE_Y) continue;
-					//타격 성공 
-					(*it)->_player->_hp -= dfAttack1Damage;
-
-
-					//데미지 메세지 보내기
-
-					std::list<Session*>::iterator FuncIt;
-
-					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
-
-					//사망 판정 //
-
-					if ((*it)->_player->_hp <= 0)
-					{
-						DeleteSession(*it);
-					}
-						return true; //한명 타격 성공하면 바로 리턴 
-
-				}
-			}
-		}
-
+		DeleteSession(hitTarget);
 	}
 
-	else
-	{
-		for (int i = -1; i < 2; i++)
-		{
-			for (int j = -1; j < 2; j++)
-			{
-				if (sectorX  + i < 0 || sectorX + i >= sectorXRange) continue;
-				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-				it = Sector[sectorX + i][sectorY + j].begin();
-
-				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-				{
-					if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-
-					int resultX = AttackPacket.X - (*it)->_player->_x;
-					int resultY = AttackPacket.Y - (*it)->_player->_y;
-
-					if (resultX > 0) continue;
-					if (resultY < 0) resultY *= -1;
-					resultX *= -1;
-
-					if (resultX > dfATTACK1_RANGE_X || resultY > dfATTACK1_RANGE_Y) continue;
-
-					//타격 성공 
-					(*it)->_player->_hp -= dfAttack1Damage;
-
-
-					//데미지 메세지 보내기
-
-					std::list<Session*>::iterator FuncIt;
-
-					MsgSectorBroadCasting(SendDamageMessage, (char*)_session,(char*)(*it), sectorX, sectorY, true);
-
-					//사망 판정 //
-
-					if ((*it)->_player->_hp <= 0)
-					{
-						DeleteSession(*it);
-					}
-
-					return true; //한명 타격 성공하면 바로 리턴 
-				}
-			}
-		}
-
-	}
-
-
-	return false;
+	return true;
 }
 
 bool Attack2(Session* _session)
@@ -383,141 +174,33 @@ bool Attack2(Session* _session)
 
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
-	//싱크 작업 먼저 
-	int sumX = AttackPacket.X - _session->_player->_x;
-	int sumY = AttackPacket.Y - _session->_player->_y;
 
-	if (sumX < 0) sumX *= -1;
-	if (sumY < 0) sumY *= -1;
-
-	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
-	{
-		std::string logEntry = std::format("Send Sync Message ||old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
-			_session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y, getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
-
-		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
-	}
-	/*
-	else
-	{
-		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
-		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
-
-		int newSectorX = AttackPacket.X / SECTOR_RATIO;
-		int newSectorY = AttackPacket.Y / SECTOR_RATIO;;
-
-		_session->_player->_x = AttackPacket.X;
-		_session->_player->_y = AttackPacket.Y;
-		_session->_player->_direction = AttackPacket.Direction;
-
-		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
-		{
-
-			Sector[oldSectorX][oldSectorY].remove(_session);
-			Sector[newSectorX][newSectorY].push_back(_session);
-			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
-		}
-
-	}
-	//*/
+	SyncCheck(_session, AttackPacket.X, AttackPacket.Y);
 
 	_session->_player->_direction = AttackPacket.Direction;
-
 
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
 
-
-	//먼저 어택 메세지를 섹터에 뿌려줌
+	
+	//타격 및 데미지 로직//
+	
 	MsgSectorBroadCasting(SendAttack2Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
 
-	if ((AttackPacket.Direction) == LL) //left
+	Session* hitTarget = CheckHit(_session, dfATTACK2_RANGE_X, dfATTACK2_RANGE_Y);
+	if (hitTarget == HIT_FAILED) return false;
+
+	hitTarget->_player->_hp -= dfAttack2Damage;
+
+	MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)hitTarget, sectorX, sectorY, true);
+
+	if (hitTarget->_player->_hp <= 0)
 	{
-		for (int i = -1; i < 2; i++)
-		{
-			for (int j = -1; j < 2; j++)
-			{
-				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-				it = Sector[sectorX + i][sectorY + j].begin();
-
-				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-				{
-					if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-
-					int resultX = AttackPacket.X - (*it)->_player->_x;
-					int resultY = AttackPacket.Y - (*it)->_player->_y;
-
-					if (resultX < 0) continue;
-					if (resultY < 0) resultY *= -1;
-
-					if (resultX > dfATTACK2_RANGE_X || resultY > dfATTACK2_RANGE_Y) continue;
-
-					//타격 성공 
-					(*it)->_player->_hp -= dfAttack2Damage;
-
-					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
-
-					if ((*it)->_player->_hp <= 0)
-					{
-						DeleteSession(*it);
-					}
-
-					return true; //한명 타격 성공하면 바로 리턴 
-				}
-			}
-		}
-
+		DeleteSession(hitTarget);
 	}
 
-	else
-	{
-		for (int i = -1; i < 2; i++)
-		{
-			for (int j = -1; j < 2; j++)
-			{
-				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
+	return true;
 
-				it = Sector[sectorX + i][sectorY + j].begin();
-
-				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-				{
-					if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-
-					int resultX = AttackPacket.X - (*it)->_player->_x;
-					int resultY = AttackPacket.Y - (*it)->_player->_y;
-
-					if (resultX > 0) continue;
-					if (resultY < 0) resultY *= -1;
-					resultX *= -1;
-
-					if (resultX > dfATTACK2_RANGE_X || resultY > dfATTACK2_RANGE_Y) continue;
-
-					//타격 성공
-					(*it)->_player->_hp -= dfAttack2Damage;
-
-					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
-
-					if ((*it)->_player->_hp <= 0)
-					{
-						DeleteSession(*it);
-					}
-						return true; //한명 타격 성공하면 바로 리턴 
-				}
-			}
-		}
-
-	}
-
-
-	return false;
 }
 bool Attack3(Session* _session)
 {
@@ -536,147 +219,30 @@ bool Attack3(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
 
-	//싱크 작업 먼저 
-	int sumX = AttackPacket.X - _session->_player->_x;
-	int sumY = AttackPacket.Y - _session->_player->_y;
-
-	if (sumX < 0) sumX *= -1;
-	if (sumY < 0) sumY *= -1;
-
-	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
-	{
-
-		std::string logEntry = std::format("Send Sync Message ||old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
-			_session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y, getFileName(__FILE__), __func__, __LINE__, GetLastError());
-		EnterCriticalSection(&g_lock);
-		LogQ.push_back(logEntry);
-		LeaveCriticalSection(&g_lock);
-
-
-
-		SyncPos(_session, _session->_player->_x, _session->_player->_y, AttackPacket.X, AttackPacket.Y);
-	}
-	/*
-	else
-	{
-		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
-		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
-
-		int newSectorX = AttackPacket.X / SECTOR_RATIO;
-		int newSectorY = AttackPacket.Y / SECTOR_RATIO;;
-
-		_session->_player->_x = AttackPacket.X;
-		_session->_player->_y = AttackPacket.Y;
-		_session->_player->_direction = AttackPacket.Direction;
-
-		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
-		{
-
-			Sector[oldSectorX][oldSectorY].remove(_session);
-			Sector[newSectorX][newSectorY].push_back(_session);
-			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
-		}
-
-	}
-	//*/
+	SyncCheck(_session, AttackPacket.X, AttackPacket.Y);
 
 	_session->_player->_direction = AttackPacket.Direction;
 
 	int sectorX = (_session->_player->_x) / SECTOR_RATIO;
 	int sectorY = (_session->_player->_y) / SECTOR_RATIO;
 
+	//타격 및 데미지 로직//
 
-	//먼저 어택 메세지를 섹터에 뿌려줌
-	MsgSectorBroadCasting(SendAttack3Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
+	MsgSectorBroadCasting(SendAttack2Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
 
-	if ((AttackPacket.Direction) == LL) //left
+	Session* hitTarget = CheckHit(_session, dfATTACK3_RANGE_X, dfATTACK3_RANGE_Y);
+	if (hitTarget == HIT_FAILED) return false;
+
+	hitTarget->_player->_hp -= dfAttack3Damage;
+
+	MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)hitTarget, sectorX, sectorY, true);
+
+	if (hitTarget->_player->_hp <= 0)
 	{
-		for (int i = -1; i < 2; i++)
-		{
-			for (int j = -1; j < 2; j++)
-			{
-				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-				it = Sector[sectorX + i][sectorY + j].begin();
-
-				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-				{
-					if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-
-					int resultX = AttackPacket.X - (*it)->_player->_x;
-					int resultY = AttackPacket.Y - (*it)->_player->_y;
-
-					if (resultX < 0) continue;
-					if (resultY < 0) resultY *= -1;
-
-					if (resultX > dfATTACK3_RANGE_X || resultY > dfATTACK3_RANGE_Y) continue;
-					//타격 성공 
-
-					(*it)->_player->_hp -= dfAttack3Damage;
-
-
-					//데미지 메세지 보내기
-					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
-					if ((*it)->_player->_hp <= 0)
-					{
-						DeleteSession(*it);
-					}
-						return true; //한명 타격 성공하면 바로 리턴 
-				}
-			}
-		}
-
+		DeleteSession(hitTarget);
 	}
 
-	else
-	{
-		for (int i = -1; i < 2; i++)
-		{
-			for (int j = -1; j < 2; j++)
-			{
-				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
-				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
-
-				it = Sector[sectorX + i][sectorY + j].begin();
-
-				for (; it != Sector[sectorX + i][sectorY + j].end(); it++)
-				{
-					if ((*it)->_player->_ID == _session->_player->_ID) continue;
-
-
-					int resultX = AttackPacket.X - (*it)->_player->_x;
-					int resultY = AttackPacket.Y - (*it)->_player->_y;
-
-
-					if (resultX > 0) continue;
-					if (resultY < 0) resultY *= -1;
-					resultX *= -1;
-
-					if (resultX > dfATTACK3_RANGE_X || resultY > dfATTACK3_RANGE_Y) continue;
-
-
-					//타격 성공 
-					(*it)->_player->_hp -= dfAttack3Damage;
-
-
-					//데미지 메세지 보내기
-					MsgSectorBroadCasting(SendDamageMessage, (char*)_session, (char*)(*it), sectorX, sectorY, true);
-					if ((*it)->_player->_hp <= 0)
-					{
-						DeleteSession(*it);
-					}
-						return true; //한명 타격 성공하면 바로 리턴 
-
-				}
-			}
-		}
-
-	}
-
-
-	return false;
+	return true;
 }
 
 bool Sync(Session* _session)

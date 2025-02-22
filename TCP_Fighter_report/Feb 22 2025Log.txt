@@ -1,0 +1,28 @@
+
+--------------------------------
+PlayerCount : 0
+frame : 3
+Sync Message Count : 0
+TimeOut Count : 0
+--------------------------------
+
+--------------------------------
+PlayerCount : 0
+frame : 17
+Sync Message Count : 0
+TimeOut Count : 0
+--------------------------------
+
+--------------------------------
+PlayerCount : 0
+frame : 5
+Sync Message Count : 0
+TimeOut Count : 0
+--------------------------------
+
+--------------------------------
+PlayerCount : 0
+frame : 19
+Sync Message Count : 0
+TimeOut Count : 0
+--------------------------------

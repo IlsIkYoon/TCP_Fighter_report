@@ -97,8 +97,8 @@ bool MoveSectorR(Session* _session, int x, int y, int oldX, int oldY)
 	
 	for (int i = -1; i < 2; i++)
 	{
-		oldSectorX = oldX / SECTOR_RATIO - 1;
-		oldSectorY = oldY / SECTOR_RATIO + i;
+		oldSectorX = (oldX / SECTOR_RATIO) - 1;
+		oldSectorY = (oldY / SECTOR_RATIO) + i;
 
 		if (oldSectorX< 0 || oldSectorX>= sectorRightMax) break;
 		if (oldSectorY< 0 || oldSectorY>= sectorBottomMax) continue;
@@ -331,7 +331,7 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 				SendCreateOtherCharMessage((char*)(*stat_ArrIt), (char*)_session);
 				
 				
-				/*
+				//*
 
 				//MoveMessage
 				if (_session->_player->_move == true)
@@ -358,5 +358,67 @@ bool SyncSector(Session* _session, int oldSecX, int oldSecY,  int newSecX, int n
 }
 
 
+Session* CheckHit(Session* _session, int rangeX, int rangeY)
+{
+	int sectorX = _session->_player->_x / SECTOR_RATIO;
+	int sectorY = _session->_player->_y / SECTOR_RATIO;
 
+
+	if ((_session->_player->_direction) == LL) //left
+	{
+		for (int i = -1; i < 2; i++)
+		{
+			for (int j = -1; j < 2; j++)
+			{
+				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
+
+				for (auto target : Sector[sectorX + i][sectorY + j])
+				{
+					if (target->_player->_ID == _session->_player->_ID) continue;
+
+					int resultX = _session->_player->_x - target->_player->_x;
+					int resultY = _session->_player->_y - target->_player->_y;
+
+					if (resultX < 0) continue;
+					if (resultY < 0) resultY *= -1;
+					
+					if (resultX < rangeX && resultY < rangeY) return target;
+
+				}
+			}
+		}
+
+	}
+	else
+	{
+		for (int i = -1; i < 2; i++)
+		{
+			for (int j = -1; j < 2; j++)
+			{
+				if (sectorX + i < 0 || sectorX + i >= sectorXRange) continue;
+				if (sectorY + j < 0 || sectorY + j >= sectorYRange) continue;
+
+
+				for (auto target : Sector[sectorX + i][sectorY + j])
+				{
+					if (target->_player->_ID == _session->_player->_ID) continue;
+
+					int resultX = _session->_player->_x - target->_player->_x;
+					int resultY = _session->_player->_y - target->_player->_y;
+
+					if (resultX > 0) continue;
+					if (resultY < 0) resultY *= -1;
+					resultX *= -1;
+
+					if (resultX < rangeX && resultY < rangeY) return target;
+
+				}
+			}
+		}
+
+	}
+
+	return HIT_FAILED;
+}
 

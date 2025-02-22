@@ -330,6 +330,7 @@ void SendDamageMessage(char* Attack, char* dest, char* Damage)
 
 void SendSyncMessage(char* src, char* dest)
 {
+	__debugbreak();
 	unsigned int enqueResult;
 
 	Session* _src = (Session*)src;
@@ -364,8 +365,7 @@ void SendSyncMessage(char* src, char* dest)
 
 void MsgSectorBroadCasting(void (*Func)(char* src, char* dest), char* _src, int SectorX, int SectorY, bool SendMe)
 {
-	std::list<Session*>::iterator it;
-	Session* pSrc = (Session*)_src;
+	Session* _session = (Session*)_src;
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
@@ -373,15 +373,13 @@ void MsgSectorBroadCasting(void (*Func)(char* src, char* dest), char* _src, int 
 			if (SectorX + i < 0 || SectorX + i >= sectorXRange) continue;
 			if (SectorY + j < 0 || SectorY + j >= sectorYRange) continue;
 
-			for (it = Sector[SectorX + i][SectorY + j].begin();
-				it != Sector[SectorX + i][SectorY + j].end(); it++)
+			for (auto target : Sector[SectorX + i][SectorY + j])
 			{
-				//여기에 나를 제외한 곳에 뿌린다는 옵션이 들어가야 하나 ?
-				if ((*it)->_player->_ID == pSrc->_player->_ID && SendMe == false)
-				{
+				if ((target->_player->_ID == _session->_player->_ID) && SendMe == false)
 					continue;
-				}
-				Func(_src, (char*)(*it));
+
+				Func(_src, (char*)target);
+
 			}
 		}
 	}
@@ -603,20 +601,12 @@ void RestorePacket(Session* _session, int packetSize, int packetType)
 
 
 
-void SyncPos(Session* pSession, int sX, int sY, int cX, int cY)
+void SyncPos(Session* pSession)
 {
-
-
-	int SVSectorX = sX / SECTOR_RATIO;
-	int SVSectorY = sY / SECTOR_RATIO;
 	SendSyncMessage((char*)pSession, (char*)pSession);
-
-
-
 
 	SyncMessageCount++;
 	
-
 }
 
 
@@ -706,6 +696,7 @@ void SendCreateSurroundCharMessage(char* src)
 				otherCharacter.Y = it->_player->_y;
 
 				//Debug
+				//-----------------------------------------------
 				if (_session->messageCount.count(it->_player->_ID) == 0)
 				{
 					_session->messageCount[it->_player->_ID] = 1;
@@ -716,12 +707,7 @@ void SendCreateSurroundCharMessage(char* src)
 
 					if (_session->messageCount[it->_player->_ID] > 1) __debugbreak();
 				}
-
-
-
-
-				if (otherCharacter.ID == _session->_player->_ID) continue;
-
+				//----------------------------------------------
 				if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
 				{
 					EnqueLog("RingBuffer SendQ Size", __FILE__, __func__, __LINE__, GetLastError());
@@ -742,6 +728,10 @@ void SendCreateSurroundCharMessage(char* src)
 					DeleteSession(_session);
 					return;
 				}
+
+				//todo//Move플래그가 켜져 있으면 MoveStart패킷도 바로 보내줘야 함
+
+
 
 			}
 		}

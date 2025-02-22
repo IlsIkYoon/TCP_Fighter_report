@@ -72,15 +72,13 @@ bool DecodeMessages(Session* _session)
 
 		_session->_recvQ.MoveFront(sizeof(pHeader));
 
+		//Header추출 완료
+
 		int bufUsed = _session->_recvQ.GetSizeUsed();
-		if (bufUsed < pHeader.bySize) //PayLoad가 다 안왔으면 다시 헤더를 넣고 리턴
+		if (bufUsed < pHeader.bySize) 
 		{
-			char* extraBuf = (char*)malloc(bufUsed);
-			unsigned int dequeResult;
-			unsigned int enqueResult;
-			_session->_recvQ.Dequeue(extraBuf, bufUsed, &dequeResult);
-			_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
-			_session->_recvQ.Enqueue(extraBuf, bufUsed, &enqueResult);
+			//PayLoad가 다 안왔으면 다시 헤더를 넣고 리턴
+			RestorePacket(_session, pHeader.bySize, pHeader.byType);
 			return false;
 		}
 
@@ -95,7 +93,6 @@ bool DecodeMessages(Session* _session)
 		case dfPACKET_CS_MOVE_START:
 
 			MoveStart(_session);
-
 
 			break;
 
@@ -128,7 +125,7 @@ bool DecodeMessages(Session* _session)
 
 		case dfPACKET_CS_SYNC:
 		{
-			EnqueLog("SyncMessage ", __FILE__, __func__, __LINE__, GetLastError());
+			EnqueLog("SyncMessage Recved ", __FILE__, __func__, __LINE__, GetLastError());
 		}
 			break;
 
@@ -187,7 +184,6 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		if (_x - deltaX < dfRANGE_MOVE_LEFT) return false;
 		_x -= deltaX;;
 		
-
 	}
 	break;
 
@@ -196,8 +192,6 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		if (_x - deltaX < dfRANGE_MOVE_LEFT || _y - deltaY < dfRANGE_MOVE_TOP) return false;
 		_x -= deltaX;
 		_y -= deltaY;
-
-		
 
 	}
 
@@ -276,15 +270,27 @@ bool Player::Move(DWORD fixedDeltaTime) {
 		return true;
 
 
+	//섹터 이동..
+
 	int oldSectorX = oldX / SECTOR_RATIO;
 	int oldSectorY = oldY / SECTOR_RATIO;
 
 	int newSectorX = _x / SECTOR_RATIO;
 	int newSectorY = _y / SECTOR_RATIO;
 	
+
+	//섹터에 이미 존재하지 않았음
+	int debugSize = Sector[oldSectorX][oldSectorY].size();
+	
 	Sector[oldSectorX][oldSectorY].remove(pSession);
+
+	if (debugSize == Sector[oldSectorX][oldSectorY].size()) __debugbreak();
+
+
 	Sector[newSectorX][newSectorY].push_back(pSession);
 	
+
+
 	int paramX;
 	int paramY;
 
@@ -333,7 +339,7 @@ bool Player::Move(DWORD fixedDeltaTime) {
 
 
 
-bool Player::MoveStart(BYTE Direction, short X, short Y) {
+bool Player::MoveStart(BYTE Direction) {
 
 	_direction = Direction;
 
@@ -344,7 +350,7 @@ bool Player::MoveStart(BYTE Direction, short X, short Y) {
 
 
 
-void Player::MoveStop(int Dir, int x, int y)
+void Player::MoveStop(int Dir)
 {
 
 	_direction = Dir;
@@ -371,7 +377,7 @@ void FlushDeleteArr()
 			if (debugSize == Sector[sectorX][sectorY].size())
 			{
 
-				EnqueLog("Sector ", __FILE__, __func__, __LINE__, GetLastError());
+				EnqueLog("Sector Delete ", __FILE__, __func__, __LINE__, GetLastError());
 			}
 
 
@@ -399,4 +405,51 @@ void TimeOutCheck()
 			timeOutCount++;
 		}
 	}
+}
+
+void SyncCheck(Session* _session, int newX, int newY)
+{
+	int sumX = newX - _session->_player->_x;
+	int sumY = newY - _session->_player->_y;
+
+	if (sumX < 0) sumX *= -1;
+	if (sumY < 0) sumY *= -1;
+
+	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
+	{
+		//todo//Debug용 log문자열 전달 함수 생성 필요
+		std::string logEntry = std::format("Send Sync Message ||old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
+			_session->_player->_x, _session->_player->_y, newX, newY, getFileName(__FILE__), __func__, __LINE__, GetLastError());
+		EnterCriticalSection(&g_lock);
+		LogQ.push_back(logEntry);
+		LeaveCriticalSection(&g_lock);
+
+
+		SyncPos(_session);
+	}
+	/*
+	else
+	{
+		int oldSectorX = _session->_player->_x / SECTOR_RATIO;
+		int oldSectorY = _session->_player->_y / SECTOR_RATIO;
+
+		int newSectorX = AttackPacket.X / SECTOR_RATIO;
+		int newSectorY = AttackPacket.Y / SECTOR_RATIO;;
+
+		_session->_player->_x = AttackPacket.X;
+		_session->_player->_y = AttackPacket.Y;
+		_session->_player->_direction = AttackPacket.Direction;
+
+		if (oldSectorX != newSectorX || oldSectorY != newSectorY)
+		{
+
+			Sector[oldSectorX][oldSectorY].remove(_session);
+			Sector[newSectorX][newSectorY].push_back(_session);
+			SyncSector(_session, oldSectorX, oldSectorY, newSectorX, newSectorY);
+		}
+
+	}
+
+	//*/
+
 }
