@@ -26,3 +26,31 @@ frame : 19
 Sync Message Count : 0
 TimeOut Count : 0
 --------------------------------
+
+--------------------------------
+PlayerCount : 0
+frame : 10
+Sync Message Count : 0
+TimeOut Count : 0
+--------------------------------
+
+--------------------------------
+PlayerCount : 0
+frame : 11
+Sync Message Count : 0
+TimeOut Count : 0
+--------------------------------
+
+--------------------------------
+PlayerCount : 700
+frame : 18
+Sync Message Count : 0
+TimeOut Count : 3717
+--------------------------------
+
+--------------------------------
+PlayerCount : 1228
+frame : 15
+Sync Message Count : 0
+TimeOut Count : 3717
+--------------------------------

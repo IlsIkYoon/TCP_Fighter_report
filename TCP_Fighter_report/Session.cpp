@@ -154,7 +154,7 @@ bool DeleteSession(Session* _session)
 	MsgSectorBroadCasting(SendDeleteMessage, (char*)_session, sectorX, sectorY, true);
 	_session->_delete = true;
 	DeleteArr.push_back(_session); // 지연 삭제를 위해 DeleteArr에 보관
-
+	//SessionArr.remove(_session);
 
 	return true;
 }
@@ -399,7 +399,7 @@ void TimeOutCheck()
 
 	for (auto session : SessionArr)
 	{
-		if (session->_timeout < deadLine)
+		if (session->_timeout < deadLine && session->_delete == false)
 		{
 			DeleteSession(session);
 			timeOutCount++;
