@@ -36,6 +36,11 @@ public:
 		_delete = false;
 	}
 
+	~Session() {
+		delete _player;
+
+	}
+
 	/*
 	//Debug
 	std::map<int, int> messageCount;

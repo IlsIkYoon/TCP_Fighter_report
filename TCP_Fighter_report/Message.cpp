@@ -642,6 +642,8 @@ void RestorePacket(Session* _session, int packetSize, int packetType)
 	_session->_recvQ.Enqueue((char*)&pHeader, sizeof(pHeader), &enqueResult);
 	_session->_recvQ.Enqueue(localBuf, size, &enqueResult);
 
+	free(localBuf);
+
 	return;
 }
 
