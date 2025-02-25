@@ -24,7 +24,8 @@ void PrintLog()
 	printf("frame : %d\n", frame);
 	printf("Sync Message Count : %d\n", SyncMessageCount);
 	printf("TimeOut Count : %d\n", timeOutCount);
-	printf("Message Error Count : %d\n", messageErrorCount);
+	//printf("Message Error Count : %d\n", messageErrorCount);
+	printf("Message Error Count : Disabled\n");
 	printf("--------------------------------\n");
 }
 
@@ -90,7 +91,8 @@ void WriteLog()
 	fprintf(fpWrite, "frame : %d\n", frame);
 	fprintf(fpWrite, "Sync Message Count : %d\n", SyncMessageCount);
 	fprintf(fpWrite, "TimeOut Count : %d\n", timeOutCount);
-	fprintf(fpWrite, "Message Error Count : %d\n", messageErrorCount);
+	//fprintf(fpWrite, "Message Error Count : %d\n", messageErrorCount);
+	fprintf(fpWrite, "Message Error Count : Disabled\n");
 	fprintf(fpWrite, "--------------------------------\n");
 
 	fclose(fpWrite);

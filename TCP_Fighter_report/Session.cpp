@@ -154,7 +154,7 @@ bool DeleteSession(Session* _session)
 	MsgSectorBroadCasting(SendDeleteMessage, (char*)_session, sectorX, sectorY, true);
 	_session->_delete = true;
 	DeleteArr.push_back(_session); // 지연 삭제를 위해 DeleteArr에 보관
-	//SessionArr.remove(_session);
+	
 
 	return true;
 }
@@ -422,7 +422,7 @@ void TimeOutCheck()
 	}
 }
 
-void SyncCheck(Session* _session, int newX, int newY)
+void SyncCheck(Session* _session, int newX, int newY, const char* File, const char* func, int Line, int ErrorCode)
 {
 	int sumX = newX - _session->_player->_x;
 	int sumY = newY - _session->_player->_y;
@@ -433,8 +433,8 @@ void SyncCheck(Session* _session, int newX, int newY)
 	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
 	{
 		//todo//Debug용 log문자열 전달 함수 생성 필요
-		std::string logEntry = std::format("Send Sync Message ||old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
-			_session->_player->_x, _session->_player->_y, newX, newY, getFileName(__FILE__), __func__, __LINE__, GetLastError());
+		std::string logEntry = std::format("Send Sync Message ||ID : %d || old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
+			_session->_player->_ID, _session->_player->_x, _session->_player->_y, newX, newY, getFileName(File), func, Line, ErrorCode);
 		EnterCriticalSection(&g_lock);
 		LogQ.push_back(logEntry);
 		LeaveCriticalSection(&g_lock);

@@ -54,7 +54,7 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 	Session* _src = (Session*)src;
 	Session* _dest = (Session*)dest;
 
-	
+	/*
 	//Debug
 	if (_dest->messageCount.count(_src->_player->_ID) == 0)
 	{
@@ -71,6 +71,7 @@ void SendCreateOtherCharMessage(char* src, char* dest)
 		}
 	}
 
+	//*/
 
 
 	PacketHeader pHeader;
@@ -109,6 +110,7 @@ void SendDeleteMessage(char* src, char* dest)
 	Session* _src = (Session*)src;
 	Session* _dest = (Session*)dest;
 	
+	/*
 	//Debug
 	if (_dest->messageCount.count(_src->_player->_ID) == 0)
 	{
@@ -130,6 +132,7 @@ void SendDeleteMessage(char* src, char* dest)
 		}
 
 	}
+	//*/
 	
 
 	PacketHeader pHeader;
@@ -740,10 +743,9 @@ void SendCreateSurroundCharMessage(char* src)
 				otherCharacter.X = it->_player->_x;
 				otherCharacter.Y = it->_player->_y;
 
+				/*
 				//Debug
 				//-----------------------------------------------
-
-
 				if (_session->messageCount.count(it->_player->_ID) == 0)
 				{
 					_session->messageCount[it->_player->_ID] = 1;
@@ -758,11 +760,8 @@ void SendCreateSurroundCharMessage(char* src)
 						EnqueLog("Message Error", __FILE__, __func__, __LINE__, GetLastError());
 					}
 				}
-
-
-
-
 				//----------------------------------------------
+				//*/
 				if (_session->_sendQ.GetSizeFree() < sizeof(pHeader) + pHeader.bySize)
 				{
 					EnqueLog("RingBuffer SendQ Size", __FILE__, __func__, __LINE__, GetLastError());

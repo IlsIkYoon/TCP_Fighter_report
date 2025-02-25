@@ -68,7 +68,7 @@ bool MoveStart(Session* _session)
 
 	//헤더 추출 완료
 
-	SyncCheck(_session, MoveStartPacket.X, MoveStartPacket.Y);
+	SyncCheck(_session, MoveStartPacket.X, MoveStartPacket.Y, __FILE__, __func__, __LINE__, GetLastError());
 
 
 	_session->_player->MoveStart(MoveStartPacket.Direction);
@@ -101,7 +101,7 @@ bool MoveStop(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(MoveStopPacket));
 	
 
-	SyncCheck(_session, MoveStopPacket.X, MoveStopPacket.Y);
+	SyncCheck(_session, MoveStopPacket.X, MoveStopPacket.Y, __FILE__, __func__, __LINE__, GetLastError());
 
 	_session->_player->MoveStop(MoveStopPacket.Direction);
 
@@ -134,7 +134,7 @@ bool Attack1(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
 	//싱크 작업 먼저 
-	SyncCheck(_session, AttackPacket.X, AttackPacket.Y);
+	SyncCheck(_session, AttackPacket.X, AttackPacket.Y, __FILE__, __func__, __LINE__, GetLastError());
 
 
 	_session->_player->_direction = AttackPacket.Direction;
@@ -146,7 +146,7 @@ bool Attack1(Session* _session)
 
 	//타격 및 데미지 로직//
 
-	MsgSectorBroadCasting(SendAttack2Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
+	MsgSectorBroadCasting(SendAttack1Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
 
 	Session* hitTarget = CheckHit(_session, dfATTACK1_RANGE_X, dfATTACK1_RANGE_Y);
 	if (hitTarget == HIT_FAILED) return false;
@@ -179,7 +179,7 @@ bool Attack2(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
 
-	SyncCheck(_session, AttackPacket.X, AttackPacket.Y);
+	SyncCheck(_session, AttackPacket.X, AttackPacket.Y, __FILE__, __func__, __LINE__, GetLastError());
 
 	_session->_player->_direction = AttackPacket.Direction;
 
@@ -223,7 +223,7 @@ bool Attack3(Session* _session)
 	_session->_recvQ.MoveFront(sizeof(AttackPacket));
 
 
-	SyncCheck(_session, AttackPacket.X, AttackPacket.Y);
+	SyncCheck(_session, AttackPacket.X, AttackPacket.Y, __FILE__, __func__, __LINE__, GetLastError());
 
 	_session->_player->_direction = AttackPacket.Direction;
 
@@ -232,7 +232,7 @@ bool Attack3(Session* _session)
 
 	//타격 및 데미지 로직//
 
-	MsgSectorBroadCasting(SendAttack2Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
+	MsgSectorBroadCasting(SendAttack3Message, (char*)_session, (char*)&AttackPacket, sectorX, sectorY, true);
 
 	Session* hitTarget = CheckHit(_session, dfATTACK3_RANGE_X, dfATTACK3_RANGE_Y);
 	if (hitTarget == HIT_FAILED) return false;

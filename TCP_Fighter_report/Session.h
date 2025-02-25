@@ -36,7 +36,7 @@ public:
 		_delete = false;
 	}
 
-	//*
+	/*
 	//Debug
 	std::map<int, int> messageCount;
 	//*/
@@ -129,6 +129,6 @@ void TimeOutCheck();
 // _session의 좌표와 new좌표가 dfErrorRange이상으로 차이나면 클라이언트에 SyncMessage 전송
 // dfErrorRange이하로 차이나면 클라이언트의 좌표 서버에 대입(todo)
 //----------------------------------------------------------------
-void SyncCheck(Session* _session, int newX, int newY);
+void SyncCheck(Session* _session, int newX, int newY, const char* File, const char* func, int Line, int ErrorCode);
 
 #endif
