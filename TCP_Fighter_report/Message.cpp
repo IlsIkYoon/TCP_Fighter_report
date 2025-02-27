@@ -785,7 +785,47 @@ void SendCreateSurroundCharMessage(char* src)
 					return;
 				}
 
-				//todo//Move플래그가 켜져 있으면 MoveStart패킷도 바로 보내줘야 함
+				//Move플래그가 켜져 있으면 MoveStart패킷도 바로 보내줌
+
+				if (it->_player->_move == false) continue;
+
+				PacketHeader moveHeader;
+				SC_MOVE_START MoveStartPacket;
+
+				moveHeader.byCode = 0x89;
+				moveHeader.bySize = sizeof(MoveStartPacket);
+				moveHeader.byType = dfPACKET_CS_MOVE_START;
+
+				MoveStartPacket.Direction = it->_player->_direction;
+				MoveStartPacket.ID = it->_player->_ID;
+				MoveStartPacket.X = it->_player->_x;
+				MoveStartPacket.Y = it->_player->_y;
+
+
+				if (_session->_sendQ.GetSizeFree() < sizeof(moveHeader) + moveHeader.bySize)
+				{
+					EnqueLog("RingBuffer SendQ Size", __FILE__, __func__, __LINE__, GetLastError());
+					DeleteSession(_session);
+					return;
+				}
+
+				if (_session->_sendQ.Enqueue((char*)&moveHeader, sizeof(moveHeader), &EnqueOut) == false)
+				{
+					EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
+					DeleteSession(_session);
+					return;
+				}
+
+				if (_session->_sendQ.Enqueue((char*)&MoveStartPacket, moveHeader.bySize, &EnqueOut) == false)
+				{
+					EnqueLog("RingBuffer SendQ", __FILE__, __func__, __LINE__, GetLastError());
+					DeleteSession(_session);
+					return;
+				}
+					 
+
+
+
 
 
 
