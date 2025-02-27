@@ -9,45 +9,7 @@
 extern DWORD playerCount;
 extern int playerID;
 
-class Player;
-
-struct Session
-{
-
-public:
-	SOCKET _socket;
-	DWORD _ip;
-	DWORD _port;
-	RingBuffer _recvQ;
-	RingBuffer _sendQ;
-	Player* _player;
-
-	DWORD _timeout;
-	bool _delete;
-	//Session* _next; 배열로 가기 때문에 필요 없음
-	Session() {
-		_ip = 0;
-		_port = 0;
-		_player = nullptr;
-		_socket = 0;
-
-
-		_timeout = timeGetTime();
-		_delete = false;
-	}
-
-	~Session() {
-		delete _player;
-
-	}
-
-	/*
-	//Debug
-	std::map<int, int> messageCount;
-	//*/
-
-
-};
+struct Session;
 
 class Player {
 
@@ -98,6 +60,44 @@ public:
 	void MoveStop(int Dir);
 
 	
+
+
+};
+
+struct Session
+{
+
+public:
+	SOCKET _socket;
+	DWORD _ip;
+	DWORD _port;
+	RingBuffer _recvQ;
+	RingBuffer _sendQ;
+	Player* _player;
+
+	DWORD _timeout;
+	bool _delete;
+	//Session* _next; 배열로 가기 때문에 필요 없음
+	Session() {
+		_ip = 0;
+		_port = 0;
+		_player = nullptr;
+		_socket = 0;
+
+
+		_timeout = timeGetTime();
+		_delete = false;
+	}
+
+	~Session() {
+		delete _player;
+
+	}
+
+	/*
+	//Debug
+	std::map<int, int> messageCount;
+	//*/
 
 
 };
