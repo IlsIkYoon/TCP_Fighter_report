@@ -794,7 +794,7 @@ void SendCreateSurroundCharMessage(char* src)
 
 				moveHeader.byCode = 0x89;
 				moveHeader.bySize = sizeof(MoveStartPacket);
-				moveHeader.byType = dfPACKET_CS_MOVE_START;
+				moveHeader.byType = dfPACKET_SC_MOVE_START;
 
 				MoveStartPacket.Direction = it->_player->_direction;
 				MoveStartPacket.ID = it->_player->_ID;
