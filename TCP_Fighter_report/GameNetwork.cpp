@@ -50,21 +50,13 @@ void GameNetwork()
 
 
 	for (DWORD i = 0; i < playerCount / 64 + 1; i++) 
-	{
-		
-		
-		
-		
+	{	
 		select_retval = select(NULL, &readset[i], &writeset[i], NULL, &timeout);
 		if (select_retval == SOCKET_ERROR && GetLastError() != 10022)
 		{
 			EnqueLog("Select", __FILE__, __func__, __LINE__, GetLastError());
 			continue;
 		}
-
-		
-		
-
 	}
 
 
@@ -77,9 +69,6 @@ void GameNetwork()
 
 			recv_retval = recv(session->_socket, session->_recvQ.GetRear(),
 				session->_recvQ.GetDirectEnqueSize(), NULL);
-
-
-
 
 			if (recv_retval == 0)
 			{
