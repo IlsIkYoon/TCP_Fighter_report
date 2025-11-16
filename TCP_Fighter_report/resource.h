@@ -20,7 +20,7 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-#define SECTOR_RATIO 128 //100분의 1 비율 6400에서 나눠서 떨어지는 수를 하는게 좋다
+#define SECTOR_RATIO 128 
 #define FrameRate 25
 #define FrameSec (1000 / FrameRate)
 #define FrameError 20
@@ -64,10 +64,10 @@
 // 기본 설정
 //-------------------------------------------------------------
 
-#define dfHP 100
-#define dfAttack1Damage 1
-#define dfAttack2Damage 2
-#define dfAttack3Damage 3
+#define dfHP 10
+#define dfAttack1Damage 3
+#define dfAttack2Damage 6
+#define dfAttack3Damage 10
 
 #define LL 0x00
 #define RR 0x04
