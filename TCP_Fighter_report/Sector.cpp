@@ -402,7 +402,7 @@ Session* CheckHit(Session* _session, int rangeX, int rangeY)
 		}
 
 	}
-	else
+	else //방향이 RR이라면
 	{
 		for (int i = -1; i < 2; i++)
 		{

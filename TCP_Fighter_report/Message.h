@@ -73,9 +73,7 @@ void SendAttack3Message(char* src, char* dest, char* AttackPacket);
 //dest의 SendQ에 Damage패킷 만들어서 Enque
 //------------------------------------------------------
 void SendDamageMessage(char* Attack, char* dest, char* Damaged);
-//------------------------------------------------------
-//현 시점에서 쓰는 순간이 있나?
-//------------------------------------------------------
+
 void SendSyncMessage(char* src, char* dest);
 
 

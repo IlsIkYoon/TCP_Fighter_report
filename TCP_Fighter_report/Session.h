@@ -132,7 +132,7 @@ void TimeOutCheck();
 
 //----------------------------------------------------------------
 // _session의 좌표와 new좌표가 dfErrorRange이상으로 차이나면 클라이언트에 SyncMessage 전송
-// dfErrorRange이하로 차이나면 클라이언트의 좌표 서버에 대입(todo)
+// dfErrorRange이하로 차이나면 클라이언트의 좌표 서버에 대입
 //----------------------------------------------------------------
 void SyncCheck(Session* _session, int newX, int newY, const char* File, const char* func, int Line, int ErrorCode);
 

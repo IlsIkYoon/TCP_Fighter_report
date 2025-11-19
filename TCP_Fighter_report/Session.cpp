@@ -432,7 +432,6 @@ void SyncCheck(Session* _session, int newX, int newY, const char* File, const ch
 
 	if (sumX >= dfERROR_RANGE || sumY >= dfERROR_RANGE)
 	{
-		//todo//Debug용 log문자열 전달 함수 생성 필요
 		std::string logEntry = std::format("Send Sync Message ||ID : {} || old X : {} old Y : {} newX : {} newY : {}  FILE : {}, Func : {} , Line : {} error : {}\n",
 			_session->_player->_ID, _session->_player->_x, _session->_player->_y, newX, newY, getFileName(File), func, Line, ErrorCode);
 		EnterCriticalSection(&g_lock);
